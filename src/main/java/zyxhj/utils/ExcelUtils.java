@@ -38,7 +38,7 @@ public class ExcelUtils {
 					continue;
 				}
 				// 如果当前行没有数据，跳出循环
-				if (StringUtils.isBlank(row.getCell(0).toString())) {
+				if (row.getCell(0) == null || StringUtils.isBlank(row.getCell(0).toString())) {
 					break;
 				}
 
@@ -187,7 +187,7 @@ public class ExcelUtils {
 
 	public static String getString(Object o) {
 		if (o == null) {
-			return null;
+			return "";
 		} else {
 			return o.toString();
 		}

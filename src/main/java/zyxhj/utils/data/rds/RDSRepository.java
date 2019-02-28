@@ -6,14 +6,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
@@ -465,6 +468,81 @@ public abstract class RDSRepository<T> {
 			JSONArray tags = JSON.parseArray(result);
 			return tags;
 		}
+	}
+
+	/**
+	 * 跟进标签查询对象列表</br>
+	 * 需要传入标签分组keyword和标签数组</br>
+	 * 如果keyword为blank，则从根上查询JSON数组
+	 */
+	protected List<T> getListByTags(DruidPooledConnection conn, String tagColumnName, String keyword, JSONArray tags,
+			String where, Object[] whereParams, Integer count, Integer offset) throws ServerException {
+		// WHERE org_id=? AND (JSON_CONTAINS(roles, '101', '$') OR JSON_CONTAINS(roles,
+		// '102', '$') OR JSON_CONTAINS(roles, '103', '$') )
+
+		StringBuffer sb = new StringBuffer(where);
+		if (tags != null && tags.size() > 0) {
+			sb.append(" AND (");
+			for (int i = 0; i < tags.size(); i++) {
+				String group = tags.getString(i);
+				sb.append("JSON_CONTAINS(").append(tagColumnName).append(", '").append(group);
+				if (StringUtils.isBlank(keyword)) {
+					sb.append("', '$') OR ");
+				} else {
+					sb.append("', '$.").append(keyword).append("') OR ");
+				}
+			}
+			sb.delete(sb.length() - 3, sb.length() - 1);// 移除最后的 OR
+			sb.append(" )");
+		}
+
+		String newWhere = sb.toString();
+		System.out.println(newWhere);
+		return this.getList(conn, newWhere, whereParams, count, offset);
+	}
+
+	/**
+	 * 跟进标签查询对象列表</br>
+	 * 需要传入完整标签对象结构（keyword和标签name）
+	 */
+	protected List<T> getListByTags(DruidPooledConnection conn, String tagColumnName, JSONObject tags, String where,
+			Object[] whereParams, Integer count, Integer offset) throws ServerException {
+		// WHERE org_id=? AND (JSON_CONTAINS(tags, '101', '$.key1') OR
+		// JSON_CONTAINS(tags, '102', '$.key2') OR JSON_CONTAINS(tags, '103', '$.key1')
+		// )
+
+		StringBuffer sb = new StringBuffer(where);
+		boolean flg = false;
+		sb.append(" AND (");
+		if (tags != null && tags.entrySet().size() > 0) {
+			Iterator<Entry<String, Object>> it = tags.entrySet().iterator();
+			while (it.hasNext()) {
+				Entry<String, Object> entry = it.next();
+				String key = entry.getKey();
+				JSONArray arr = (JSONArray) entry.getValue();
+
+				if (arr != null && arr.size() > 0) {
+					for (int i = 0; i < arr.size(); i++) {
+						String temp = arr.getString(i);
+						sb.append("JSON_CONTAINS(").append(tagColumnName).append(", '").append(temp).append("', '$.")
+								.append(key).append("') OR ");
+						flg = true;
+					}
+				}
+			}
+		}
+
+		if (!flg) {
+			// 没加任何条件，补完语句
+			sb.append(" TRUE ) ");
+		} else {
+			sb.delete(sb.length() - 3, sb.length() - 1);// 移除最后的 OR
+			sb.append(" )");
+		}
+
+		String newWhere = sb.toString();
+		System.out.println(newWhere);
+		return this.getList(conn, newWhere, whereParams, count, offset);
 	}
 
 	/**
