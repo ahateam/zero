@@ -40,7 +40,7 @@ public class User {
 	 * 手机号（索引）
 	 */
 	@RDSAnnIndex(type = RDSAnnIndex.NORMAL)
-	@RDSAnnField(column = "VARCHAR(16)")
+	@RDSAnnField(column = "VARCHAR(32)")
 	public String mobile;
 
 	/**

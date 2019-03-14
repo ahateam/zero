@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -894,6 +895,7 @@ public abstract class RDSRepository<T> {
 		String[] newValues = new String[values.length + whereParams.length];
 		System.arraycopy(whereParams, 0, newValues, 0, whereParams.length);
 		System.arraycopy(values, 0, newValues, whereParams.length, values.length);
+		System.out.println(sql.toString());
 		PreparedStatement ps = prepareStatement(conn, sql.toString(), newValues);
 		try {
 			ResultSet rs = ps.executeQuery();
@@ -994,10 +996,37 @@ public abstract class RDSRepository<T> {
 	 */
 	protected <X> List<X> nativeGetList(DruidPooledConnection conn, RDSRepository repository, String sql,
 			Object[] whereParams) throws ServerException {
+//		System.out.println(sql.toString());
 		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
 		try {
 			ResultSet rs = ps.executeQuery();
 			return repository.mapper.deserialize(rs, repository.clazz);
+		} catch (Exception e) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
+		} finally {
+			try {
+				ps.close();
+			} catch (Exception e) {
+			}
+		}
+	}
+
+	protected JSONArray nativeGetJSONArray(DruidPooledConnection conn, String sql, Object[] whereParams)
+			throws ServerException {
+		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
+		try {
+			ResultSet rs = ps.executeQuery();
+
+			ResultSetMetaData md = rs.getMetaData();
+			JSONArray ret = new JSONArray();// 存放返回的jsonOjbect数组
+			while (rs.next()) {
+				JSONObject jsonObject = new JSONObject();// 将每一个结果集放入到jsonObject对象中
+				for (int i = 1; i <= md.getColumnCount(); i++) {
+					jsonObject.put(md.getColumnName(i), rs.getObject(i));// 列值一一对应
+				}
+				ret.add(jsonObject);
+			}
+			return ret;
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
 		} finally {

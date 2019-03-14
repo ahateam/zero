@@ -32,7 +32,7 @@ public class ExcelUtils {
 
 		for (Row row : sheet) {
 			try {
-				// 跳过表头，前两行
+				// 跳过表头
 				if (count < skipRowCount) {
 					count++;
 					continue;
