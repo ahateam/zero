@@ -116,4 +116,21 @@ public class UserController extends Controller {
 		}
 	}
 
+	
+	/**
+	 * 修改用户的身份证
+	 */
+	@POSTAPI(//
+			path = "editUserIdNumber", //
+			des = "修改用户的身份证", //
+			ret = "返回修改信息")
+	public APIResponse editUserIdNumber(//
+			@P(t = "管理员编号") Long adminUsreId, //
+			@P(t = "用户编号") Long userId ,//
+			@P(t = "用户身份证号码") String IdNumber //
+	) throws Exception {
+		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+			return APIResponse.getNewSuccessResp(userService.editUserIdNumber(conn, adminUsreId, userId,IdNumber));
+		}
+	}
 }

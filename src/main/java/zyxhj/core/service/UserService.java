@@ -1,17 +1,14 @@
 package zyxhj.core.service;
 
 import java.util.Date;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
-import com.alibaba.fastjson.JSONArray;
 
 import zyxhj.core.domain.LoginBo;
 import zyxhj.core.domain.User;
-import zyxhj.core.domain.UserRole;
 import zyxhj.core.domain.UserSession;
 import zyxhj.core.repository.UserRepository;
 import zyxhj.core.repository.UserRoleRepository;
@@ -204,6 +201,14 @@ public class UserService {
 			}
 
 		}
+	}
+
+	public User editUserIdNumber(DruidPooledConnection conn, Long adminUsreId, Long userId, String newIdNumber) throws Exception{
+			User u = new User();
+			u.id = userId;
+			u.idNumber = newIdNumber;
+			userRepository.updateByKey(conn, "id",userId , u, true);
+		return u;
 	}
 
 }
