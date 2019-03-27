@@ -33,14 +33,14 @@ public class User {
 	 * 身份证号
 	 */
 	@RDSAnnIndex(type = RDSAnnIndex.UNIQUE)
-	@RDSAnnField(column = "VARCHAR(32)")
+	@RDSAnnField(column = "VARCHAR(48)")
 	public String idNumber;
 
 	/**
 	 * 手机号（索引）
 	 */
 	@RDSAnnIndex(type = RDSAnnIndex.NORMAL)
-	@RDSAnnField(column = "VARCHAR(32)")
+	@RDSAnnField(column = "VARCHAR(48)")
 	public String mobile;
 
 	/**
