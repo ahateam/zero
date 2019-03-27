@@ -106,9 +106,13 @@ public interface BaseRC {
 	static final RC ECM_VOIT_PROJECT_FINISHED = new RC("ecm-0015", "投票项目已结束");
 	static final RC ECM_VOTE_ORGROLE_ERROR = new RC("ecm-0016", "该用户与组织信息不符");
 	static final RC ECM_VOTE_NO_PROMISS = new RC("ecm-0017", "该用户没有权限");
+	static final RC ECM_VOTE_NO_BALLOTCOUNT = new RC("ecm-0018", "该用户没有票数");
 
 	static final RC ECM_VOIT_NOTEXIST = new RC("ecm-0018", "投票不存在");
 	static final RC ECM_VOIT_STATUS_ERROR = new RC("ecm-0019", "投票状态不允许该操作");
 	static final RC ECM_ORG_USER_EXIST = new RC("ecm-0020", "组织的用户已存在");
+	
+	static final RC ECM_ORG_FAMILY_EXIST = new RC("ecm-0021", "户序号已存在");
+	
 
 }
