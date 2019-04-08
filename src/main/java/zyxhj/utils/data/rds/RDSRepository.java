@@ -564,6 +564,8 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，获取数量</br>
 	 * 
+	 * TODO 有些鸡肋，准备取消该方法
+	 * 
 	 * @param conn
 	 *            连接对象
 	 * @param where
@@ -721,6 +723,9 @@ public abstract class RDSRepository<T> {
 		return this.getList(conn, sb.toString(), new Object[] { value }, count, offset);
 	}
 
+	/**
+	 * TODO 考虑是否替代
+	 */
 	public T getByKeys(DruidPooledConnection conn, String[] keys, Object[] values) throws ServerException {
 		if (keys.length != values.length) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
@@ -736,6 +741,9 @@ public abstract class RDSRepository<T> {
 		return this.get(conn, sb.toString(), values);
 	}
 
+	/**
+	 * TODO 考虑是否替代
+	 */
 	public List<T> getListByKeys(DruidPooledConnection conn, String[] keys, Object[] values, int count, int offset)
 			throws ServerException {
 		if (keys.length != values.length) {
@@ -753,6 +761,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
+	 * TODO 考虑是否替代
+	 * 
 	 * 模版方法，根据某个唯一键值的某些值，获取这些值所对应的对象数组</br>
 	 * 
 	 * @param conn
@@ -788,6 +798,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
+	 * 
+	 * TODO 考虑是否替代 </br>
 	 * TODO 这个方法有些不规范，但没有更好的办法
 	 * 
 	 * 模版方法，根据某个唯一键值的某些值，获取这些值所对应的对象数组</br>
@@ -809,13 +821,13 @@ public abstract class RDSRepository<T> {
 		StringBuffer sql = new StringBuffer("SELECT * FROM ").append(mapper.getTableName());
 		sql.append(" ").append(where).append(" AND ");
 		sql.append(key).append(" IN (");
-//		List<Object> inValues = new ArrayList<>();
+		// List<Object> inValues = new ArrayList<>();
 		StringBuffer ordersb = new StringBuffer(" ORDER BY FIND_IN_SET(");
 		ordersb.append(key).append(",'");
 		for (String id : values) {
 			sql.append("?").append(",");
 			ordersb.append(id).append(",");
-//			inValues.add(id);
+			// inValues.add(id);
 		}
 		sql.deleteCharAt(sql.length() - 1);
 		sql.append(") ");
@@ -846,6 +858,9 @@ public abstract class RDSRepository<T> {
 		return delete(conn, sb.toString(), new Object[] { value });
 	}
 
+	/**
+	 * TODO 考虑是否替代
+	 */
 	public int deleteByKeys(DruidPooledConnection conn, String[] keys, Object[] values) throws ServerException {
 		StringBuffer sb = new StringBuffer("WHERE ");
 		if (keys.length != values.length) {
@@ -881,6 +896,9 @@ public abstract class RDSRepository<T> {
 		return this.update(conn, sb.toString(), new Object[] { value }, t, skipNull);
 	}
 
+	/**
+	 * TODO 考虑是否替代
+	 */
 	public int updateByKeys(DruidPooledConnection conn, String[] keys, Object[] values, T t, boolean skipNull)
 			throws ServerException {
 		if (keys.length != values.length) {
@@ -898,6 +916,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
+	 * TODO 考虑是否替代
+	 * 
 	 * 模版方法，根据某个唯一键值获取符合这一条件的记录数</br>
 	 * 
 	 * @param conn

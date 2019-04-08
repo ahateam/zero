@@ -44,7 +44,7 @@ public class SQL {
 	}
 
 	/**
-	 * 添加表达式
+	 * 添加子表达式
 	 */
 	public SQL addSubEx(SQL subEx) {
 		return addEx(SQLEx.subEx(subEx));
