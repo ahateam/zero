@@ -265,18 +265,12 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，原生查询，获取字段对象数组列表</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * @param count
-	 *            查询的总数量
-	 * @param offset
-	 *            查询的起始位置，下标从零开始（0表示从第一个开始查询）
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param conn        连接对象
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
+	 * @param count       查询的总数量
+	 * @param offset      查询的起始位置，下标从零开始（0表示从第一个开始查询）
+	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * @return 返回查询的对象数组列表，如果查询不到，则返回空数组
 	 */
 	protected List<Object[]> getObjectsList(DruidPooledConnection conn, String where, Object[] whereParams,
@@ -292,14 +286,10 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，原生查询，获取一行字段对象数组</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param conn        连接对象
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
+	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象数组，如果查询不到，则返回null
 	 */
@@ -311,18 +301,12 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，获取对象列表</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * @param count
-	 *            查询的总数量
-	 * @param offset
-	 *            查询的起始位置，下标从零开始（0表示从第一个开始查询）
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param conn        连接对象
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
+	 * @param count       查询的总数量
+	 * @param offset      查询的起始位置，下标从零开始（0表示从第一个开始查询）
+	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象列表，如果查询不到，则返回空数组
 	 */
@@ -341,14 +325,10 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，获取一个对象</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param conn        连接对象
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
+	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象，如果查询不到，则返回null
 	 */
@@ -360,12 +340,9 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，删除对象</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
+	 * @param conn        连接对象
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
 	 * 
 	 * @return 返回影响的记录数
 	 */
@@ -380,16 +357,11 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，更新</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param set
-	 *            SQL的SET从句字符串
-	 * @param setParams
-	 *            SET从句的参数
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
+	 * @param conn        连接对象
+	 * @param set         SQL的SET从句字符串
+	 * @param setParams   SET从句的参数
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
 	 * 
 	 * @return 返回影响的记录数
 	 */
@@ -409,14 +381,10 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，更新对象</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * @param skipNull
-	 *            是否跳过空字段
+	 * @param conn        连接对象
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
+	 * @param skipNull    是否跳过空字段
 	 * 
 	 * @return 返回影响的记录数
 	 */
@@ -616,12 +584,9 @@ public abstract class RDSRepository<T> {
 	 * 
 	 * TODO 有些鸡肋，准备取消该方法
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
+	 * @param conn        连接对象
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
 	 * 
 	 * @return 返回数量
 	 */
@@ -647,10 +612,8 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，插入对象（如果字段为空则不插入该字段）</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param T
-	 *            要插入的对象（泛型）
+	 * @param conn 连接对象
+	 * @param T    要插入的对象（泛型）
 	 */
 	public void insert(DruidPooledConnection conn, T t) throws ServerException {
 		StringBuffer sb = new StringBuffer("INSERT INTO ").append(mapper.getTableName());
@@ -688,10 +651,8 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，批量插入对象列表</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param list
-	 *            要插入的对象列表（泛型）
+	 * @param conn 连接对象
+	 * @param list 要插入的对象列表（泛型）
 	 * @return 插入的记录数
 	 */
 	public int insertList(DruidPooledConnection conn, List<T> list) throws ServerException {
@@ -741,12 +702,9 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，根据某个唯一键值获取一个对象</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
+	 * @param conn  连接对象
+	 * @param key   列名
+	 * @param value 值
 	 * @return 返回查询的对象，如果查询不到，则返回null
 	 */
 	public T getByKey(DruidPooledConnection conn, String key, Object value) throws ServerException {
@@ -769,12 +727,9 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，根据某个唯一键值获取对象数组</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
+	 * @param conn  连接对象
+	 * @param key   列名
+	 * @param value 值
 	 * @return 返回查询的对象数组，如果查询不到，则数组长度为0
 	 */
 	public List<T> getListByKey(DruidPooledConnection conn, String key, Object value, Integer count, Integer offset)
@@ -826,12 +781,9 @@ public abstract class RDSRepository<T> {
 	 * 
 	 * 模版方法，根据某个唯一键值的某些值，获取这些值所对应的对象数组</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param key
-	 *            列名
-	 * @param values
-	 *            值数组（字符串，在外部转换好再放进来，防止隐式转换出问题）
+	 * @param conn   连接对象
+	 * @param key    列名
+	 * @param values 值数组（字符串，在外部转换好再放进来，防止隐式转换出问题）
 	 * @return 查询的对象列表
 	 * @throws ServerException
 	 */
@@ -865,14 +817,10 @@ public abstract class RDSRepository<T> {
 	 * 
 	 * 模版方法，根据某个唯一键值的某些值，获取这些值所对应的对象数组</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param key
-	 *            列名
-	 * @param values
-	 *            值数组（字符串，在外部转换好再放进来，防止隐式转换出问题）
+	 * @param conn   连接对象
+	 * @param where  SQL的WHERE从句字符串
+	 * @param key    列名
+	 * @param values 值数组（字符串，在外部转换好再放进来，防止隐式转换出问题）
 	 * @return 查询的对象列表
 	 * @throws ServerException
 	 */
@@ -905,12 +853,9 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，根据某个唯一键值删除一个对象</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
+	 * @param conn  连接对象
+	 * @param key   列名
+	 * @param value 值
 	 * @return 返回影响的记录数
 	 */
 	public int deleteByKey(DruidPooledConnection conn, String key, Object value) throws ServerException {
@@ -940,14 +885,10 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，根据某个唯一键值更新一个对象</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
-	 * @param t
-	 *            要更新的对象（最好在对象中将key所对应的值抹掉）
+	 * @param conn  连接对象
+	 * @param key   列名
+	 * @param value 值
+	 * @param t     要更新的对象（最好在对象中将key所对应的值抹掉）
 	 * @return 返回影响的记录数
 	 */
 	public int updateByKey(DruidPooledConnection conn, String key, Object value, T t, boolean skipNull)
@@ -981,12 +922,9 @@ public abstract class RDSRepository<T> {
 	 * 
 	 * 模版方法，根据某个唯一键值获取符合这一条件的记录数</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
+	 * @param conn  连接对象
+	 * @param key   列名
+	 * @param value 值
 	 * @return 返记录数
 	 */
 	public int countByKey(DruidPooledConnection conn, String key, Object value) throws ServerException {
@@ -1025,7 +963,7 @@ public abstract class RDSRepository<T> {
 
 		StringBuffer sb = new StringBuffer(sql);
 		buildCountAndOffset(sb, count, offset);
-
+		System.out.println(sql.toString());
 		return executeQuerySQL2Objects(conn, sql.toString(), params);
 	}
 
