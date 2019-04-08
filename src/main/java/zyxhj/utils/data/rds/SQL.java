@@ -173,6 +173,12 @@ public class SQL {
 		}
 	}
 
+	public String getSQL() {
+		StringBuffer sb = new StringBuffer();
+		this.fillSQL(sb);
+		return sb.toString();
+	}
+
 	public Object[] getParams() {
 		ArrayList<Object> objs = new ArrayList<>();
 		fillParams(objs);
@@ -237,8 +243,7 @@ public class SQL {
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList<Object> params = new ArrayList<>();
-			
-			
+
 			sql.fillSQL(sb);
 			sql.fillParams(params);
 

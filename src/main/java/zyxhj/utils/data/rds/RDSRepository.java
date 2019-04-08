@@ -785,7 +785,7 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * TODO 考虑是否替代
+	 * TODO xxx
 	 */
 	public T getByKeys(DruidPooledConnection conn, String[] keys, Object[] values) throws ServerException {
 		if (keys.length != values.length) {
@@ -803,7 +803,7 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * TODO 考虑是否替代
+	 * TODO xxx
 	 */
 	public List<T> getListByKeys(DruidPooledConnection conn, String[] keys, Object[] values, int count, int offset)
 			throws ServerException {
@@ -822,7 +822,7 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * TODO 考虑是否替代
+	 * TODO xxx
 	 * 
 	 * 模版方法，根据某个唯一键值的某些值，获取这些值所对应的对象数组</br>
 	 * 
@@ -958,7 +958,7 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * TODO 考虑是否替代
+	 * TODO xxx
 	 */
 	public int updateByKeys(DruidPooledConnection conn, String[] keys, Object[] values, T t, boolean skipNull)
 			throws ServerException {
@@ -977,7 +977,7 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * TODO 考虑是否替代
+	 * TODO xxx
 	 * 
 	 * 模版方法，根据某个唯一键值获取符合这一条件的记录数</br>
 	 * 
