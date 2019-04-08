@@ -3,6 +3,7 @@ package zyxhj.utils.data.rds;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,6 +12,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 /**
  * RDS对象映射器
@@ -62,7 +66,7 @@ public class RDSObjectMapper {
 	}
 
 	/**
-	 * 反序列化到对象数组列表
+	 * 根据列名selections，反序列化到字段对象数组列表
 	 */
 	public <T> List<Object[]> deserialize(ResultSet rs, String... selections) throws Exception {
 		List<Object[]> ret = new ArrayList<>();
@@ -80,6 +84,43 @@ public class RDSObjectMapper {
 				mapper.putFieldValue(objs, i, rs);
 			}
 			ret.add(objs);
+		}
+		return ret;
+	}
+
+	/**
+	 * 反序列化到字段对象数组列表
+	 */
+	public List<Object[]> deserialize(ResultSet rs) throws Exception {
+		List<Object[]> ret = new ArrayList<>();
+
+		ResultSetMetaData md = rs.getMetaData();
+		int columnCount = md.getColumnCount();
+
+		// ResultSet不是标准set，所以不能用stream接口
+		while (rs.next()) {
+			Object[] objs = new Object[columnCount];
+			for (int i = 0; i < columnCount; i++) {
+				objs[i] = rs.getObject(i);
+			}
+			ret.add(objs);
+		}
+		return ret;
+	}
+
+	/**
+	 * 反序列化到字段JSONArray
+	 */
+	public JSONArray deserialize2JSONArray(ResultSet rs) throws Exception {
+		ResultSetMetaData md = rs.getMetaData();
+		int columnCount = md.getColumnCount();
+		JSONArray ret = new JSONArray();// 存放返回的jsonOjbect数组
+		while (rs.next()) {
+			JSONObject jsonObject = new JSONObject();// 将每一个结果集放入到jsonObject对象中
+			for (int i = 1; i <= columnCount; i++) {
+				jsonObject.put(md.getColumnName(i), rs.getObject(i));// 列值一一对应
+			}
+			ret.add(jsonObject);
 		}
 		return ret;
 	}
