@@ -233,7 +233,7 @@ public class RDSUtils {
 	}
 
 	public static String underscoreName(String name) {
-		StringBuilder result = new StringBuilder();
+		StringBuffer result = new StringBuffer();
 		if (name != null && name.length() > 0) {
 			// 将第一个字符处理成大写
 			result.append(name.substring(0, 1).toLowerCase());
@@ -252,7 +252,7 @@ public class RDSUtils {
 	}
 
 	public static String camelName(String name) {
-		StringBuilder result = new StringBuilder();
+		StringBuffer result = new StringBuffer();
 		// 快速检查
 		if (name == null || name.isEmpty()) {
 			// 没必要转换

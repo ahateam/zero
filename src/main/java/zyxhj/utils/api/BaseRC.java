@@ -35,7 +35,7 @@ public interface BaseRC {
 	static final RC REPOSITORY_COUNT_OFFSET_ERROR = new RC("repo-0003", "count or offset parameter error");// 分页参数错误
 	static final RC REPOSITORY_INSERT_ERROR = new RC("repo-0004", "insert error");// 插入错误
 	static final RC REPOSITORY_UPDATE_ERROR = new RC("repo-0005", "update error");// 更新错误
-	static final RC REPOSITORY_DELETE_ERROR = new RC("repo-0006", "delete error");// 插入错误
+//	static final RC REPOSITORY_DELETE_ERROR = new RC("repo-0006", "delete error");// 插入错误
 	static final RC REPOSITORY_GET_ERROR = new RC("repo-0007", "get error");// 获取错误
 	static final RC REPOSITORY_PUT_ERROR = new RC("repo-0008", "put error");// PUT错误
 	static final RC REPOSITORY_SET_ERROR = new RC("repo-0009", "set error");// SET错误

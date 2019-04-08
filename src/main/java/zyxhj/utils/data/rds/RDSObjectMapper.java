@@ -61,6 +61,32 @@ public class RDSObjectMapper {
 		return fieldMapperMap.get(alias);
 	}
 
+	/**
+	 * 反序列化到对象数组列表
+	 */
+	public <T> List<Object[]> deserialize(ResultSet rs, String... selections) throws Exception {
+		List<Object[]> ret = new ArrayList<>();
+
+		int len = selections.length;
+		// ResultSet不是标准set，所以不能用stream接口
+		while (rs.next()) {
+
+			Iterator<Entry<String, RDSFieldMapper>> it = fieldMapperMap.entrySet().iterator();
+
+			Object[] objs = new Object[len];
+			for (int i = 0; i < selections.length; i++) {
+				String alias = selections[i];
+				RDSFieldMapper mapper = getFieldMapperByAlias(alias);
+				mapper.putFieldValue(objs, i, rs);
+			}
+			ret.add(objs);
+		}
+		return ret;
+	}
+
+	/**
+	 * 发序列化到对象列表
+	 */
 	public <T> List<T> deserialize(ResultSet rs, Class<T> clazz) throws Exception {
 		List<T> ret = new ArrayList<>();
 		// ResultSet不是标准set，所以不能用stream接口

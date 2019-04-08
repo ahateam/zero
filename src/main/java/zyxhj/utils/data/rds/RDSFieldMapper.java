@@ -46,6 +46,31 @@ public class RDSFieldMapper {
 		return field.get(obj);
 	}
 
+	protected void putFieldValue(Object[] objs, int ind, ResultSet rs) throws Exception {
+		if (javaType.equals(Boolean.class)) {
+			objs[ind] = rs.getBoolean(alias);
+		} else if (javaType.equals(Byte.class)) {
+			objs[ind] = rs.getByte(alias);
+		} else if (javaType.equals(Short.class)) {
+			objs[ind] = rs.getShort(alias);
+		} else if (javaType.equals(Integer.class)) {
+			objs[ind] = rs.getInt(alias);
+		} else if (javaType.equals(Long.class)) {
+			objs[ind] = rs.getLong(alias);
+		} else if (javaType.equals(Float.class)) {
+			objs[ind] = rs.getFloat(alias);
+		} else if (javaType.equals(Double.class)) {
+			objs[ind] = rs.getDouble(alias);
+		} else if (javaType.equals(String.class)) {
+			objs[ind] = rs.getString(alias);
+		} else if (javaType.equals(Date.class)) {
+			// RecordSet中，getDate只获取日期部分，getTime只获取时间部分
+			objs[ind] = rs.getTimestamp(alias);
+		} else {
+			objs[ind] = rs.getObject(alias);
+		}
+	}
+
 	protected void setFieldValue(Object obj, ResultSet rs) throws Exception {
 		if (javaType.equals(Boolean.class)) {
 			field.set(obj, rs.getBoolean(alias));
