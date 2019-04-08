@@ -91,7 +91,7 @@ public class RDSObjectMapper {
 	/**
 	 * 反序列化到字段对象数组列表
 	 */
-	public List<Object[]> deserialize(ResultSet rs) throws Exception {
+	public static List<Object[]> deserialize2ObjectsList(ResultSet rs) throws Exception {
 		List<Object[]> ret = new ArrayList<>();
 
 		ResultSetMetaData md = rs.getMetaData();
@@ -111,7 +111,7 @@ public class RDSObjectMapper {
 	/**
 	 * 反序列化到字段JSONArray
 	 */
-	public JSONArray deserialize2JSONArray(ResultSet rs) throws Exception {
+	public static JSONArray deserialize2JSONArray(ResultSet rs) throws Exception {
 		ResultSetMetaData md = rs.getMetaData();
 		int columnCount = md.getColumnCount();
 		JSONArray ret = new JSONArray();// 存放返回的jsonOjbect数组

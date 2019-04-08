@@ -164,13 +164,13 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 根据要求的字段列，查询返回字段对象数组列表
 	 */
-	private List<Object[]> executeQuerySQL2Objects(DruidPooledConnection conn, String sql, Object[] whereParams,
+	private static List<Object[]> executeQuerySQL2Objects(DruidPooledConnection conn, String sql, Object[] whereParams,
 			String... selections) throws ServerException {
 		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
 		try {
 			ResultSet rs = ps.executeQuery();
 
-			return mapper.deserialize(rs);
+			return RDSObjectMapper.deserialize2ObjectsList(rs);
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
 		} finally {
@@ -184,13 +184,13 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 根据要求的字段列，查询返回字段对象数组列表
 	 */
-	private JSONArray executeQuerySQL2JSONArray(DruidPooledConnection conn, String sql, Object[] whereParams)
+	private static JSONArray executeQuerySQL2JSONArray(DruidPooledConnection conn, String sql, Object[] whereParams)
 			throws ServerException {
 		PreparedStatement ps = prepareStatement(conn, sql.toString(), whereParams);
 		try {
 			ResultSet rs = ps.executeQuery();
 
-			return mapper.deserialize2JSONArray(rs);
+			return RDSObjectMapper.deserialize2JSONArray(rs);
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
 		} finally {
@@ -281,7 +281,12 @@ public abstract class RDSRepository<T> {
 	 */
 	protected List<Object[]> getObjectsList(DruidPooledConnection conn, String where, Object[] whereParams,
 			Integer count, Integer offset, String... selections) throws ServerException {
-		return sqlGetObjectsList(conn, mapper.getTableName(), where, whereParams, count, offset, selections);
+		StringBuffer sql = buildSELECT(selections);
+		buildFROM(sql, mapper.getTableName());
+		buildWHERE(sql, where);
+		buildCountAndOffset(sql, count, offset);
+
+		return executeQuerySQLSelections(conn, sql.toString(), whereParams, selections);
 	}
 
 	/**
@@ -388,8 +393,8 @@ public abstract class RDSRepository<T> {
 	 * 
 	 * @return 返回影响的记录数
 	 */
-	protected int nativeUpdate(DruidPooledConnection conn, String set, Object[] setParams, String where,
-			Object[] whereParams) throws ServerException {
+	protected int update(DruidPooledConnection conn, String set, Object[] setParams, String where, Object[] whereParams)
+			throws ServerException {
 		StringBuffer sb = new StringBuffer("UPDATE ");
 		buildFROM(sb, mapper.getTableName());
 		buildSET(sb, set);
@@ -442,7 +447,7 @@ public abstract class RDSRepository<T> {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR);
 		}
 
-		return nativeUpdate(conn, set.toString(), values.toArray(), where, whereParams);
+		return update(conn, set.toString(), values.toArray(), where, whereParams);
 	}
 
 	protected int setTags(DruidPooledConnection conn, String tagColumnName, String groupKeyword, JSONArray tags,
@@ -464,7 +469,7 @@ public abstract class RDSRepository<T> {
 			sbSet.append("))");
 			String set = sbSet.toString();
 
-			return this.nativeUpdate(conn, set, null, where, whereParams);
+			return this.update(conn, set, null, where, whereParams);
 		}
 	}
 
@@ -487,7 +492,7 @@ public abstract class RDSRepository<T> {
 				.append(tag).append("\")))");
 		String set = sbSet.toString();
 
-		return this.nativeUpdate(conn, set, null, where, whereParams);
+		return this.update(conn, set, null, where, whereParams);
 	}
 
 	protected int delTag(DruidPooledConnection conn, String tagColumnName, String groupKeyword, String tag,
@@ -509,7 +514,7 @@ public abstract class RDSRepository<T> {
 				.append(tagColumn).append(")");
 		String set = sbSet.toString();
 
-		return this.nativeUpdate(conn, set, null, where, whereParams);
+		return this.update(conn, set, null, where, whereParams);
 	}
 
 	protected JSONArray getTags(DruidPooledConnection conn, String tagColumnName, String groupKeyword, String where,
@@ -518,7 +523,10 @@ public abstract class RDSRepository<T> {
 		StringBuffer sb = new StringBuffer("SELECT ");
 		sb.append(tagColumnName).append("->'$.").append(groupKeyword).append("'");
 
-		Object[] objs = this.sqlGetObjects(conn, sb.toString(), mapper.getTableName(), where, whereParams);
+		buildFROM(sb, mapper.getTableName());
+		buildWHERE(sb, where);
+
+		Object[] objs = sqlGetObjects(conn, sb.toString(), whereParams);
 		String result = objs == null ? null : objs[0].toString();
 		if (StringUtils.isBlank(result)) {
 			return new JSONArray();
@@ -745,6 +753,17 @@ public abstract class RDSRepository<T> {
 		StringBuffer sb = new StringBuffer("WHERE ");
 		sb.append(key).append("=?");
 		return this.get(conn, sb.toString(), new Object[] { value });
+	}
+
+	public List<T> getList(DruidPooledConnection conn, Integer count, Integer offset, String... selections)
+			throws ServerException {
+
+		StringBuffer sb = buildSELECT(selections);
+		buildFROM(sb, mapper.getTableName());
+		buildCountAndOffset(sb, count, offset);
+
+		// System.out.println(sb.toString());
+		return executeQuerySQL(conn, sb.toString(), null);
 	}
 
 	/**
@@ -981,7 +1000,7 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 原生SQL方法，获取JSONArray
 	 */
-	protected JSONArray sqlGetJSONArray(DruidPooledConnection conn, String sql, Object[] params, Integer count,
+	protected static JSONArray sqlGetJSONArray(DruidPooledConnection conn, String sql, Object[] params, Integer count,
 			Integer offset) throws ServerException {
 		// System.out.println(sql);
 		StringBuffer sb = new StringBuffer(sql);
@@ -993,7 +1012,7 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 原生SQL方法，获取JSONOBJECT
 	 */
-	protected JSONObject sqlGetJSONObject(DruidPooledConnection conn, String sql, Object[] params)
+	protected static JSONObject sqlGetJSONObject(DruidPooledConnection conn, String sql, Object[] params)
 			throws ServerException {
 		return jsonArray2Obj(sqlGetJSONArray(conn, sql, params, 1, 0));
 	}
@@ -1001,81 +1020,29 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 原生SQL方法，根据查询获取某个表的某些字段值列表</br>
 	 */
-	protected List<Object[]> sqlGetObjectsList(DruidPooledConnection conn, String select, String tableName,
-			String where, Object[] whereParams, Integer count, Integer offset) throws ServerException {
+	protected static List<Object[]> sqlGetObjectsList(DruidPooledConnection conn, String sql, Object[] params,
+			Integer count, Integer offset) throws ServerException {
 
-		StringBuffer sql = new StringBuffer(select);
-		buildFROM(sql, tableName);
-		buildWHERE(sql, where);
-		buildCountAndOffset(sql, count, offset);
+		StringBuffer sb = new StringBuffer(sql);
+		buildCountAndOffset(sb, count, offset);
 
-		return executeQuerySQL2Objects(conn, sql.toString(), whereParams);
+		return executeQuerySQL2Objects(conn, sql.toString(), params);
 	}
 
 	/**
 	 * 原生SQL方法，获取某个表的某些字段值</br>
 	 * 
 	 */
-	protected Object[] sqlGetObjects(DruidPooledConnection conn, String select, String tableName, String where,
-			Object[] whereParams) throws ServerException {
-		return list2Obj(sqlGetObjectsList(conn, tableName, where, whereParams, 1, 0));
-	}
-
-	/**
-	 * 原生SQL方法，获取某个表的某些字段值列表</br>
-	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param tableName
-	 *            表名
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * @param count
-	 *            查询的总数量
-	 * @param offset
-	 *            查询的起始位置，下标从零开始（0表示从第一个开始查询）
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
-	 * @return 返回查询的对象数组列表，如果查询不到，则返回空数组
-	 */
-	protected List<Object[]> sqlGetObjectsList(DruidPooledConnection conn, String tableName, String where,
-			Object[] whereParams, Integer count, Integer offset, String... selections) throws ServerException {
-
-		StringBuffer sql = buildSELECT(selections);
-		buildFROM(sql, tableName);
-		buildWHERE(sql, where);
-		buildCountAndOffset(sql, count, offset);
-
-		return executeQuerySQLSelections(conn, sql.toString(), whereParams, selections);
-	}
-
-	/**
-	 * 原生SQL方法，获取某个表的某些字段值</br>
-	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param tableName
-	 *            表名
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
-	 * @return 返回查询的对象数组
-	 */
-	protected Object[] sqlGetObjects(DruidPooledConnection conn, String tableName, String where, Object[] whereParams,
-			String... selections) throws ServerException {
-		return list2Obj(sqlGetObjectsList(conn, tableName, where, whereParams, 1, 0, selections));
+	protected static Object[] sqlGetObjects(DruidPooledConnection conn, String sql, Object[] params)
+			throws ServerException {
+		return list2Obj(sqlGetObjectsList(conn, sql, params, 1, 0));
 	}
 
 	/**
 	 * 原生SQL方法，根据某个类的repository实例，获取对应对象的列表</br>
 	 * 方便跨对象操作的原生SQL模版方法</br>
 	 */
-	protected static <X> List<X> sqlGetList(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
+	protected static <X> List<X> sqlGetOtherList(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
 			Object[] whereParams) throws ServerException {
 		// System.out.println(sql.toString());
 
@@ -1097,46 +1064,9 @@ public abstract class RDSRepository<T> {
 	 * 原生SQL方法，根据某个类的repository实例，获取对应对象</br>
 	 * 方便跨对象操作的原生SQL模版方法</br>
 	 */
-	protected static <X> X sqlGet(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
+	protected static <X> X sqlGetOther(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
 			Object[] whereParams) throws ServerException {
-		return list2Obj(sqlGetList(conn, repository, sql, whereParams));
-	}
-
-	/**
-	 * TODO 准备干掉的方法
-	 */
-	protected List<String> getColumnStrings(DruidPooledConnection conn, String columnName, String where,
-			Object[] whereParams, Integer count, Integer offset) throws ServerException {
-
-		StringBuffer sql = new StringBuffer("SELECT ").append(columnName).append(" FROM ")
-				.append(mapper.getTableName());
-
-		if (StringUtils.isNotBlank(where)) {
-			sql.append(BLANK).append(where);
-		} else {
-			// 查询操作 where可以为空
-		}
-
-		buildCountAndOffset(sql, count, offset);
-
-		// System.out.println(sql);
-		PreparedStatement ps = prepareStatement(conn, sql.toString(), whereParams);
-		try {
-			ResultSet rs = ps.executeQuery();
-
-			ArrayList<String> ret = new ArrayList<>();
-			while (rs.next()) {
-				ret.add(rs.getString(columnName));
-			}
-			return ret;
-		} catch (Exception e) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
-		} finally {
-			try {
-				ps.close();
-			} catch (Exception e) {
-			}
-		}
+		return list2Obj(sqlGetOtherList(conn, repository, sql, whereParams));
 	}
 
 }

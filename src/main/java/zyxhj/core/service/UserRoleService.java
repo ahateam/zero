@@ -66,7 +66,7 @@ public class UserRoleService {
 	 * 获取系统角色列表
 	 */
 	public List<UserRole> getUserRoles(DruidPooledConnection conn, Integer count, Integer offset) throws Exception {
-		return roleRepository.getList(conn, "WHERE TRUE", null, count, offset);
+		return roleRepository.getList(conn, count, offset);
 	}
 
 }
