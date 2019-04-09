@@ -97,7 +97,7 @@ public class TagService {
 	 * 根据groupKeyword和status获取标签列表标签
 	 */
 	public JSONObject getTags(DruidPooledConnection conn, String groupKeyword, Byte status) throws Exception {
-		List<Tag> tags = tagRepository.getListByKeys(conn, new String[] { "group_keyword", "status" },
+		List<Tag> tags = tagRepository.getListByANDKeys(conn, new String[] { "group_keyword", "status" },
 				new Object[] { groupKeyword, status }, 512, 0);
 		JSONObject ret = new JSONObject();
 		for (Tag t : tags) {
@@ -120,7 +120,7 @@ public class TagService {
 		Tag renew = new Tag();
 		renew.status = Tag.STATUS.ENABLED.v();
 
-		return tagRepository.updateByKeys(conn, new String[] { "group_keyword", "name" },
+		return tagRepository.updateByANDKeys(conn, new String[] { "group_keyword", "name" },
 				new Object[] { groupKeyword, name }, renew, true);
 	}
 
@@ -131,7 +131,7 @@ public class TagService {
 		Tag renew = new Tag();
 		renew.status = Tag.STATUS.DISABLED.v();
 
-		return tagRepository.updateByKeys(conn, new String[] { "group_keyword", "name" },
+		return tagRepository.updateByANDKeys(conn, new String[] { "group_keyword", "name" },
 				new Object[] { groupKeyword, name }, renew, true);
 	}
 }

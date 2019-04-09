@@ -263,10 +263,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 模版方法，原生查询，获取字段对象数组列表</br>
+	 * 获取字段对象数组列表</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param where
 	 *            SQL的WHERE从句字符串
 	 * @param whereParams
@@ -277,6 +275,7 @@ public abstract class RDSRepository<T> {
 	 *            查询的起始位置，下标从零开始（0表示从第一个开始查询）
 	 * @param selections
 	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * 
 	 * @return 返回查询的对象数组列表，如果查询不到，则返回空数组
 	 */
 	protected List<Object[]> getObjectsList(DruidPooledConnection conn, String where, Object[] whereParams,
@@ -290,10 +289,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 模版方法，原生查询，获取一行字段对象数组</br>
+	 * 获取一行字段对象数组</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param where
 	 *            SQL的WHERE从句字符串
 	 * @param whereParams
@@ -309,10 +306,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 模版方法，获取对象列表</br>
+	 * 获取对象列表</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param where
 	 *            SQL的WHERE从句字符串
 	 * @param whereParams
@@ -339,10 +334,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 模版方法，获取一个对象</br>
+	 * 获取一个对象</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param where
 	 *            SQL的WHERE从句字符串
 	 * @param whereParams
@@ -358,10 +351,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 模版方法，删除对象</br>
+	 * 删除对象</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param where
 	 *            SQL的WHERE从句字符串
 	 * @param whereParams
@@ -369,7 +360,7 @@ public abstract class RDSRepository<T> {
 	 * 
 	 * @return 返回影响的记录数
 	 */
-	protected int delete(DruidPooledConnection conn, String where, Object[] whereParams) throws ServerException {
+	protected int delete(DruidPooledConnection conn, String where, Object... whereParams) throws ServerException {
 		StringBuffer sb = new StringBuffer("DELETE ");
 		buildFROM(sb, mapper.getTableName());
 		buildWHERE(sb, where);
@@ -378,10 +369,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 模版方法，更新</br>
+	 * 更新</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param set
 	 *            SQL的SET从句字符串
 	 * @param setParams
@@ -407,10 +396,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 模版方法，更新对象</br>
+	 * 更新对象</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param where
 	 *            SQL的WHERE从句字符串
 	 * @param whereParams
@@ -612,43 +599,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 模版方法，获取数量</br>
+	 * 插入对象（如果字段为空则不插入该字段）</br>
 	 * 
-	 * TODO 有些鸡肋，准备取消该方法
-	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * 
-	 * @return 返回数量
-	 */
-	protected int count(DruidPooledConnection conn, String where, Object[] whereParams) throws ServerException {
-		StringBuffer sb = new StringBuffer("SELECT COUNT(*) FROM ").append(mapper.getTableName());
-		buildWHERE(sb, where);
-
-		PreparedStatement ps = prepareStatement(conn, sb.toString(), whereParams);
-		try {
-			ResultSet rs = ps.executeQuery();
-			rs.next();
-			return rs.getInt(1);
-		} catch (Exception e) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
-		} finally {
-			try {
-				ps.close();
-			} catch (Exception e) {
-			}
-		}
-	}
-
-	/**
-	 * 模版方法，插入对象（如果字段为空则不插入该字段）</br>
-	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param T
 	 *            要插入的对象（泛型）
 	 */
@@ -686,10 +638,8 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 模版方法，批量插入对象列表</br>
+	 * 批量插入对象列表</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param list
 	 *            要插入的对象列表（泛型）
 	 * @return 插入的记录数
@@ -739,22 +689,11 @@ public abstract class RDSRepository<T> {
 	};
 
 	/**
-	 * 模版方法，根据某个唯一键值获取一个对象</br>
+	 * 模版方法，无条件获取对象列表</br>
 	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
-	 * @return 返回查询的对象，如果查询不到，则返回null
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 */
-	public T getByKey(DruidPooledConnection conn, String key, Object value) throws ServerException {
-		StringBuffer sb = new StringBuffer("WHERE ");
-		sb.append(key).append("=?");
-		return this.get(conn, sb.toString(), new Object[] { value });
-	}
-
 	public List<T> getList(DruidPooledConnection conn, Integer count, Integer offset, String... selections)
 			throws ServerException {
 
@@ -769,82 +708,79 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，根据某个唯一键值获取对象数组</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param key
 	 *            列名
 	 * @param value
 	 *            值
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * 
 	 * @return 返回查询的对象数组，如果查询不到，则数组长度为0
 	 */
-	public List<T> getListByKey(DruidPooledConnection conn, String key, Object value, Integer count, Integer offset)
-			throws ServerException {
-		StringBuffer sb = new StringBuffer("WHERE ");
-		sb.append(key).append("=?");
-		return this.getList(conn, sb.toString(), new Object[] { value }, count, offset);
+	public List<T> getListByKey(DruidPooledConnection conn, String key, Object value, Integer count, Integer offset,
+			String... selections) throws ServerException {
+		return getList(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, count, offset, selections);
 	}
 
 	/**
-	 * TODO xxx
-	 */
-	public T getByKeys(DruidPooledConnection conn, String[] keys, Object[] values) throws ServerException {
-		if (keys.length != values.length) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
-		}
-		StringBuffer sb = new StringBuffer("WHERE ");
-		sb.append(keys[0]).append("=?");
-		if (keys.length >= 2) {
-			for (int i = 1; i < keys.length; i++) {
-				sb.append(" AND ");
-				sb.append(keys[i]).append("=?");
-			}
-		}
-		return this.get(conn, sb.toString(), values);
-	}
-
-	/**
-	 * TODO xxx
-	 */
-	public List<T> getListByKeys(DruidPooledConnection conn, String[] keys, Object[] values, int count, int offset)
-			throws ServerException {
-		if (keys.length != values.length) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
-		}
-		StringBuffer sb = new StringBuffer("WHERE ");
-		sb.append(keys[0]).append("=?");
-		if (keys.length >= 2) {
-			for (int i = 1; i < keys.length; i++) {
-				sb.append(" AND ");
-				sb.append(keys[i]).append("=?");
-			}
-		}
-		return this.getList(conn, sb.toString(), values, count, offset);
-	}
-
-	/**
-	 * TODO xxx
+	 * 模版方法，根据某个唯一键值获取一个对象</br>
 	 * 
+	 * @param key
+	 *            列名
+	 * @param value
+	 *            值
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * 
+	 * @return 返回查询的对象，如果查询不到，则返回null
+	 */
+	public T getByKey(DruidPooledConnection conn, String key, Object value, String... selections)
+			throws ServerException {
+		return get(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, selections);
+	}
+
+	/**
+	 * 根据多个字段的值，获取对象列表</br>
+	 * key1=? AND key2=? AND key3=?</br>
+	 * 
+	 * @param keys
+	 *            键数组
+	 * @param values
+	 *            值数组
+	 * 
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择 *
+	 */
+	public List<T> getListByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, int count, int offset,
+			String... selections) throws ServerException {
+		if (keys.length != values.length) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
+		}
+		StringBuffer sb = new StringBuffer("WHERE ");
+		SQLEx.exANDKeys(keys, values).toSQL(sb);
+		return getList(conn, sb.toString(), values, count, offset, selections);
+	}
+
+	/**
 	 * 模版方法，根据某个唯一键值的某些值，获取这些值所对应的对象数组</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param key
 	 *            列名
 	 * @param values
 	 *            值数组（字符串，在外部转换好再放进来，防止隐式转换出问题）
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * @return 查询的对象列表
-	 * @throws ServerException
 	 */
-	public List<T> getListByKeyInValues(DruidPooledConnection conn, String key, String[] values)
+	public List<T> getListByKeyInValues(DruidPooledConnection conn, String key, Object[] values, String... selections)
 			throws ServerException {
-		// 有oracle兼容性问题，不支持limit和offset
-		StringBuffer sb = new StringBuffer("SELECT * FROM ").append(mapper.getTableName());
-		sb.append(" WHERE ");
-		sb.append(key).append(" IN (");
+		StringBuffer sb = buildSELECT(selections);
+		buildFROM(sb, mapper.getTableName());
+		sb.append(" WHERE ").append(key).append(" IN (");
 		List<Object> inValues = new ArrayList<>();
 		StringBuffer ordersb = new StringBuffer(" ORDER BY FIND_IN_SET(");
 		ordersb.append(key).append(",'");
-		for (String id : values) {
+		for (Object id : values) {
 			sb.append("?").append(",");
 			ordersb.append(id).append(",");
 			inValues.add(id);
@@ -859,54 +795,26 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
+	 * 根据多个字段的值，获取对象</br>
+	 * key1=? AND key2=? AND key3=?</br>
 	 * 
-	 * TODO 考虑是否替代 </br>
-	 * TODO 这个方法有些不规范，但没有更好的办法
-	 * 
-	 * 模版方法，根据某个唯一键值的某些值，获取这些值所对应的对象数组</br>
-	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param key
-	 *            列名
+	 * @param keys
+	 *            键数组
 	 * @param values
-	 *            值数组（字符串，在外部转换好再放进来，防止隐式转换出问题）
-	 * @return 查询的对象列表
-	 * @throws ServerException
+	 *            值数组
+	 * 
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择 *
+	 * 
 	 */
-	public List<T> getListWhereKeyInValues(DruidPooledConnection conn, String where, String key, String[] values,
-			String... whereParams) throws ServerException {
-		// 有oracle兼容性问题，不支持limit和offset
-		StringBuffer sql = new StringBuffer("SELECT * FROM ").append(mapper.getTableName());
-		sql.append(" ").append(where).append(" AND ");
-		sql.append(key).append(" IN (");
-		// List<Object> inValues = new ArrayList<>();
-		StringBuffer ordersb = new StringBuffer(" ORDER BY FIND_IN_SET(");
-		ordersb.append(key).append(",'");
-		for (String id : values) {
-			sql.append("?").append(",");
-			ordersb.append(id).append(",");
-			// inValues.add(id);
-		}
-		sql.deleteCharAt(sql.length() - 1);
-		sql.append(") ");
-		ordersb.deleteCharAt(ordersb.length() - 1);
-		ordersb.append("')");
-		sql.append(ordersb);
-		String[] newValues = new String[values.length + whereParams.length];
-		System.arraycopy(whereParams, 0, newValues, 0, whereParams.length);
-		System.arraycopy(values, 0, newValues, whereParams.length, values.length);
-		// System.out.println(sql.toString());
-		return executeQuerySQL(conn, sql.toString(), values);
+	public T getByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, String... selections)
+			throws ServerException {
+		return list2Obj(getListByANDKeys(conn, keys, values, 1, 0, selections));
 	}
 
 	/**
 	 * 模版方法，根据某个唯一键值删除一个对象</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param key
 	 *            列名
 	 * @param value
@@ -914,34 +822,30 @@ public abstract class RDSRepository<T> {
 	 * @return 返回影响的记录数
 	 */
 	public int deleteByKey(DruidPooledConnection conn, String key, Object value) throws ServerException {
-		StringBuffer sb = new StringBuffer("WHERE ");
-		sb.append(key).append("=?");
-		return delete(conn, sb.toString(), new Object[] { value });
+		return delete(conn, StringUtils.join("WHERE ", key, "=?"), value);
 	}
 
 	/**
-	 * TODO 考虑是否替代
+	 * 根据多个字段的值，删除对应的对象</br>
+	 * key1=? AND key2=? AND key3=?</br>
+	 * 
+	 * @param keys
+	 *            键数组
+	 * @param values
+	 *            值数组
 	 */
-	public int deleteByKeys(DruidPooledConnection conn, String[] keys, Object[] values) throws ServerException {
-		StringBuffer sb = new StringBuffer("WHERE ");
+	public int deleteByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values) throws ServerException {
 		if (keys.length != values.length) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
 		}
-		sb.append(keys[0]).append("=?");
-		if (keys.length >= 2) {
-			for (int i = 1; i < keys.length; i++) {
-				sb.append(" AND ");
-				sb.append(keys[i]).append("=?");
-			}
-		}
+		StringBuffer sb = new StringBuffer("WHERE ");
+		SQLEx.exANDKeys(keys, values).toSQL(sb);
 		return delete(conn, sb.toString(), values);
 	}
 
 	/**
 	 * 模版方法，根据某个唯一键值更新一个对象</br>
 	 * 
-	 * @param conn
-	 *            连接对象
 	 * @param key
 	 *            列名
 	 * @param value
@@ -952,47 +856,27 @@ public abstract class RDSRepository<T> {
 	 */
 	public int updateByKey(DruidPooledConnection conn, String key, Object value, T t, boolean skipNull)
 			throws ServerException {
-		StringBuffer sb = new StringBuffer("WHERE ");
-		sb.append(key).append("=?");
-		return this.update(conn, sb.toString(), new Object[] { value }, t, skipNull);
+		return update(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, t, skipNull);
 	}
 
 	/**
-	 * TODO xxx
+	 * 根据多个字段的值，更新对应的对象</br>
+	 * key1=? AND key2=? AND key3=?</br>
+	 * 
+	 * @param keys
+	 *            键数组
+	 * @param values
+	 *            值数组
+	 * 
 	 */
-	public int updateByKeys(DruidPooledConnection conn, String[] keys, Object[] values, T t, boolean skipNull)
+	public int updateByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, T t, boolean skipNull)
 			throws ServerException {
 		if (keys.length != values.length) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
 		}
 		StringBuffer sb = new StringBuffer("WHERE ");
-		sb.append(keys[0]).append("=?");
-		if (keys.length >= 2) {
-			for (int i = 1; i < keys.length; i++) {
-				sb.append(" AND ");
-				sb.append(keys[i]).append("=?");
-			}
-		}
-		return this.update(conn, sb.toString(), values, t, skipNull);
-	}
-
-	/**
-	 * TODO xxx
-	 * 
-	 * 模版方法，根据某个唯一键值获取符合这一条件的记录数</br>
-	 * 
-	 * @param conn
-	 *            连接对象
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
-	 * @return 返记录数
-	 */
-	public int countByKey(DruidPooledConnection conn, String key, Object value) throws ServerException {
-		StringBuffer sb = new StringBuffer("WHERE ");
-		sb.append(key).append("=?");
-		return count(conn, sb.toString(), new Object[] { value });
+		SQLEx.exANDKeys(keys, values).toSQL(sb);
+		return update(conn, sb.toString(), values, t, skipNull);
 	}
 
 	///////////////// SQL原生方法
