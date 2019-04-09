@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
@@ -23,11 +25,13 @@ import zyxhj.utils.api.ServerException;
 
 public abstract class RDSRepository<T> {
 
+	private static Logger log = LoggerFactory.getLogger(RDSRepository.class);
+
 	private static final String BLANK = " ";
 
 	private RDSObjectMapper mapper;
 
-	private Class clazz;
+	private Class<T> clazz;
 
 	private static PreparedStatement prepareStatement(Connection conn, String sql, Object[] params)
 			throws ServerException {
@@ -257,6 +261,34 @@ public abstract class RDSRepository<T> {
 		return total;
 	}
 
+	/**
+	 * 判断WHERE语句中，是否包含表达式</br>
+	 * 如果有表达式，则后续拼接其它条件表达式时需要增加连接符AND或OR</br>
+	 * 如果没有表达式，则后续拼接时，不要添加AND或OR连接符
+	 * 
+	 */
+	private boolean checkWHEREContaineEx(String where) throws ServerException {
+		int ind = -1;
+		if (where.contains("where")) {
+			ind = where.indexOf("where") + 5;
+		} else if (where.contains("WHERE")) {
+			ind = where.indexOf("WHERE") + 5;
+		} else {
+			throw new ServerException(BaseRC.REPOSITORY_NOT_WHERE);
+		}
+
+		if (ind == where.length()) {
+			return false;
+		} else {
+			String sub = where.substring(ind);
+			if (StringUtils.isBlank(sub.trim())) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+	}
+
 	protected RDSRepository(Class<T> clazz) {
 		this.clazz = clazz;
 		this.mapper = new RDSObjectMapper(clazz);
@@ -329,8 +361,9 @@ public abstract class RDSRepository<T> {
 		buildWHERE(sb, where);
 		buildCountAndOffset(sb, count, offset);
 
-		// System.out.println(sb.toString());
-		return executeQuerySQL(conn, sb.toString(), whereParams);
+		String sql = sb.toString();
+		log.debug(sql);
+		return executeQuerySQL(conn, sql, whereParams);
 	}
 
 	/**
@@ -385,13 +418,14 @@ public abstract class RDSRepository<T> {
 	protected int update(DruidPooledConnection conn, String set, Object[] setParams, String where, Object[] whereParams)
 			throws ServerException {
 		StringBuffer sb = new StringBuffer("UPDATE ");
-		buildFROM(sb, mapper.getTableName());
+		sb.append(mapper.getTableName()).append(' ');
 		buildSET(sb, set);
 		buildWHERE(sb, where);
 
 		Object[] total = mergeArray(setParams, whereParams);
 
-		// System.out.println(sb);
+		String sql = sb.toString();
+		log.debug(sql);
 		return executeUpdateSQL(conn, sb.toString(), total);
 	}
 
@@ -504,7 +538,11 @@ public abstract class RDSRepository<T> {
 				"IF(JSON_CONTAINS(", tName, ",'\"", tag, "\"','$.", gkey, "'),", tName, ",JSON_ARRAY_APPEND(", tName,
 				",'$.", gkey, "' ,\"", tag, "\")),", "JSON_SET(", tName, ",'$.", gkey, "',JSON_ARRAY(\"", tag, "\")))");
 
-		return this.update(conn, set, null, where, whereParams);
+		// UPDATE tb_cms_contentSET tags=
+		// IF(JSON_CONTAINS_PATH(tags,'one','$.kind_type'),IF(JSON_CONTAINS(tags,'"tag5"','$.kind_type'),tags,JSON_ARRAY_APPEND(tags,'$.kind_type'
+		// ,"tag5")),JSON_SET(tags,'$.kind_type',JSON_ARRAY("tag5"))) WHERE id=?
+
+		return update(conn, set, null, where, whereParams);
 	}
 
 	/**
@@ -591,8 +629,9 @@ public abstract class RDSRepository<T> {
 	protected List<T> getListByTags(DruidPooledConnection conn, String tagColumnName, String groupKeyword,
 			String[] tags, String where, Object[] whereParams, Integer count, Integer offset, String... selections)
 			throws ServerException {
-		// WHERE org_id=? AND (JSON_CONTAINS(roles, '101', '$') OR JSON_CONTAINS(roles,
-		// '102', '$') OR JSON_CONTAINS(roles, '103', '$') )
+		// WHERE org_id=? AND (JSON_CONTAINS(roles, '"101"', '$') OR
+		// JSON_CONTAINS(roles,
+		// '"102"', '$') OR JSON_CONTAINS(roles, '"103"', '$') )
 
 		StringBuffer sb = new StringBuffer(where);
 		if (tags != null && tags.length > 0) {
@@ -600,16 +639,23 @@ public abstract class RDSRepository<T> {
 			for (int i = 0; i < tags.length; i++) {
 				String group = tags[i];
 				if (StringUtils.isBlank(groupKeyword)) {
-					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '", group, "', '$') OR "));
+					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '\"", group, "\"', '$')"));
 				} else {
-					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '", group, "', '$.", groupKeyword,
-							"') OR "));
+					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '\"", group, "\"', '$.", groupKeyword,
+							"')"));
 				}
 			}
 
-			sb.append(" AND (");
-			sql.fillSQL(sb);
-			sb.append(')');
+			// 前面的where语句可能为空
+			if (checkWHEREContaineEx(where)) {
+				// 前面有表达式
+				sb.append(" AND (");
+				sql.fillSQL(sb);
+				sb.append(')');
+			} else {
+				// 前面没有表达式
+				sql.fillSQL(sb);
+			}
 		}
 
 		return this.getList(conn, sb.toString(), whereParams, count, offset, selections);
@@ -640,8 +686,8 @@ public abstract class RDSRepository<T> {
 
 		if (jsonTags != null && jsonTags.entrySet().size() > 0) {
 			boolean flg = false;
-			sb.append(" AND ( ");
 
+			StringBuffer sss = new StringBuffer();
 			Iterator<Entry<String, Object>> it = jsonTags.entrySet().iterator();
 			while (it.hasNext()) {
 				Entry<String, Object> entry = it.next();
@@ -655,14 +701,26 @@ public abstract class RDSRepository<T> {
 						sql.OR("JSON_CONTAINS(", tagColumnName, ", '", temp, "', '$.", key, "')");
 						flg = true;
 					}
-					sql.fillSQL(sb);
+					sql.fillSQL(sss);
 				}
 			}
 
-			if (!flg) {
-				sb.append("TRUE");
+			if (flg) {
+				// 有tag表达式
+
+				// 前面的where语句可能为空
+				if (checkWHEREContaineEx(where)) {
+					// 前面有表达式
+					sb.append(" AND (");
+					sb.append(sss);
+					sb.append(" )");
+				} else {
+					// 前面没有表达式，直接添加tag表达式
+					sb.append(sss);
+				}
+			} else {
+				// 没有tag表达式，无需拼接
 			}
-			sb.append(" )");
 		}
 
 		return this.getList(conn, sb.toString(), whereParams, count, offset, selections);
@@ -999,6 +1057,7 @@ public abstract class RDSRepository<T> {
 	 * 原生SQL方法，根据某个类的repository实例，获取对应对象的列表</br>
 	 * 方便跨对象操作的原生SQL模版方法</br>
 	 */
+	@SuppressWarnings("unchecked")
 	protected static <X> List<X> sqlGetOtherList(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
 			Object[] whereParams) throws ServerException {
 		// System.out.println(sql.toString());

@@ -255,4 +255,16 @@ public class CodecUtils {
 		}
 	}
 
+	public static String[] convertJSONArray2StringArray(JSONArray array) {
+		if (array != null && array.size() > 0) {
+			String[] ret = new String[array.size()];
+			for (int i = 0; i < array.size(); i++) {
+				ret[i] = array.getString(i);
+			}
+			return ret;
+		} else {
+			return new String[] {};
+		}
+	}
+
 }

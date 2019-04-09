@@ -182,7 +182,11 @@ public class SQL {
 	public Object[] getParams() {
 		ArrayList<Object> objs = new ArrayList<>();
 		fillParams(objs);
-		return objs.toArray();
+		if (objs == null || objs.size() <= 0) {
+			return null;
+		} else {
+			return objs.toArray();
+		}
 	}
 
 	public static void main(String[] args) {

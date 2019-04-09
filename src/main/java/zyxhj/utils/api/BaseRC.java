@@ -41,6 +41,7 @@ public interface BaseRC {
 	static final RC REPOSITORY_SET_ERROR = new RC("repo-0009", "set error");// SET错误
 	static final RC REPOSITORY_CONNECTION_ERROR = new RC("repo-0010", "connection error");// 插入错误
 	static final RC REPOSITORY_QUERY_EMPTY = new RC("repo-0011", "query empty");// 什么都没查到
+	static final RC REPOSITORY_NOT_WHERE = new RC("repo-0012", "not where ex");// 什么都没查到
 
 	// 开放搜索错误
 	static final RC OPENSEARCH_APPNAME_BLANK = new RC("os-0001", "opensearch appname blank");// 开放搜索appneme错误
