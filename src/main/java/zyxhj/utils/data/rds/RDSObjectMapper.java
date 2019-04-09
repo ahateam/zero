@@ -101,7 +101,7 @@ public class RDSObjectMapper {
 		while (rs.next()) {
 			Object[] objs = new Object[columnCount];
 			for (int i = 0; i < columnCount; i++) {
-				objs[i] = rs.getObject(i);
+				objs[i] = rs.getObject(i + 1);
 			}
 			ret.add(objs);
 		}
