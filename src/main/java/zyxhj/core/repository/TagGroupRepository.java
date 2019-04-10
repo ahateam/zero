@@ -17,6 +17,6 @@ public class TagGroupRepository extends RDSRepository<TagGroup> {
 		renew.remark = remark;
 
 		// 系统标签不允许修改
-		return this.update(conn, "WHERE keyword=? AND type<>0", new Object[] { keyword }, renew, true);
+		return update(conn, "WHERE keyword=? AND type<>0", new Object[] { keyword }, renew, true);
 	}
 }

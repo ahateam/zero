@@ -203,11 +203,12 @@ public class UserService {
 		}
 	}
 
-	public User editUserIdNumber(DruidPooledConnection conn, Long adminUsreId, Long userId, String newIdNumber) throws Exception{
-			User u = new User();
-			u.id = userId;
-			u.idNumber = newIdNumber;//身份证已添加唯一索引，无需再判断身份证号码是否重复
-			userRepository.updateByKey(conn, "id",userId , u, true);
+	public User editUserIdNumber(DruidPooledConnection conn, Long adminUsreId, Long userId, String newIdNumber)
+			throws Exception {
+		User u = new User();
+		u.id = userId;
+		u.idNumber = newIdNumber;// 身份证已添加唯一索引，无需再判断身份证号码是否重复
+		userRepository.updateByKey(conn, "id", userId, u, true);
 		return u;
 	}
 

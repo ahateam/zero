@@ -17,7 +17,7 @@ public class UserRepository extends RDSRepository<User> {
 	}
 
 	public JSONArray getUserTags(DruidPooledConnection conn, Long userId, String tagKey) throws ServerException {
-		return this.getTags(conn, "tags", tagKey, "WHERE id=?", new Object[] { userId });
+		return getTags(conn, "tags", tagKey, "WHERE id=?", new Object[] { userId });
 	}
 
 }
