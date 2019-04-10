@@ -1040,7 +1040,6 @@ public abstract class RDSRepository<T> {
 
 		StringBuffer sb = new StringBuffer(sql);
 		buildCountAndOffset(sb, count, offset);
-		System.out.println(sql.toString());
 		return executeQuerySQL2Objects(conn, sql.toString(), params);
 	}
 

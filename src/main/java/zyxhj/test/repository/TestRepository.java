@@ -18,27 +18,27 @@ public class TestRepository extends RDSRepository<Test> {
 
 	public List<Object[]> getListAllToObject(DruidPooledConnection conn) throws Exception {
 
-		List<Object[]> li = this.getObjectsList(conn, "WHERE name = ? ", new Object[] { "123" }, 10, 0,new String[] {"name"});
+		List<Object[]> li = this.getObjectsList(conn, "WHERE name = ? ", new Object[] { "123" }, 10, 0,"name");
 
 		return li;
 	}
 
 	public Object[] getTestToObject(DruidPooledConnection conn) throws Exception {
-		Object[] objects = this.getObjects(conn, "WHERE name = ? ", new Object[] { "123" },new String[] {"name"});
+		Object[] objects = this.getObjects(conn, "WHERE name = ? ", new Object[] { "123" },"name");
 		
 		return objects;
 	}
 
 	public List<Test> getListAll(DruidPooledConnection conn) throws Exception {
 		
-		List<Test> list = this.getList(conn, " WHERE status = ? ", new Object[] { "0" }, 10, 0, new String[]{"name","year","id"});
+		List<Test> list = this.getList(conn, " WHERE status = ? ", new Object[] { "0" }, 10, 0,"name","year","id");
 		for (Test test : list) {
 			System.out.println(test);
 		}
 		return list;
 	}
 	public Test getTest(DruidPooledConnection conn) throws Exception {
-			Test test = this.get(conn, "WHERE id = ?", new Object[] {"398005800667477"},new String[] {"id"});
+			Test test = this.get(conn, "WHERE id = ?", new Object[] {"398005800667477"},"id");
 			return test;
 	}
 
@@ -48,22 +48,28 @@ public class TestRepository extends RDSRepository<Test> {
 	}
 
 	public JSONArray getJSONArray(DruidPooledConnection conn) throws Exception {
-		StringBuffer sql = new StringBuffer("select * from tb_rds_test where status = ?");
+		StringBuffer sql = new StringBuffer("SELECT * FROM tb_rds_test WHERE status = ?");
 		JSONArray sqlGetJSONArray = RDSRepository.sqlGetJSONArray(conn, sql.toString(), new Object[] {"0"}, 10, 0);
 		return sqlGetJSONArray;
 	}
 
 	public JSONObject sqlJSONObject(DruidPooledConnection conn) throws Exception {
-		StringBuffer sql = new StringBuffer("select * from tb_rds_test where status = ?");
+		StringBuffer sql = new StringBuffer("SELECT * FROM tb_rds_test WHERE status = ?");
 		JSONObject s = RDSRepository.sqlGetJSONObject(conn, sql.toString(),  new Object[] {"0"});
 		return s;
 	}
 
 	public List<Object[]> sqlGetListObject(DruidPooledConnection conn) throws Exception {
-		StringBuffer sql = new StringBuffer("select * from tb_rds_test where status = ?");
-		 List<Object[]> obj = RDSRepository.sqlGetObjectsList(conn, sql.toString(),  new Object[] {"0"}, 2, 0);
+		StringBuffer sql = new StringBuffer("SELECT * FROM tb_rds_test WHERE status = ?");
+		 List<Object[]> obj = sqlGetObjectsList(conn, sql.toString(),  new Object[] {"0"}, 2, 0);
 		
 		return obj;
+	}
+
+	public Object[] sqlGetObjects(DruidPooledConnection conn) throws Exception {
+		StringBuffer sql = new StringBuffer("SELECT COUNT(*) FROM tb_rds_test WHERE status = ?");
+		Object[] s = sqlGetObjects(conn, sql.toString(), new Object[] {"0"});
+		return s;
 	}
 
 }
