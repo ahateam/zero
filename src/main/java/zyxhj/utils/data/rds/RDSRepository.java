@@ -426,6 +426,7 @@ public abstract class RDSRepository<T> {
 
 		String sql = sb.toString();
 		log.debug(sql);
+		//System.out.println(sb.toString());
 		return executeUpdateSQL(conn, sb.toString(), total);
 	}
 
@@ -626,7 +627,7 @@ public abstract class RDSRepository<T> {
 	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 */
-	protected List<T> getListByTags(DruidPooledConnection conn, String tagColumnName, String groupKeyword,
+	protected List<T> getListByTagsJSONArray(DruidPooledConnection conn, String tagColumnName, String groupKeyword,
 			String[] tags, String where, Object[] whereParams, Integer count, Integer offset, String... selections)
 			throws ServerException {
 		// WHERE org_id=? AND (JSON_CONTAINS(roles, '"101"', '$') OR
@@ -639,9 +640,9 @@ public abstract class RDSRepository<T> {
 			for (int i = 0; i < tags.length; i++) {
 				String group = tags[i];
 				if (StringUtils.isBlank(groupKeyword)) {
-					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '\"", group, "\"', '$')"));
+					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '", group, "', '$')"));
 				} else {
-					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '\"", group, "\"', '$.", groupKeyword,
+					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '\"", group, "', '$.", groupKeyword,
 							"')"));
 				}
 			}
@@ -657,7 +658,7 @@ public abstract class RDSRepository<T> {
 				sql.fillSQL(sb);
 			}
 		}
-
+	//	System.out.println(sb.toString());
 		return this.getList(conn, sb.toString(), whereParams, count, offset, selections);
 	}
 
@@ -676,7 +677,7 @@ public abstract class RDSRepository<T> {
 	 * @param selections
 	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 */
-	protected List<T> getListByTags(DruidPooledConnection conn, String tagColumnName, JSONObject jsonTags, String where,
+	protected List<T> getListByTagsJSONObject(DruidPooledConnection conn, String tagColumnName, JSONObject jsonTags, String where,
 			Object[] whereParams, Integer count, Integer offset, String... selections) throws ServerException {
 		// WHERE org_id=? AND (JSON_CONTAINS(tags, '101', '$.key1') OR
 		// JSON_CONTAINS(tags, '102', '$.key2') OR JSON_CONTAINS(tags, '103', '$.key1')
@@ -698,12 +699,14 @@ public abstract class RDSRepository<T> {
 					SQL sql = new SQL();
 					for (int i = 0; i < arr.size(); i++) {
 						String temp = arr.getString(i);
-						sql.OR("JSON_CONTAINS(", tagColumnName, ", '", temp, "', '$.", key, "')");
+						sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '", temp, "', '$.", key, "')"));
 						flg = true;
 					}
 					sql.fillSQL(sss);
 				}
 			}
+			
+			
 
 			if (flg) {
 				// 有tag表达式
@@ -722,7 +725,6 @@ public abstract class RDSRepository<T> {
 				// 没有tag表达式，无需拼接
 			}
 		}
-
 		return this.getList(conn, sb.toString(), whereParams, count, offset, selections);
 	}
 

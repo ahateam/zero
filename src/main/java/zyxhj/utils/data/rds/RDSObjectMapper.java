@@ -118,7 +118,7 @@ public class RDSObjectMapper {
 		while (rs.next()) {
 			JSONObject jsonObject = new JSONObject();// 将每一个结果集放入到jsonObject对象中
 			for (int i = 1; i <= columnCount; i++) {
-				jsonObject.put(md.getColumnName(i), rs.getObject(i));// 列值一一对应
+				jsonObject.put(RDSUtils.camelName(md.getColumnName(i)), rs.getObject(i));// 列值一一对应
 			}
 			ret.add(jsonObject);
 		}
