@@ -71,6 +71,7 @@ public interface BaseRC {
 	static final RC USER_AUTH_DELETED = new RC("user-0017", "user is deleted");// 用户已经删除
 	static final RC USER_AUTH_UNKNOWN_STATUS = new RC("user-0018", "unknown user status");// 未知用户状态
 	static final RC USER_AUTH_NOT_ADMIN = new RC("user-0019", "must be an admin user");// 不是管理员账号
+	static final RC USER_NO_PERMISSION = new RC("user-0020", "this user no permission");//无权限
 
 	// CMS内容管理系统错误
 	static final RC CMS_CONTENT_NOT_EXISET = new RC("cms-0010", "Content不存在");
@@ -116,4 +117,6 @@ public interface BaseRC {
 	static final RC ECM_ORG_FAMILY_EXIST = new RC("ecm-0021", "户序号已存在");
 
 	static final RC ECM_ADMINISTRATIVE_EXIST = new RC("ecm-0022", "行政机构已存在");
+	
+	static final RC ECM_NO_PERMISSION = new RC("ecm-0023", "无此权限");
 }
