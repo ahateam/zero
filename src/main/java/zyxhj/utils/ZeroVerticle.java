@@ -34,6 +34,8 @@ public abstract class ZeroVerticle extends AbstractVerticle {
 
 	protected abstract String name();
 
+	protected abstract int port();
+
 	protected void initCtrl(Map<String, Controller> map, Controller ctrl) {
 		map.put(ctrl.getNode(), ctrl);
 	}
@@ -65,9 +67,9 @@ public abstract class ZeroVerticle extends AbstractVerticle {
 			router.route("/*").handler(this::handleHttpRequest);
 
 			httpServer.requestHandler(router);
-			httpServer.listen(8080, res -> {
+			httpServer.listen(port(), res -> {
 				if (res.succeeded()) {
-					System.out.println("Server is now listening!");
+					System.out.println(StringUtils.join("Server is now listening! @", port()));
 				} else {
 					System.out.println("Fatal error: " + res.cause());
 					vertx.close(); // 严重错误，不应该继续运行，需要关闭vertx实例
