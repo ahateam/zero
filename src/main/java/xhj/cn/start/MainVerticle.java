@@ -19,6 +19,10 @@ public class MainVerticle extends ZeroVerticle {
 		return "zero";
 	}
 
+	public int port() {
+		return 8080;
+	}
+
 	protected void init() throws Exception {
 
 		DataSourceUtils.initDataSourceConfig();
