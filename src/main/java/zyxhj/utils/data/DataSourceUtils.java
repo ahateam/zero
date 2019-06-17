@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSON;
 import zyxhj.utils.CodecUtils;
 import zyxhj.utils.Input;
 import zyxhj.utils.data.rds.RDSDataSource;
+import zyxhj.utils.data.ts.TSDataSource;
 
 /**
  */
@@ -22,7 +23,7 @@ public class DataSourceUtils {
 
 	private static Logger log = LoggerFactory.getLogger(DataSourceUtils.class);
 
-	public static final String TYPE_OTS = "ots";
+	public static final String TYPE_TS = "ts";
 	public static final String TYPE_JDBC = "jdbc";
 	public static final String TYPE_OPEN_SEARCH = "opensearch";
 
@@ -61,11 +62,10 @@ public class DataSourceUtils {
 					log.info(">>>ciname>>{}", ciname);
 					p.load(new FileInputStream(ciname));
 
-					// if (ci.type.equalsIgnoreCase(TYPE_OTS)) {
-					// OTSDataSource ds = new OTSDataSource(p);
-					// dsMap.put(ci.name, ds);
-					// } else
-					if (ci.type.equalsIgnoreCase(TYPE_JDBC)) {
+					if (ci.type.equalsIgnoreCase(TYPE_TS)) {
+						TSDataSource ds = new TSDataSource(p);
+						dsMap.put(ci.name, ds);
+					} else if (ci.type.equalsIgnoreCase(TYPE_JDBC)) {
 						RDSDataSource ds = new RDSDataSource(p);
 						dsMap.put(ci.name, ds);
 					}

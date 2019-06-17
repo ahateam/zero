@@ -1,4 +1,4 @@
-package zyxhj.utils.data.ots;
+package zyxhj.utils.data.ts;
 
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
 import com.alicloud.openservices.tablestore.model.PrimaryKeyValue;

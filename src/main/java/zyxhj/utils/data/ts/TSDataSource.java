@@ -1,4 +1,4 @@
-package zyxhj.utils.data.ots;
+package zyxhj.utils.data.ts;
 
 import java.util.Properties;
 
@@ -6,16 +6,16 @@ import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
 
-public class OTSDataSource implements DataSource {
+public class TSDataSource implements DataSource {
 
 	private String endPoint;
 	private String accessKeyId;
 	private String accessKeySecret;
 	private String instanceName;
 
-	private OTSAutoCloseableClient OTSClient;
+	private TSAutoCloseableClient OTSClient;
 
-	public OTSDataSource(Properties props) {
+	public TSDataSource(Properties props) {
 		String endPoint = props.getProperty("endPoint");
 		String accessKeyId = props.getProperty("accessKeyId");
 		String accessKeySecret = props.getProperty("accessKeySecret");
@@ -26,7 +26,7 @@ public class OTSDataSource implements DataSource {
 		this.accessKeySecret = accessKeySecret;
 		this.instanceName = instanceName;
 
-		OTSClient = new OTSAutoCloseableClient(endPoint, accessKeyId, accessKeySecret, instanceName);
+		OTSClient = new TSAutoCloseableClient(endPoint, accessKeyId, accessKeySecret, instanceName);
 	}
 
 	public String getEndPoint() {
@@ -53,7 +53,7 @@ public class OTSDataSource implements DataSource {
 	@Override
 	public void closeConnection(Object conn) throws ServerException {
 		try {
-			((OTSAutoCloseableClient) conn).close();
+			((TSAutoCloseableClient) conn).close();
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_CONNECTION_ERROR, e.getMessage());
 		}

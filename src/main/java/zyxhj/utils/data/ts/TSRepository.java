@@ -1,6 +1,7 @@
-package zyxhj.utils.data.ots;
+package zyxhj.utils.data.ts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -28,16 +29,89 @@ import com.alicloud.openservices.tablestore.model.RowPutChange;
 import com.alicloud.openservices.tablestore.model.RowUpdateChange;
 import com.alicloud.openservices.tablestore.model.SingleRowQueryCriteria;
 import com.alicloud.openservices.tablestore.model.UpdateRowRequest;
+import com.alicloud.openservices.tablestore.model.search.SearchQuery;
+import com.alicloud.openservices.tablestore.model.search.SearchRequest;
+import com.alicloud.openservices.tablestore.model.search.SearchResponse;
 
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
 
-public abstract class OTSRepository<T> {
+public abstract class TSRepository<T> {
 
-	protected OTSObjectMapper<T> mapper;
+	protected TSObjectMapper<T> mapper;
 
-	protected OTSRepository(Class<T> clazz) {
-		this.mapper = new OTSObjectMapper<T>(clazz);
+	protected TSRepository(Class<T> clazz) {
+		this.mapper = new TSObjectMapper<T>(clazz);
+	}
+
+	private static Row _get(SyncClient client, String tableName, PrimaryKey pk, String... selections)
+			throws ServerException {
+		try {
+			// 读一行
+			SingleRowQueryCriteria criteria = new SingleRowQueryCriteria(tableName, pk);
+			// 设置读取最新版本
+			criteria.setMaxVersions(1);
+			if (selections != null && selections.length > 0) {
+				criteria.addColumnsToGet(selections);
+			}
+			GetRowResponse getRowResponse = client.getRow(new GetRowRequest(criteria));
+			Row row = getRowResponse.getRow();
+			if (row == null || row.isEmpty()) {
+				return null;
+			} else {
+				return row;
+			}
+		} catch (Exception e) {
+			throw new ServerException(BaseRC.REPOSITORY_GET_ERROR, e.getMessage());
+		}
+	}
+
+	private static List<Row> _batchGet(SyncClient client, String tableName, List<PrimaryKey> pks, String... selections)
+			throws ServerException {
+		MultiRowQueryCriteria criteria = new MultiRowQueryCriteria(tableName);
+		for (PrimaryKey pk : pks) {
+			criteria.addRow(pk);
+		}
+
+		criteria.setMaxVersions(1);
+		if (selections != null && selections.length > 0) {
+			criteria.addColumnsToGet(selections);
+		}
+
+		BatchGetRowRequest batchGetRowRequest = new BatchGetRowRequest();
+		batchGetRowRequest.addMultiRowQueryCriteria(criteria);
+
+		List<Row> ret = new ArrayList<>();
+
+		BatchGetRowResponse response = client.batchGetRow(batchGetRowRequest);
+		Iterator<RowResult> it = response.getBatchGetRowResult(tableName).iterator();
+		while (it.hasNext()) {
+			RowResult rr = it.next();
+			Row row = rr.getRow();
+			if (row == null || row.isEmpty()) {
+				// 异常，插入一个空数据，数组对齐，方便后续处理
+				ret.add(null);
+			} else {
+				ret.add(row);
+			}
+		}
+
+		return ret;
+	}
+
+	private static SearchResponse _search(SyncClient client, String tableName, String indexName, SearchQuery query,
+			String... selections) throws ServerException {
+		SearchRequest searchRequest = new SearchRequest(tableName, indexName, query);
+
+		SearchRequest.ColumnsToGet columnsToGet = new SearchRequest.ColumnsToGet();
+		if (selections != null && selections.length > 0) {
+			columnsToGet.setColumns(Arrays.asList(selections));
+		} else {
+			columnsToGet.setReturnAll(true);
+		}
+		searchRequest.setColumnsToGet(columnsToGet);
+
+		return client.search(searchRequest);
 	}
 
 	/**
@@ -125,29 +199,7 @@ public abstract class OTSRepository<T> {
 		if (row.isEmpty()) {
 			return null;
 		} else {
-			return OTSObjectMapper.deserialize2JSONObject(row);
-		}
-	}
-
-	private static Row _get(SyncClient client, String tableName, PrimaryKey pk, String... selections)
-			throws ServerException {
-		try {
-			// 读一行
-			SingleRowQueryCriteria criteria = new SingleRowQueryCriteria(tableName, pk);
-			// 设置读取最新版本
-			criteria.setMaxVersions(1);
-			if (selections != null && selections.length > 0) {
-				criteria.addColumnsToGet(selections);
-			}
-			GetRowResponse getRowResponse = client.getRow(new GetRowRequest(criteria));
-			Row row = getRowResponse.getRow();
-			if (row == null || row.isEmpty()) {
-				return null;
-			} else {
-				return row;
-			}
-		} catch (Exception e) {
-			throw new ServerException(BaseRC.REPOSITORY_GET_ERROR, e.getMessage());
+			return TSObjectMapper.deserialize2JSONObject(row);
 		}
 	}
 
@@ -231,7 +283,7 @@ public abstract class OTSRepository<T> {
 
 		JSONArray ret = new JSONArray();
 		for (Row row : rows) {
-			ret.add(OTSObjectMapper.deserialize2JSONObject(row));
+			ret.add(TSObjectMapper.deserialize2JSONObject(row));
 		}
 		return ret;
 	}
@@ -256,41 +308,45 @@ public abstract class OTSRepository<T> {
 				// 异常，插入一个空数据，数组对齐，方便后续处理
 				ret.add(new JSONObject(true));
 			} else {
-				ret.add(OTSObjectMapper.deserialize2JSONObject(row));
+				ret.add(TSObjectMapper.deserialize2JSONObject(row));
 			}
 		}
 		return ret;
 	}
 
-	private static List<Row> _batchGet(SyncClient client, String tableName, List<PrimaryKey> pks, String... selections)
-			throws ServerException {
-		MultiRowQueryCriteria criteria = new MultiRowQueryCriteria(tableName);
-		for (PrimaryKey pk : pks) {
-			criteria.addRow(pk);
-		}
+	/**
+	 * 根据表格存储的多元查询功能进行搜索
+	 * 
+	 * tableName 表名
+	 * 
+	 * @param indexName
+	 *            索引名
+	 * @param query
+	 *            TableStore查询对象
+	 * @param selections
+	 *            可选参数，要查询的列名，不填则查询所有列
+	 * @return 查询到的记录，JSONObject格式</br>
+	 *         包含isAllSuccess是否全部成功标记，totalCount查询匹配总行数，以及list查询结果（JSONArray）
+	 */
+	public static JSONObject nativeSearch(SyncClient client, String tableName, String indexName, SearchQuery query,
+			String... selections) throws ServerException {
+		SearchResponse resp = _search(client, tableName, indexName, query, selections);
 
-		criteria.setMaxVersions(1);
-		if (selections != null && selections.length > 0) {
-			criteria.addColumnsToGet(selections);
-		}
+		JSONObject ret = new JSONObject();
+		ret.put("isAllSuccess", resp.isAllSuccess());
+		ret.put("totalCount", resp.getTotalCount());
 
-		BatchGetRowRequest batchGetRowRequest = new BatchGetRowRequest();
-		batchGetRowRequest.addMultiRowQueryCriteria(criteria);
-
-		List<Row> ret = new ArrayList<>();
-
-		BatchGetRowResponse response = client.batchGetRow(batchGetRowRequest);
-		Iterator<RowResult> it = response.getBatchGetRowResult(tableName).iterator();
-		while (it.hasNext()) {
-			RowResult rr = it.next();
-			Row row = rr.getRow();
+		List<Row> rows = resp.getRows();
+		JSONArray list = new JSONArray();
+		for (Row row : rows) {
 			if (row == null || row.isEmpty()) {
 				// 异常，插入一个空数据，数组对齐，方便后续处理
-				ret.add(null);
+				list.add(new JSONObject(true));
 			} else {
-				ret.add(row);
+				list.add(TSObjectMapper.deserialize2JSONObject(row));
 			}
 		}
+		ret.put("list", list);
 
 		return ret;
 	}
@@ -299,7 +355,7 @@ public abstract class OTSRepository<T> {
 	 * 插入对象，检查是否存在，如果不存在，插入；否则插入失败
 	 * 
 	 */
-	public void insert(OTSAutoCloseableClient client, T t, boolean cover) throws ServerException {
+	public void insert(SyncClient client, T t, boolean cover) throws ServerException {
 		nativeInsert(client, mapper.getTableName(), mapper.getPrimaryKeyFromObject(t),
 				mapper.getColumnListFromObject(t), cover);
 	}
@@ -307,7 +363,7 @@ public abstract class OTSRepository<T> {
 	/**
 	 * 根据主键获取对象
 	 */
-	public T get(OTSAutoCloseableClient client, PrimaryKey pk, String... selections) throws Exception {
+	public T get(SyncClient client, PrimaryKey pk, String... selections) throws Exception {
 		Row row = _get(client, mapper.getTableName(), pk, selections);
 		if (row == null || row.isEmpty()) {
 			return null;
@@ -319,7 +375,7 @@ public abstract class OTSRepository<T> {
 	/**
 	 * 根据主键删除对象
 	 */
-	public void delete(OTSAutoCloseableClient client, PrimaryKey pk) throws ServerException {
+	public void delete(SyncClient client, PrimaryKey pk) throws ServerException {
 		nativeDel(client, mapper.getTableName(), pk);
 	}
 
@@ -334,6 +390,33 @@ public abstract class OTSRepository<T> {
 				ret.add(null);
 			} else {
 				ret.add(mapper.deserialize(row));
+			}
+		}
+		return ret;
+	}
+
+	public class Response {
+		public boolean isAllSuccess;
+		public long totalCount;
+		public List<T> list;
+	}
+
+	public Response search(SyncClient client, String indexName, SearchQuery query, String... selections)
+			throws Exception {
+		SearchResponse resp = _search(client, mapper.getTableName(), indexName, query, selections);
+
+		Response ret = new Response();
+		ret.isAllSuccess = resp.isAllSuccess();
+		ret.totalCount = resp.getTotalCount();
+
+		List<Row> rows = resp.getRows();
+		ret.list = new ArrayList<>();
+		for (Row row : rows) {
+			if (row == null || row.isEmpty()) {
+				// 异常，插入一个空数据，数组对齐，方便后续处理
+				ret.list.add(null);
+			} else {
+				ret.list.add(mapper.deserialize(row));
 			}
 		}
 		return ret;

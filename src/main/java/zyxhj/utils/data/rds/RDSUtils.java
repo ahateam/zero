@@ -16,27 +16,6 @@ import zyxhj.utils.data.DataSource;
 
 public class RDSUtils {
 
-	/**
-	 * mapper缓存
-	 */
-	private static HashMap<String, RDSObjectMapper> objectMapperMap = new HashMap<>();
-
-	public static void entity2map(Class clazz) {
-
-		String className = clazz.getName();
-		System.out.println(className);
-		RDSObjectMapper om = objectMapperMap.get(className);
-		if (null == om) {
-			// RDSObjectMapper om = new RDSObjectMapper(clazz);
-			// objectMapperMap.put(className, om);
-		}
-
-	}
-
-	public static void map2entity() {
-
-	}
-
 	public static void createTableByEntity(DataSource ds, Class entityClass) {
 		try {
 			createTable(ds, entityClass);

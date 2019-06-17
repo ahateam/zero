@@ -72,6 +72,10 @@ public class IDUtils {
 		return (simpleId >>> 8);
 	}
 
+	public static String simpleId2Hex(long simpleId) {
+		return Long.toHexString(simpleId);
+	}
+
 	@SuppressWarnings("deprecation")
 	public static void main(String[] args) {
 

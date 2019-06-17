@@ -1,39 +1,76 @@
 package xhj.cn.start;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
+import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.Column;
-import com.alicloud.openservices.tablestore.model.CreateIndexRequest;
-import com.alicloud.openservices.tablestore.model.IndexMeta;
+import com.alicloud.openservices.tablestore.model.ColumnValue;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
+import com.alicloud.openservices.tablestore.model.search.SearchQuery;
+import com.alicloud.openservices.tablestore.model.search.SearchRequest;
+import com.alicloud.openservices.tablestore.model.search.SearchResponse;
+import com.alicloud.openservices.tablestore.model.search.query.BoolQuery;
+import com.alicloud.openservices.tablestore.model.search.query.TermQuery;
+import com.alicloud.openservices.tablestore.model.search.query.TermsQuery;
 
+import zyxhj.core.domain.CateInfo;
+import zyxhj.core.repository.CateInfoRepository;
+import zyxhj.utils.CodecUtils;
+import zyxhj.utils.IDUtils;
+import zyxhj.utils.Singleton;
 import zyxhj.utils.api.ServerException;
-import zyxhj.utils.data.ots.ColumnBuilder;
-import zyxhj.utils.data.ots.OTSRepository;
-import zyxhj.utils.data.ots.PrimaryKeyBuilder;
+import zyxhj.utils.data.DataSourceUtils;
+import zyxhj.utils.data.ts.ColumnBuilder;
+import zyxhj.utils.data.ts.PrimaryKeyBuilder;
+import zyxhj.utils.data.ts.TSAutoCloseableClient;
+import zyxhj.utils.data.ts.TSRepository;
 
 //https://SizeStore.cn-hangzhou.ots.aliyuncs.com
 //LTAIJ9mYIjuW54Cj
 //89EMlXLsP13H8mWKIvdr4iM1OvdVxs
 
-public class InboxTest extends OTSRepository<Inbox> {
+public class InboxTest {
 
 	private static final String TABLE_NAME = "TempTable";
 	private static final String PK1 = "pk1";
 	private static final String PK2 = "pk2";
 
 	public InboxTest() {
-		super(Inbox.class);
+	}
+
+	private static DruidPooledConnection conn;
+
+	private static TSAutoCloseableClient client;
+
+	private static CateInfoRepository cateInfoRepository;
+
+	static {
+		DataSourceUtils.initDataSourceConfig();
+
+		try {
+			conn = (DruidPooledConnection) DataSourceUtils.getDataSource("rdsDefault").openConnection();
+
+			client = (TSAutoCloseableClient) DataSourceUtils.getDataSource("tsDefault").openConnection();
+
+			cateInfoRepository = Singleton.ins(CateInfoRepository.class);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args) {
-		SyncClient client = new SyncClient("https://SizeStore.cn-hangzhou.ots.aliyuncs.com", "LTAIJ9mYIjuW54Cj",
-				"89EMlXLsP13H8mWKIvdr4iM1OvdVxs", "SizeStore");
+		// SyncClient client = new
+		// SyncClient("https://SizeStore.cn-hangzhou.ots.aliyuncs.com",
+		// "LTAIJ9mYIjuW54Cj",
+		// "89EMlXLsP13H8mWKIvdr4iM1OvdVxs", "SizeStore");
 
 		// putRow(client, 123l, 8888l);
 
@@ -51,7 +88,131 @@ public class InboxTest extends OTSRepository<Inbox> {
 
 		// batchGetRow(client);
 
-		addIndex(client);
+		indexTest(client);
+
+	}
+
+	private static void indexTest(SyncClient client) {
+		// 测试创建表
+		// TSUtils.createTableByEntity(client, CateInfo.class);
+
+		// 测试删除表
+		// TSUtils.drapTableByEntity(client, CateInfo.class);
+
+		// 增加数据
+//		testAddData(client);
+
+		// 查询数据
+		// tttt(client);
+		 testSearch(client);
+	}
+
+	private static void tttt(SyncClient client) {
+		SearchQuery searchQuery = new SearchQuery();
+
+		TermQuery termQuery = new TermQuery();
+		termQuery.setFieldName("cate");
+		termQuery.setTerm(ColumnValue.fromString("类3"));
+
+		searchQuery.setQuery(termQuery);
+		SearchRequest searchRequest = new SearchRequest("CateInfo", "CateInfoIndex", searchQuery);
+
+		SearchRequest.ColumnsToGet columnsToGet = new SearchRequest.ColumnsToGet();
+		columnsToGet.setReturnAll(true); // 设置返回所有列
+		searchRequest.setColumnsToGet(columnsToGet);
+
+		SearchResponse resp = client.search(searchRequest);
+		System.out.println("Row: " + resp.getRows());
+		// 可检查NextToken是否为空，若不为空，可通过NextToken继续读取。
+	}
+
+	private static void testSearch(SyncClient client) {
+
+		BoolQuery boolQuery = new BoolQuery();
+
+		TermQuery termQuery = new TermQuery();
+		termQuery.setFieldName("cate");
+		termQuery.setTerm(ColumnValue.fromString("类2"));
+
+		// TermQuery termQuery = new TermQuery();
+		// termQuery.setFieldName("region");
+		// termQuery.setTerm(ColumnValue.fromString("区2"));
+
+		TermQuery termQuery2 = new TermQuery();
+		termQuery2.setFieldName("status");
+		termQuery2.setTerm(ColumnValue.fromLong(1L));
+
+		 TermsQuery termsQuery = new TermsQuery();
+		 termsQuery.setFieldName("tags");
+		 termsQuery.addTerm(ColumnValue.fromString("tag1"));
+//		 termsQuery.addTerm(ColumnValue.fromString("tag3"));
+
+		boolQuery.setMustQueries(Arrays.asList(termsQuery, termQuery2));
+
+		SearchQuery query = new SearchQuery();
+		query.setLimit(10);
+		query.setOffset(0);
+		query.setGetTotalCount(true);
+		query.setQuery(boolQuery);
+
+		try {
+			TSRepository.Response resp = cateInfoRepository.search(client, "CateInfoIndex", query);
+
+			System.out.println(JSON.toJSONString(resp, true));
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private static void testAddData(SyncClient client) {
+		try {
+			long status = 0L;
+			String[] regions = { "区1", "区2" };
+			int indRegion = 0;
+			String[] cates = { "类1", "类2", "类3" };
+			String[] tags = { "[\"tag1\",\"tag2\"]", "[\"tag2\",\"tag3\"]", "[\"tag1\",\"tag3\"]", "[\"tag1\"]",
+					"[\"tag3\"]", "[\"tag3\",\"tag4\",\"tag1\"]" };
+			int indTag = 0;
+
+			int indCate = 0;
+			for (int i = 0; i < 10; i++) {
+				long id = IDUtils.getSimpleId();
+				status = (status == 0L) ? 1L : 0L;
+				String region = regions[indRegion++];
+				if (indRegion >= regions.length) {
+					indRegion = 0;
+				}
+				String cate = cates[indCate++];
+				if (indCate >= cates.length) {
+					indCate = 0;
+				}
+				String tag = tags[indTag++];
+				if (indTag >= tags.length) {
+					indTag = 0;
+				}
+
+				CateInfo ci = new CateInfo();
+				ci._id = CodecUtils.md52Hex(IDUtils.simpleId2Hex(id), CodecUtils.CHARSET_UTF8);
+				ci.id = id;
+				ci.region = region;
+				ci.cate = cate;
+				ci.tags = tag;
+				ci.status = status;
+				ci.title = "title" + i;
+				ci.pos = "34.2,43.0";
+				ci.time = new Date();
+				ci.content = "content" + i;
+				ci.province = "贵州";
+				ci.city = "遵义";
+
+				cateInfoRepository.insert(client, ci, false);
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static void putRow(SyncClient client, Long pk1, Long pk2) {
@@ -63,7 +224,7 @@ public class InboxTest extends OTSRepository<Inbox> {
 		List<Column> columns = cb.build();
 
 		try {
-			OTSRepository.nativeInsert(client, TABLE_NAME, pk, columns, true);
+			TSRepository.nativeInsert(client, TABLE_NAME, pk, columns, true);
 		} catch (ServerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -80,7 +241,7 @@ public class InboxTest extends OTSRepository<Inbox> {
 		List<Column> columns = cb.build();
 
 		try {
-			OTSRepository.nativeUpdate(client, TABLE_NAME, pk, columns);
+			TSRepository.nativeUpdate(client, TABLE_NAME, pk, columns);
 		} catch (ServerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -93,7 +254,7 @@ public class InboxTest extends OTSRepository<Inbox> {
 		PrimaryKey pk = new PrimaryKeyBuilder().add(PK1, pk1).add(PK2, pk2).build();
 
 		try {
-			JSONObject obj = OTSRepository.nativeGet(client, TABLE_NAME, pk, "Col1", "xxx");
+			JSONObject obj = TSRepository.nativeGet(client, TABLE_NAME, pk, "Col1", "xxx");
 			System.out.println(JSON.toJSONString(obj, true));
 		} catch (ServerException e) {
 			// TODO Auto-generated catch block
@@ -105,7 +266,7 @@ public class InboxTest extends OTSRepository<Inbox> {
 		PrimaryKey pk = new PrimaryKeyBuilder().add(PK1, pk1).add(PK2, pk2).build();
 
 		try {
-			OTSRepository.nativeDel(client, TABLE_NAME, pk);
+			TSRepository.nativeDel(client, TABLE_NAME, pk);
 		} catch (ServerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -121,7 +282,7 @@ public class InboxTest extends OTSRepository<Inbox> {
 		PrimaryKey pkEnd = new PrimaryKeyBuilder().add(PK1, 123l).add(PK2, 199999l).build();
 
 		try {
-			JSONArray array = OTSRepository.nativeGetRange(client, TABLE_NAME, pkStart, pkEnd, 10, 2, "Col1", "Col5",
+			JSONArray array = TSRepository.nativeGetRange(client, TABLE_NAME, pkStart, pkEnd, 10, 2, "Col1", "Col5",
 					"xxx");
 			System.out.println(JSON.toJSONString(array, true));
 		} catch (ServerException e) {
@@ -137,7 +298,7 @@ public class InboxTest extends OTSRepository<Inbox> {
 		}
 
 		try {
-			JSONArray array = OTSRepository.nativeBatchGet(client, TABLE_NAME, pks, "Col3", "Col5", "sdf");
+			JSONArray array = TSRepository.nativeBatchGet(client, TABLE_NAME, pks, "Col3", "Col5", "sdf");
 			System.out.println(JSON.toJSONString(array, true));
 		} catch (ServerException e) {
 			e.printStackTrace();
@@ -145,11 +306,8 @@ public class InboxTest extends OTSRepository<Inbox> {
 
 	}
 
-	private static void addIndex(SyncClient client) {
-		IndexMeta indexMeta = new IndexMeta("TestIndex"); // 新建索引Meta
-		indexMeta.addPrimaryKeyColumn("Col0"); // 指定DEFINED_COL_NAME_2列为索引表的第一列PK
-		indexMeta.addPrimaryKeyColumn("Col1"); // 指定DEFINED_COL_NAME_1列为索引表的第二列PK
-		CreateIndexRequest request = new CreateIndexRequest(TABLE_NAME, indexMeta, false); // 将索引表添加到主表上
-		client.createIndex(request); // 创建索引表
+	private static void querySearchIndex(SyncClient client) {
+
 	}
+
 }

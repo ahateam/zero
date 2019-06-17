@@ -1,9 +1,13 @@
 package zyxhj.core.domain;
 
+import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
+
 import zyxhj.utils.api.Controller.ENUMVALUE;
-import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
+import zyxhj.utils.data.ts.TSAnnEntity;
+import zyxhj.utils.data.ts.TSAnnField;
+import zyxhj.utils.data.ts.TSAnnID;
 
 /**
  * 导入数据临时表
@@ -11,7 +15,7 @@ import zyxhj.utils.data.rds.RDSAnnID;
  * @author hunhun
  *
  */
-@RDSAnnEntity(alias = "tb_import_temp_record")
+@TSAnnEntity(alias = "ImportTempRecord")
 public class ImportTempRecord {
 
 	public static enum STATUS implements ENUMVALUE {
@@ -39,29 +43,27 @@ public class ImportTempRecord {
 	}
 
 	/**
-	 * 任务编号
+	 * 任务编号n分片键
 	 */
-	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.ID)
+	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.INTEGER)
 	public Long taskId;
 
 	/**
 	 * 记录编号
 	 */
-	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.ID)
+	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
 	public Long recordId;
 
 	/**
 	 * 状态
 	 */
-	@RDSAnnField(column = RDSAnnField.BYTE)
-	public Byte status;
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long status;
 
 	/**
 	 * 返回结果信息
 	 */
-	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String resultMessage;
 
 	/**

@@ -1,6 +1,7 @@
-package zyxhj.utils.data.ots;
+package zyxhj.utils.data.ts;
 
 import java.lang.reflect.Field;
+import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -11,9 +12,9 @@ import com.alicloud.openservices.tablestore.model.Row;
 
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
-import zyxhj.utils.data.ots.OTSAnnID.KeyType;
+import zyxhj.utils.data.ts.TSAnnID.Key;
 
-public class OTSFieldMapper<T> {
+public class TSFieldMapper<T> {
 
 	/**
 	 * 字段名（java对象中的名称）
@@ -38,9 +39,9 @@ public class OTSFieldMapper<T> {
 	/**
 	 * 主键类型，如果为空则表示不是主键
 	 */
-	protected KeyType primaryKeyType;
+	protected Key primaryKeyType;
 
-	public OTSFieldMapper(String name, String alias, Field field, KeyType primaryKeyType) {
+	public TSFieldMapper(String name, String alias, Field field, Key primaryKeyType) {
 		this.name = name;
 		this.alias = alias;
 		this.field = field;
@@ -48,38 +49,39 @@ public class OTSFieldMapper<T> {
 		this.primaryKeyType = primaryKeyType;
 	}
 
-	public Object getFieldValueFromParam(Object param) throws Exception {
-		if (null != primaryKeyType) {
-			if (javaType.equals(Long.class)) {
-				return PrimaryKeyValue.fromLong((Long) param);
-			} else if (javaType.equals(String.class)) {
-				return PrimaryKeyValue.fromString((String) param);
-			} else if (javaType.equals(Integer.class)) {
-				// ots实际上用的是Integer
-				return PrimaryKeyValue.fromLong((Integer) param);
-			} else if (javaType.equals(byte[].class)) {
-				return ColumnValue.fromBinary((byte[]) param);
-			} else {
-				throw new Exception(StringUtils.join("unknown ots primary key type:", javaType));
-			}
-		} else {
-			if (javaType.equals(Boolean.class)) {
-				return ColumnValue.fromBoolean((Boolean) param);
-			} else if (javaType.equals(Long.class)) {
-				return ColumnValue.fromLong((Long) param);
-			} else if (javaType.equals(Double.class)) {
-				return ColumnValue.fromDouble((Double) param);
-			} else if (javaType.equals(String.class)) {
-				return ColumnValue.fromString((String) param);
-			} else if (javaType.equals(Integer.class)) {
-				return ColumnValue.fromLong((Integer) param);
-			} else if (javaType.equals(byte[].class)) {
-				return ColumnValue.fromBinary((byte[]) param);
-			} else {
-				throw new Exception(StringUtils.join("unknown ots column type:", javaType));
-			}
-		}
-	}
+	// public Object getFieldValueFromParam(Object param) throws Exception {
+	// if (null != primaryKeyType) {
+	// if (javaType.equals(Long.class)) {
+	// return PrimaryKeyValue.fromLong((Long) param);
+	// } else if (javaType.equals(String.class)) {
+	// return PrimaryKeyValue.fromString((String) param);
+	// } else if (javaType.equals(Integer.class)) {
+	// // ots实际上用的是Integer
+	// return PrimaryKeyValue.fromLong((Integer) param);
+	// } else if (javaType.equals(byte[].class)) {
+	// return ColumnValue.fromBinary((byte[]) param);
+	// } else {
+	// throw new Exception(StringUtils.join("unknown ots primary key type:",
+	// javaType));
+	// }
+	// } else {
+	// if (javaType.equals(Boolean.class)) {
+	// return ColumnValue.fromBoolean((Boolean) param);
+	// } else if (javaType.equals(Long.class)) {
+	// return ColumnValue.fromLong((Long) param);
+	// } else if (javaType.equals(Double.class)) {
+	// return ColumnValue.fromDouble((Double) param);
+	// } else if (javaType.equals(String.class)) {
+	// return ColumnValue.fromString((String) param);
+	// } else if (javaType.equals(Integer.class)) {
+	// return ColumnValue.fromLong((Integer) param);
+	// } else if (javaType.equals(byte[].class)) {
+	// return ColumnValue.fromBinary((byte[]) param);
+	// } else {
+	// throw new Exception(StringUtils.join("unknown ots column type:", javaType));
+	// }
+	// }
+	// }
 
 	public Object getFieldValueFromObject(Object obj) throws ServerException {
 		Object t;
@@ -114,6 +116,8 @@ public class OTSFieldMapper<T> {
 				return ColumnValue.fromString((String) t);
 			} else if (javaType.equals(Integer.class)) {
 				return ColumnValue.fromLong((Integer) t);
+			} else if (javaType.equals(Date.class)) {
+				return ColumnValue.fromLong(((Date) t).getTime());
 			} else {
 				throw new ServerException(BaseRC.REPOSITORY_TABLESTORE_FIELD_ERROR,
 						StringUtils.join("unknown ots type:", javaType));
@@ -151,6 +155,8 @@ public class OTSFieldMapper<T> {
 					field.set(obj, cv.asString());
 				} else if (javaType.equals(Integer.class)) {
 					field.set(obj, (int) cv.asLong());
+				} else if (javaType.equals(Date.class)) {
+					field.set(obj, new Date(cv.asLong()));
 				} else {
 					throw new Exception(StringUtils.join("ots unsupported data type:", javaType.toString()));
 				}
