@@ -14,8 +14,6 @@ import com.alicloud.openservices.tablestore.model.Column;
 import com.alicloud.openservices.tablestore.model.ColumnValue;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
 import com.alicloud.openservices.tablestore.model.search.SearchQuery;
-import com.alicloud.openservices.tablestore.model.search.SearchRequest;
-import com.alicloud.openservices.tablestore.model.search.SearchResponse;
 import com.alicloud.openservices.tablestore.model.search.query.BoolQuery;
 import com.alicloud.openservices.tablestore.model.search.query.TermQuery;
 import com.alicloud.openservices.tablestore.model.search.query.TermsQuery;
@@ -30,6 +28,7 @@ import zyxhj.utils.data.DataSourceUtils;
 import zyxhj.utils.data.ts.ColumnBuilder;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
 import zyxhj.utils.data.ts.TSAutoCloseableClient;
+import zyxhj.utils.data.ts.TSQL;
 import zyxhj.utils.data.ts.TSRepository;
 
 //https://SizeStore.cn-hangzhou.ots.aliyuncs.com
@@ -100,30 +99,11 @@ public class InboxTest {
 		// TSUtils.drapTableByEntity(client, CateInfo.class);
 
 		// 增加数据
-//		testAddData(client);
+		// testAddData(client);
 
 		// 查询数据
 		// tttt(client);
-		 testSearch(client);
-	}
-
-	private static void tttt(SyncClient client) {
-		SearchQuery searchQuery = new SearchQuery();
-
-		TermQuery termQuery = new TermQuery();
-		termQuery.setFieldName("cate");
-		termQuery.setTerm(ColumnValue.fromString("类3"));
-
-		searchQuery.setQuery(termQuery);
-		SearchRequest searchRequest = new SearchRequest("CateInfo", "CateInfoIndex", searchQuery);
-
-		SearchRequest.ColumnsToGet columnsToGet = new SearchRequest.ColumnsToGet();
-		columnsToGet.setReturnAll(true); // 设置返回所有列
-		searchRequest.setColumnsToGet(columnsToGet);
-
-		SearchResponse resp = client.search(searchRequest);
-		System.out.println("Row: " + resp.getRows());
-		// 可检查NextToken是否为空，若不为空，可通过NextToken继续读取。
+		testSearch(client);
 	}
 
 	private static void testSearch(SyncClient client) {
@@ -142,10 +122,10 @@ public class InboxTest {
 		termQuery2.setFieldName("status");
 		termQuery2.setTerm(ColumnValue.fromLong(1L));
 
-		 TermsQuery termsQuery = new TermsQuery();
-		 termsQuery.setFieldName("tags");
-		 termsQuery.addTerm(ColumnValue.fromString("tag1"));
-//		 termsQuery.addTerm(ColumnValue.fromString("tag3"));
+		TermsQuery termsQuery = new TermsQuery();
+		termsQuery.setFieldName("tags");
+		termsQuery.addTerm(ColumnValue.fromString("tag1"));
+		termsQuery.addTerm(ColumnValue.fromString("tag3"));
 
 		boolQuery.setMustQueries(Arrays.asList(termsQuery, termQuery2));
 
@@ -156,7 +136,16 @@ public class InboxTest {
 		query.setQuery(boolQuery);
 
 		try {
-			TSRepository.Response resp = cateInfoRepository.search(client, "CateInfoIndex", query);
+			TSQL ts = new TSQL();
+			// ts.setFirstTerms("tags", "tag1", "tag3").ANDTerm("status",
+			// 1L).ANDTerm("cate", "类3");
+			ts.setFirstTerm("cate", "类1").ORTerm("status", 1L);
+			ts.setLimit(10);
+			ts.setOffset(0);
+			ts.setGetTotalCount(true);
+			SearchQuery myQuery = ts.build();
+
+			TSRepository.Response resp = cateInfoRepository.search(client, "CateInfoIndex", myQuery);
 
 			System.out.println(JSON.toJSONString(resp, true));
 

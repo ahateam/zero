@@ -18,7 +18,7 @@ public class ColumnBuilder {
 	public ColumnBuilder() {
 	}
 
-	private static ColumnValue buildColumnValue(Object value) {
+	public static ColumnValue buildColumnValue(Object value) {
 		if (value == null) {
 			return null;
 		} else {

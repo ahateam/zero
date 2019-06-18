@@ -44,6 +44,8 @@ public interface BaseRC {
 	static final RC REPOSITORY_NOT_WHERE = new RC("repo-0012", "not where ex");// 什么都没查到
 	
 	static final RC REPOSITORY_TABLESTORE_FIELD_ERROR = new RC("repo-0013", "TableStore field convert error");
+	static final RC REPOSITORY_TABLESTORE_OP_ERROR = new RC("repo-0014", "TableStore query op error");
+	static final RC REPOSITORY_TABLESTORE_QUERY_ERROR = new RC("repo-0014", "TableStore query error");
 
 	// 开放搜索错误
 	static final RC OPENSEARCH_APPNAME_BLANK = new RC("os-0001", "opensearch appname blank");// 开放搜索appneme错误

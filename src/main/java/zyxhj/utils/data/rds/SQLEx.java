@@ -1,7 +1,5 @@
 package zyxhj.utils.data.rds;
 
-import java.util.List;
-
 public class SQLEx {
 
 	private String ex;
@@ -17,7 +15,7 @@ public class SQLEx {
 	private SQLEx(SQL subEx) {
 		this.subEx = subEx;
 	}
-	
+
 	/**
 	 * 普通表达式</br>
 	 * 如：id=?
@@ -32,7 +30,7 @@ public class SQLEx {
 	public static SQLEx subEx(SQL subEx) {
 		return new SQLEx(subEx);
 	}
-	
+
 	/**
 	 * In表达式</br>
 	 * 如：id IN(?,?,?)
@@ -51,7 +49,7 @@ public class SQLEx {
 		sb.append(')');
 		return new SQLEx(sb.toString(), params);
 	}
-	
+
 	/**
 	 * In表达式，有序的</br>
 	 * 如：id IN(?,?,?) ORDER BY FIND_IN_SET(id,p1,p2,p3)
