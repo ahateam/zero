@@ -1,13 +1,14 @@
 package zyxhj.core.domain;
 
 import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
+import com.alicloud.openservices.tablestore.model.search.FieldType;
 
 import zyxhj.utils.api.Controller.ENUMVALUE;
-import zyxhj.utils.data.rds.RDSAnnField;
-import zyxhj.utils.data.rds.RDSAnnID;
 import zyxhj.utils.data.ts.TSAnnEntity;
 import zyxhj.utils.data.ts.TSAnnField;
 import zyxhj.utils.data.ts.TSAnnID;
+import zyxhj.utils.data.ts.TSAnnIndex;
+import zyxhj.utils.data.ts.TSEntity;
 
 /**
  * 导入数据临时表
@@ -16,7 +17,7 @@ import zyxhj.utils.data.ts.TSAnnID;
  *
  */
 @TSAnnEntity(alias = "ImportTempRecord")
-public class ImportTempRecord {
+public class ImportTempRecord extends TSEntity {
 
 	public static enum STATUS implements ENUMVALUE {
 		PENDING((byte) 0, "准备导入"), //
@@ -57,6 +58,7 @@ public class ImportTempRecord {
 	/**
 	 * 状态
 	 */
+	@TSAnnIndex(name = "ImportTempRecordIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long status;
 
@@ -64,11 +66,6 @@ public class ImportTempRecord {
 	 * 返回结果信息
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String resultMessage;
+	public String result;
 
-	/**
-	 * 内容（JSONArray）
-	 */
-	@RDSAnnField(column = RDSAnnField.JSON)
-	public String content;
 }

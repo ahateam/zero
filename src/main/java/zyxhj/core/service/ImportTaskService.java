@@ -142,7 +142,7 @@ public class ImportTaskService {
 			ImportTempRecord record = new ImportTempRecord();
 			record.taskId = id;
 			record.recordId = IDUtils.getSimpleId();
-			record.content = JSON.toJSONString(row);
+//			record.content = JSON.toJSONString(row);
 
 			list.add(record);
 		}

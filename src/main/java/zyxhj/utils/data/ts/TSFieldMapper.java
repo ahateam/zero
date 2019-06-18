@@ -14,7 +14,7 @@ import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.ts.TSAnnID.Key;
 
-public class TSFieldMapper<T> {
+public class TSFieldMapper<T extends TSEntity> {
 
 	/**
 	 * 字段名（java对象中的名称）
@@ -143,22 +143,25 @@ public class TSFieldMapper<T> {
 			}
 		} else {
 			// 不是主键，只是普通列
-			ColumnValue cv = row.getLatestColumn(alias).getValue();
-			if (null != cv) {
-				if (javaType.equals(Boolean.class)) {
-					field.set(obj, cv.asBoolean());
-				} else if (javaType.equals(Long.class)) {
-					field.set(obj, cv.asLong());
-				} else if (javaType.equals(Double.class)) {
-					field.set(obj, cv.asDouble());
-				} else if (javaType.equals(String.class)) {
-					field.set(obj, cv.asString());
-				} else if (javaType.equals(Integer.class)) {
-					field.set(obj, (int) cv.asLong());
-				} else if (javaType.equals(Date.class)) {
-					field.set(obj, new Date(cv.asLong()));
-				} else {
-					throw new Exception(StringUtils.join("ots unsupported data type:", javaType.toString()));
+			if (row.contains(alias)) {
+				// 有值
+				ColumnValue cv = row.getLatestColumn(alias).getValue();
+				if (null != cv) {
+					if (javaType.equals(Boolean.class)) {
+						field.set(obj, cv.asBoolean());
+					} else if (javaType.equals(Long.class)) {
+						field.set(obj, cv.asLong());
+					} else if (javaType.equals(Double.class)) {
+						field.set(obj, cv.asDouble());
+					} else if (javaType.equals(String.class)) {
+						field.set(obj, cv.asString());
+					} else if (javaType.equals(Integer.class)) {
+						field.set(obj, (int) cv.asLong());
+					} else if (javaType.equals(Date.class)) {
+						field.set(obj, new Date(cv.asLong()));
+					} else {
+						throw new Exception(StringUtils.join("ots unsupported data type:", javaType.toString()));
+					}
 				}
 			}
 		}

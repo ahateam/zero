@@ -8,6 +8,8 @@ import com.alicloud.openservices.tablestore.model.search.query.BoolQuery;
 import com.alicloud.openservices.tablestore.model.search.query.Query;
 import com.alicloud.openservices.tablestore.model.search.query.TermQuery;
 import com.alicloud.openservices.tablestore.model.search.query.TermsQuery;
+import com.alicloud.openservices.tablestore.model.search.sort.Sort;
+import com.alicloud.openservices.tablestore.model.search.sort.Sort.Sorter;
 
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
@@ -27,10 +29,16 @@ public class TSQL {
 	 */
 	private ArrayList<Object> queries;
 
+	/**
+	 * 排序数组
+	 */
+	private ArrayList<Sorter> sorts;
+
 	private int op = -1;
 
 	public TSQL() {
 		queries = new ArrayList<>();
+		sorts = new ArrayList<>();
 	}
 
 	public TSQL setFirst(Query query) {
@@ -186,14 +194,18 @@ public class TSQL {
 		this.getTotalCount = getTotalCount;
 	}
 
-	protected Query _build() throws ServerException {
+	public void addSort(Sorter sorter) {
+		this.sorts.add(sorter);
+	}
+
+	private Query buildQuery() throws ServerException {
 		if (queries.size() == 1) {
 			// 只有一个节点，当即返回
 			Object obj = queries.get(0);
 			Query ret;
 			if (obj instanceof TSQL) {
 				TSQL tsql = (TSQL) obj;
-				ret = tsql._build();
+				ret = tsql.buildQuery();
 			} else {
 				// Query
 				ret = (Query) obj;
@@ -206,7 +218,7 @@ public class TSQL {
 			for (Object obj : queries) {
 				if (obj instanceof TSQL) {
 					TSQL tsql = (TSQL) obj;
-					qs.add(tsql._build());
+					qs.add(tsql.buildQuery());
 				} else {
 					// Query
 					qs.add((Query) obj);
@@ -228,13 +240,20 @@ public class TSQL {
 		}
 	}
 
+	private Sort buildSort() {
+		return new Sort(sorts);
+	}
+
 	public SearchQuery build() throws ServerException {
 		SearchQuery ret = new SearchQuery();
 		ret.setLimit(limit);
 		ret.setOffset(offset);
 		ret.setGetTotalCount(getTotalCount);
 
-		ret.setQuery(_build());
+		ret.setQuery(buildQuery());
+		if (!sorts.isEmpty()) {
+			ret.setSort(buildSort());
+		}
 
 		return ret;
 	}

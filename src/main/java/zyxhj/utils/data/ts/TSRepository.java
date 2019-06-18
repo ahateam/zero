@@ -36,7 +36,7 @@ import com.alicloud.openservices.tablestore.model.search.SearchResponse;
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
 
-public abstract class TSRepository<T> {
+public abstract class TSRepository<T extends TSEntity> {
 
 	protected TSObjectMapper<T> mapper;
 
@@ -196,7 +196,7 @@ public abstract class TSRepository<T> {
 	public static JSONObject nativeGet(SyncClient client, String tableName, PrimaryKey pk, String... selections)
 			throws ServerException {
 		Row row = _get(client, tableName, pk, selections);
-		if (row.isEmpty()) {
+		if (row == null || row.isEmpty()) {
 			return null;
 		} else {
 			return TSObjectMapper.deserialize2JSONObject(row);

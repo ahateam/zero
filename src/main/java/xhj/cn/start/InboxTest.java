@@ -89,6 +89,44 @@ public class InboxTest {
 
 		indexTest(client);
 
+		// 动态字段测试
+		// dynamicFieldsTest(client);
+	}
+
+	private static void dynamicFieldsTest(SyncClient client) {
+		long id = IDUtils.getSimpleId();
+
+		try {
+
+			PrimaryKey pk = new PrimaryKeyBuilder()
+					.add("_id", CodecUtils.md52Hex(IDUtils.simpleId2Hex(id), CodecUtils.CHARSET_UTF8)).add("id", id)
+					.build();
+
+			ColumnBuilder cb = new ColumnBuilder();
+			for (int i = 0; i < 3; i++) {
+				cb.add("Col" + i, i);
+			}
+			List<Column> columns = cb.build();
+
+			TSRepository.nativeInsert(client, "CateInfo", pk, columns, true);
+
+			// PrimaryKey pk = new PrimaryKeyBuilder().add("_id",
+			// "986372771269207efa6146eccf0f12f8")
+			// .add("id", 399580393241531L).build();
+
+			JSONObject obj = TSRepository.nativeGet(client, "CateInfo", pk);
+			System.out.println(JSON.toJSONString(obj, true));
+
+			CateInfo ci = cateInfoRepository.get(client, pk);
+
+			System.out.println(JSON.toJSONString(ci, true));
+
+			TSRepository.nativeDel(client, "CateInfo", pk);
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 
 	private static void indexTest(SyncClient client) {

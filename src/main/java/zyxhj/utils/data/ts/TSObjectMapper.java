@@ -21,7 +21,7 @@ import com.alicloud.openservices.tablestore.model.Row;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.ts.TSAnnID.Key;
 
-public class TSObjectMapper<T> {
+public class TSObjectMapper<T extends TSEntity> {
 
 	private Class<T> clazz;
 
@@ -92,15 +92,19 @@ public class TSObjectMapper<T> {
 					}
 				} else {
 					// 普通列
+					if (annField != null) {
+						// 有field注解
+						String fieldAlias = annField.alias();
+						if (StringUtils.isBlank(fieldAlias)) {
+							// 如果不存在别名，则默认按Java的驼峰命名规则
+							fieldAlias = fieldName;
+						}
 
-					String fieldAlias = annField.alias();
-					if (StringUtils.isBlank(fieldAlias)) {
-						// 如果不存在别名，则默认按Java的驼峰命名规则
-						fieldAlias = fieldName;
+						mapper = new TSFieldMapper<T>(fieldName, fieldAlias, cf, null);
+						columnList.add(mapper);
+					} else {
+						// 没有field注解，不参与序列化
 					}
-
-					mapper = new TSFieldMapper<T>(fieldName, fieldAlias, cf, null);
-					columnList.add(mapper);
 				}
 			}
 		}
@@ -131,6 +135,42 @@ public class TSObjectMapper<T> {
 		for (TSFieldMapper<T> fieldMapper : columnList) {
 			fieldMapper.setFieldValue(t, row);
 		}
+		// 仍有不在columnList中的列存在
+		// 需要放入dynamicFields中
+		Column[] columns = row.getColumns();
+		if (columns != null && columns.length > 0) {
+			for (Column col : columns) {
+				String colName = col.getName();
+				boolean isDynamic = true;
+				for (TSFieldMapper<T> fieldMapper : columnList) {
+					String fieldName = fieldMapper.alias;
+					if (fieldName.equals(colName)) {
+						isDynamic = false;
+						break;
+					}
+				}
+
+				if (isDynamic) {
+					// 添加到dynamicFields中
+					ColumnValue cv = row.getLatestColumn(colName).getValue();
+					ColumnType type = cv.getType();
+					if (type.equals(ColumnType.INTEGER)) {
+						((TSEntity) t).dynamicFields.put(colName, cv.asLong());
+					} else if (type.equals(ColumnType.BOOLEAN)) {
+						((TSEntity) t).dynamicFields.put(colName, cv.asBoolean());
+					} else if (type.equals(ColumnType.BINARY)) {
+						((TSEntity) t).dynamicFields.put(colName, cv.asBinary());
+					} else if (type.equals(ColumnType.STRING)) {
+						((TSEntity) t).dynamicFields.put(colName, cv.asString());
+					} else {
+						((TSEntity) t).dynamicFields.put(colName, cv.asString());
+					}
+				} else {
+					// 正常列，已经处理过，这里略过
+				}
+			}
+		}
+
 		return t;
 	}
 

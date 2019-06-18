@@ -9,13 +9,14 @@ import zyxhj.utils.data.ts.TSAnnEntity;
 import zyxhj.utils.data.ts.TSAnnField;
 import zyxhj.utils.data.ts.TSAnnID;
 import zyxhj.utils.data.ts.TSAnnIndex;
+import zyxhj.utils.data.ts.TSEntity;
 
 /**
  * 分类信息
  *
  */
 @TSAnnEntity(alias = "CateInfo")
-public class CateInfo {
+public class CateInfo extends TSEntity {
 
 	/**
 	 * 分片编号，MD5(id)，避免数据热点
