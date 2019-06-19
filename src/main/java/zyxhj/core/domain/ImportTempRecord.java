@@ -44,21 +44,15 @@ public class ImportTempRecord extends TSEntity {
 	}
 
 	/**
-	 * 分片编号，MD5(id)，避免数据热点
-	 */
-	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.STRING)
-	public String _id;
-
-	/**
 	 * 任务编号n分片键
 	 */
-	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
+	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.INTEGER)
 	public Long taskId;
 
 	/**
 	 * 记录编号
 	 */
-	@TSAnnID(key = TSAnnID.Key.PK3, type = PrimaryKeyType.INTEGER, AUTO_INCREMENT = true)
+	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER, AUTO_INCREMENT = true)
 	public Long recordId;
 
 	/**
