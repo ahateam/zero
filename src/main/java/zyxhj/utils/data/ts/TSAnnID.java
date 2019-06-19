@@ -32,4 +32,6 @@ public @interface TSAnnID {
 	 */
 	public String alias() default "";
 
+	public boolean AUTO_INCREMENT() default false;
+
 }

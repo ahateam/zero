@@ -10,6 +10,7 @@ import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.CapacityUnit;
 import com.alicloud.openservices.tablestore.model.CreateTableRequest;
 import com.alicloud.openservices.tablestore.model.DeleteTableRequest;
+import com.alicloud.openservices.tablestore.model.PrimaryKeyOption;
 import com.alicloud.openservices.tablestore.model.PrimaryKeySchema;
 import com.alicloud.openservices.tablestore.model.ReservedThroughput;
 import com.alicloud.openservices.tablestore.model.TableMeta;
@@ -191,7 +192,14 @@ public class TSUtils {
 				TSAnnID annId = pkField.getAnnotation(TSAnnID.class);
 
 				// 为主表添加主键列
-				tableMeta.addPrimaryKeyColumn(new PrimaryKeySchema(pkName, annId.type()));
+				if (annId.AUTO_INCREMENT()) {
+					// 自增主键
+					tableMeta.addPrimaryKeyColumn(
+							new PrimaryKeySchema(pkName, annId.type(), PrimaryKeyOption.AUTO_INCREMENT));
+				} else {
+					tableMeta.addPrimaryKeyColumn(new PrimaryKeySchema(pkName, annId.type()));
+				}
+
 			}
 
 			// 先构造表
