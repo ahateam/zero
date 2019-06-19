@@ -19,7 +19,9 @@ import com.alicloud.openservices.tablestore.model.search.query.TermQuery;
 import com.alicloud.openservices.tablestore.model.search.query.TermsQuery;
 
 import zyxhj.core.domain.CateInfo;
+import zyxhj.core.domain.ImportTempRecord;
 import zyxhj.core.repository.CateInfoRepository;
+import zyxhj.core.repository.ImportTempRecordRepository;
 import zyxhj.utils.CodecUtils;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
@@ -50,6 +52,8 @@ public class InboxTest {
 
 	private static CateInfoRepository cateInfoRepository;
 
+	private static ImportTempRecordRepository importTempRecordRepository;
+
 	static {
 		DataSourceUtils.initDataSourceConfig();
 
@@ -59,6 +63,7 @@ public class InboxTest {
 			client = (TSAutoCloseableClient) DataSourceUtils.getDataSource("tsDefault").openConnection();
 
 			cateInfoRepository = Singleton.ins(CateInfoRepository.class);
+			importTempRecordRepository = Singleton.ins(ImportTempRecordRepository.class);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -87,10 +92,33 @@ public class InboxTest {
 
 		// batchGetRow(client);
 
-		indexTest(client);
+		// indexTest(client);
 
 		// 动态字段测试
 		// dynamicFieldsTest(client);
+
+		autoTest();
+	}
+
+	private static void autoTest() {
+		// 测试创建表
+		// TSUtils.createTableByEntity(client, ImportTempRecord.class);
+
+		// 测试删除表
+		// TSUtils.drapTableByEntity(client, CateInfo.class);
+
+		ImportTempRecord itr = new ImportTempRecord();
+		itr.taskId = 123L;
+		itr.recordId = null;// 自增列，随便怎么赋值，都会被忽略
+		itr.status = 1L;
+		itr.result = "result";
+
+		try {
+			importTempRecordRepository.insert(client, itr, true);
+		} catch (ServerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private static void dynamicFieldsTest(SyncClient client) {

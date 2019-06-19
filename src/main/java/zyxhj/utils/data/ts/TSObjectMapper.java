@@ -75,7 +75,7 @@ public class TSObjectMapper<T extends TSEntity> {
 					}
 
 					Key kt = annId.key();
-					mapper = new TSFieldMapper<T>(fieldName, fieldAlias, cf, kt);
+					mapper = new TSFieldMapper<T>(fieldName, fieldAlias, cf, kt, annId.AUTO_INCREMENT());
 
 					if (kt == TSAnnID.Key.PK1) {
 						pks[0] = mapper;
@@ -100,7 +100,7 @@ public class TSObjectMapper<T extends TSEntity> {
 							fieldAlias = fieldName;
 						}
 
-						mapper = new TSFieldMapper<T>(fieldName, fieldAlias, cf, null);
+						mapper = new TSFieldMapper<T>(fieldName, fieldAlias, cf, null, false);
 						columnList.add(mapper);
 					} else {
 						// 没有field注解，不参与序列化
@@ -184,7 +184,11 @@ public class TSObjectMapper<T extends TSEntity> {
 
 		// 因为在构造时，已经将PrimaryKey按顺序排好了，所以这里可以直接按数组里的顺序去取。
 		for (TSFieldMapper<T> pk : primaryKeyList) {
-			primaryKeyBuilder.addPrimaryKeyColumn(pk.alias, (PrimaryKeyValue) pk.getFieldValueFromObject(t));
+			if (pk.autoIncrement) {
+				primaryKeyBuilder.addPrimaryKeyColumn(pk.alias, PrimaryKeyValue.AUTO_INCREMENT);
+			} else {
+				primaryKeyBuilder.addPrimaryKeyColumn(pk.alias, (PrimaryKeyValue) pk.getFieldValueFromObject(t));
+			}
 		}
 		return primaryKeyBuilder.build();
 	}

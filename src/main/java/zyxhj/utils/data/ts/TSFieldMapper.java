@@ -41,12 +41,15 @@ public class TSFieldMapper<T extends TSEntity> {
 	 */
 	protected Key primaryKeyType;
 
-	public TSFieldMapper(String name, String alias, Field field, Key primaryKeyType) {
+	protected boolean autoIncrement;
+
+	public TSFieldMapper(String name, String alias, Field field, Key primaryKeyType, boolean autoIncrement) {
 		this.name = name;
 		this.alias = alias;
 		this.field = field;
 		this.javaType = field.getType();
 		this.primaryKeyType = primaryKeyType;
+		this.autoIncrement = autoIncrement;
 	}
 
 	// public Object getFieldValueFromParam(Object param) throws Exception {
