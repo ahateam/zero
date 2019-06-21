@@ -2,9 +2,9 @@ package zyxhj.utils.data.ts;
 
 import com.alicloud.openservices.tablestore.SyncClient;
 
-public class TSAutoCloseableClient extends SyncClient implements AutoCloseable {
+public class TSSyncClient extends SyncClient implements AutoCloseable {
 
-	public TSAutoCloseableClient(String endpoint, String accessKeyId, String accessKeySecret, String instanceName) {
+	public TSSyncClient(String endpoint, String accessKeyId, String accessKeySecret, String instanceName) {
 		super(endpoint, accessKeyId, accessKeySecret, instanceName);
 	}
 

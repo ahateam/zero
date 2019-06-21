@@ -5,18 +5,16 @@ import java.lang.reflect.Modifier;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
-
-import zyxhj.utils.data.DataSource;
 
 public class RDSUtils {
 
-	public static void createTableByEntity(DataSource ds, Class entityClass) {
+	public static void createTableByEntity(DruidDataSource ds, Class entityClass) {
 		try {
 			createTable(ds, entityClass);
 			createIndex(ds, entityClass);
@@ -25,7 +23,7 @@ public class RDSUtils {
 		}
 	}
 
-	public static void dropTableByEntity(DataSource ds, Class entityClass) {
+	public static void dropTableByEntity(DruidDataSource ds, Class entityClass) {
 		try {
 			dropTable(ds, entityClass);
 			// 表没了，索引自然就没了
@@ -34,7 +32,7 @@ public class RDSUtils {
 		}
 	}
 
-	private static void dropTable(DataSource ds, Class entityClass) throws Exception {
+	private static void dropTable(DruidDataSource ds, Class entityClass) throws Exception {
 		RDSAnnEntity annEntity = (RDSAnnEntity) entityClass.getAnnotation(RDSAnnEntity.class);
 
 		if (null == annEntity) {
@@ -48,7 +46,7 @@ public class RDSUtils {
 
 			System.out.println(sql.toString());
 
-			try (DruidPooledConnection conn = (DruidPooledConnection) ds.openConnection()) {
+			try (DruidPooledConnection conn = ds.getConnection()) {
 				Statement stmt = conn.createStatement();
 
 				stmt.executeUpdate(sql.toString());
@@ -59,7 +57,7 @@ public class RDSUtils {
 		}
 	}
 
-	private static void createTable(DataSource ds, Class entityClass) throws Exception {
+	private static void createTable(DruidDataSource ds, Class entityClass) throws Exception {
 
 		RDSAnnEntity annEntity = (RDSAnnEntity) entityClass.getAnnotation(RDSAnnEntity.class);
 
@@ -141,7 +139,7 @@ public class RDSUtils {
 
 			System.out.println(sql.toString());
 
-			try (DruidPooledConnection conn = (DruidPooledConnection) ds.openConnection()) {
+			try (DruidPooledConnection conn = ds.getConnection()) {
 				Statement stmt = conn.createStatement();
 
 				stmt.executeUpdate(sql.toString());
@@ -152,7 +150,7 @@ public class RDSUtils {
 		}
 	}
 
-	private static void createIndex(DataSource ds, Class entityClass) throws Exception {
+	private static void createIndex(DruidDataSource ds, Class entityClass) throws Exception {
 		RDSAnnEntity annEntity = (RDSAnnEntity) entityClass.getAnnotation(RDSAnnEntity.class);
 
 		if (null == annEntity) {
@@ -191,7 +189,7 @@ public class RDSUtils {
 
 							System.out.println(sql);
 
-							try (DruidPooledConnection conn = (DruidPooledConnection) ds.openConnection()) {
+							try (DruidPooledConnection conn = ds.getConnection()) {
 								Statement stmt = conn.createStatement();
 
 								stmt.executeUpdate(sql.toString());

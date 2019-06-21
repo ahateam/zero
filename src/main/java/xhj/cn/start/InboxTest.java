@@ -9,6 +9,7 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alicloud.openservices.tablestore.AsyncClient;
 import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.Column;
 import com.alicloud.openservices.tablestore.model.ColumnValue;
@@ -26,12 +27,12 @@ import zyxhj.utils.CodecUtils;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.ServerException;
-import zyxhj.utils.data.DataSourceUtils;
+import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.ts.ColumnBuilder;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
-import zyxhj.utils.data.ts.TSAutoCloseableClient;
 import zyxhj.utils.data.ts.TSQL;
 import zyxhj.utils.data.ts.TSRepository;
+import zyxhj.utils.data.ts.TSSyncClient;
 
 //https://SizeStore.cn-hangzhou.ots.aliyuncs.com
 //LTAIJ9mYIjuW54Cj
@@ -48,19 +49,20 @@ public class InboxTest {
 
 	private static DruidPooledConnection conn;
 
-	private static TSAutoCloseableClient client;
+	private static SyncClient syncClient;
+	private static AsyncClient asyncClient;
 
 	private static CateInfoRepository cateInfoRepository;
 
 	private static ImportTempRecordRepository importTempRecordRepository;
 
 	static {
-		DataSourceUtils.initDataSourceConfig();
 
 		try {
-			conn = (DruidPooledConnection) DataSourceUtils.getDataSource("rdsDefault").openConnection();
+			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
 
-			client = (TSAutoCloseableClient) DataSourceUtils.getDataSource("tsDefault").openConnection();
+			syncClient = DataSource.getTableStoreSyncClient("tsDefault.prop");
+			asyncClient = DataSource.getTableStoreAsyncClient("tsDefault.prop");
 
 			cateInfoRepository = Singleton.ins(CateInfoRepository.class);
 			importTempRecordRepository = Singleton.ins(ImportTempRecordRepository.class);
@@ -92,12 +94,12 @@ public class InboxTest {
 
 		// batchGetRow(client);
 
-		// indexTest(client);
+		 indexTest(syncClient);
 
 		// 动态字段测试
 		// dynamicFieldsTest(client);
 
-		autoTest();
+//		autoTest();
 	}
 
 	private static void autoTest() {
@@ -114,7 +116,7 @@ public class InboxTest {
 		itr.result = "result";
 
 		try {
-			importTempRecordRepository.insert(client, itr, true);
+			importTempRecordRepository.insert(syncClient, itr, true);
 		} catch (ServerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

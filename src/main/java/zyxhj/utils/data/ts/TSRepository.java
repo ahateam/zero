@@ -337,20 +337,6 @@ public abstract class TSRepository<T extends TSEntity> {
 		}
 
 		return client.batchWriteRow(batchWriteRowRequest);
-		// if (!response.isAllSucceed()) {
-		// for (BatchWriteRowResponse.RowResult rowResult : response.getFailedRows()) {
-		// System.out.println(StringUtils.join"失败的行:" + batchWriteRowRequest
-		// .getRowChange(rowResult.getTableName(),
-		// rowResult.getIndex()).getPrimaryKey());
-		// System.out.println("失败原因:" + rowResult.getError());
-		// }
-		// /**
-		// * 可以通过createRequestForRetry方法再构造一个请求对失败的行进行重试.这里只给出构造重试请求的部分.
-		// * 推荐的重试方法是使用SDK的自定义重试策略功能, 支持对batch操作的部分行错误进行重试. 设定重试策略后, 调用接口处即不需要增加重试代码.
-		// */
-		// BatchWriteRowRequest retryRequest =
-		// batchWriteRowRequest.createRequestForRetry(response.getFailedRows());
-		// }
 	}
 
 	/**

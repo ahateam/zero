@@ -3,6 +3,7 @@ package zyxhj.core.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 
 import zyxhj.core.domain.Tag;
@@ -13,20 +14,19 @@ import zyxhj.utils.Singleton;
 import zyxhj.utils.api.APIResponse;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.data.DataSource;
-import zyxhj.utils.data.DataSourceUtils;
 
 public class TagController extends Controller {
 
 	private static Logger log = LoggerFactory.getLogger(TagController.class);
 
-	private DataSource dsRds;
+	private DruidDataSource dds;
 	private TagService tagService;
 
 	public TagController(String node) {
 		super(node);
 
 		try {
-			dsRds = DataSourceUtils.getDataSource("rdsDefault");
+			dds = DataSource.getDruidDataSource("rdsDefault.prop");
 
 			tagService = Singleton.ins(TagService.class);
 		} catch (Exception e) {
@@ -50,7 +50,7 @@ public class TagController extends Controller {
 			@P(t = "标签分组关键字") String keyword, //
 			@P(t = "备注") String remark//
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			User user = ServiceUtils.userAuth(conn, userId);// user鉴权
 
 			return APIResponse.getNewSuccessResp(tagService.createSysTagGroup(conn, keyword, remark));
@@ -70,7 +70,7 @@ public class TagController extends Controller {
 			@P(t = "标签分组关键字") String keyword, //
 			@P(t = "备注") String remark//
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			User user = ServiceUtils.userAuth(conn, userId);// user鉴权
 
 			return APIResponse.getNewSuccessResp(tagService.createCustomTagGroup(conn, keyword, remark));
@@ -90,7 +90,7 @@ public class TagController extends Controller {
 			@P(t = "标签分组关键字") String keyword, //
 			@P(t = "备注") String remark//
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			User user = ServiceUtils.userAuth(conn, userId);// user鉴权
 
 			return APIResponse.getNewSuccessResp(tagService.updateCumtomTagGroup(conn, keyword, remark));
@@ -108,7 +108,7 @@ public class TagController extends Controller {
 	public APIResponse getSysTagGroups(//
 			@P(t = "用户编号") Long userId //
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			User user = ServiceUtils.userAuth(conn, userId);// user鉴权
 
 			return APIResponse.getNewSuccessResp(tagService.getSysTagGroups(conn));
@@ -126,7 +126,7 @@ public class TagController extends Controller {
 	public APIResponse getCumtomTagGroups(//
 			@P(t = "用户编号") Long userId //
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			User user = ServiceUtils.userAuth(conn, userId);// user鉴权
 
 			return APIResponse.getNewSuccessResp(tagService.getCumtomTagGroups(conn));
@@ -146,7 +146,7 @@ public class TagController extends Controller {
 			@P(t = "标签分组关键字") String groupKeyword, //
 			@P(t = "标签名称") String name//
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			User user = ServiceUtils.userAuth(conn, userId);// user鉴权
 
 			return APIResponse.getNewSuccessResp(tagService.createTag(conn, groupKeyword, name));
@@ -166,7 +166,7 @@ public class TagController extends Controller {
 			@P(t = "标签分组关键字") String groupKeyword, //
 			Byte status//
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			User user = ServiceUtils.userAuth(conn, userId);// user鉴权
 
 			return APIResponse.getNewSuccessResp(tagService.getTags(conn, groupKeyword, status));
@@ -186,7 +186,7 @@ public class TagController extends Controller {
 			@P(t = "标签分组关键字") String groupKeyword, //
 			@P(t = "标签名称") String name//
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			User user = ServiceUtils.userAuth(conn, userId);// user鉴权
 
 			return APIResponse.getNewSuccessResp(tagService.enableTag(conn, groupKeyword, name));
@@ -206,7 +206,7 @@ public class TagController extends Controller {
 			@P(t = "标签分组关键字") String groupKeyword, //
 			@P(t = "标签名称") String name//
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			User user = ServiceUtils.userAuth(conn, userId);// user鉴权
 
 			return APIResponse.getNewSuccessResp(tagService.disableTag(conn, groupKeyword, name));

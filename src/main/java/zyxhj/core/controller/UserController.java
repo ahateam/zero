@@ -3,6 +3,7 @@ package zyxhj.core.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 
 import zyxhj.core.domain.LoginBo;
@@ -14,19 +15,18 @@ import zyxhj.utils.Singleton;
 import zyxhj.utils.api.APIResponse;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.data.DataSource;
-import zyxhj.utils.data.DataSourceUtils;
 
 public class UserController extends Controller {
 
 	private static Logger log = LoggerFactory.getLogger(UserController.class);
 
-	private DataSource dsRds;
+	private DruidDataSource dds;
 	private UserService userService;
 
 	public UserController(String node) {
 		super(node);
 		try {
-			dsRds = DataSourceUtils.getDataSource("rdsDefault");
+			dds = DataSource.getDruidDataSource("rdsDefault.prop");
 
 			userService = Singleton.ins(UserService.class);
 		} catch (Exception e) {
@@ -45,7 +45,7 @@ public class UserController extends Controller {
 	public APIResponse getUserById(//
 			@P(t = "用户编号") Long userId//
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			User user = userService.getUserById(conn, userId);
 			ServiceUtils.checkNull(user);
 			user.pwd = null;// 置空密码
@@ -65,7 +65,7 @@ public class UserController extends Controller {
 			@P(t = "用户名") String name, //
 			@P(t = "密码") String pwd//
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection();) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			User user = userService.registByNameAndPwd(conn, name, pwd);
 			// 如果成功注册，则写入Session后，返回LoginBo
 			LoginBo loginBo = userService.login(conn, user);
@@ -85,7 +85,7 @@ public class UserController extends Controller {
 			@P(t = "用户名") String name, //
 			@P(t = "密码") String pwd//
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			// 如果成功登录，则写入Session后，返回LoginBo
 			LoginBo loginBo = userService.loginByNameAndPwd(conn, name, pwd);
 			// 返回登录业务对象
@@ -110,13 +110,12 @@ public class UserController extends Controller {
 		anonymous.nickname = "孙悟空到此一游";
 
 		// 写入匿名用户Session后，返回LoginBo
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
+		try (DruidPooledConnection conn = dds.getConnection()) {
 			LoginBo loginBo = userService.login(conn, anonymous);
 			return APIResponse.getNewSuccessResp(loginBo);
 		}
 	}
 
-	
 	/**
 	 * 修改用户的身份证
 	 */
@@ -126,11 +125,11 @@ public class UserController extends Controller {
 			ret = "返回修改信息")
 	public APIResponse editUserIdNumber(//
 			@P(t = "管理员编号") Long adminUsreId, //
-			@P(t = "用户编号") Long userId ,//
+			@P(t = "用户编号") Long userId, //
 			@P(t = "用户身份证号码(已添加索引，无需查重）") String IdNumber //
 	) throws Exception {
-		try (DruidPooledConnection conn = (DruidPooledConnection) dsRds.openConnection()) {
-			return APIResponse.getNewSuccessResp(userService.editUserIdNumber(conn, adminUsreId, userId,IdNumber));
+		try (DruidPooledConnection conn = dds.getConnection()) {
+			return APIResponse.getNewSuccessResp(userService.editUserIdNumber(conn, adminUsreId, userId, IdNumber));
 		}
 	}
 }

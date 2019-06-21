@@ -9,18 +9,15 @@ import com.alibaba.fastjson.JSONObject;
 import zyxhj.test.domain.Test;
 import zyxhj.test.repository.TestRepository;
 import zyxhj.utils.IDUtils;
-import zyxhj.utils.Singleton;
 import zyxhj.utils.data.DataSource;
-import zyxhj.utils.data.DataSourceUtils;
 
 public class Test1 {
 
 	private static DruidPooledConnection conn;
 
 	static {
-		DataSourceUtils.initDataSourceConfig();
 		try {
-			conn = (DruidPooledConnection) DataSourceUtils.getDataSource("rdsDefault").openConnection();
+			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
