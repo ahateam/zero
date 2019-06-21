@@ -203,6 +203,10 @@ public class TSObjectMapper<T extends TSEntity> {
 			ColumnValue cv = (ColumnValue) c.getFieldValueFromObject(t);
 			ret.add(new Column(cn, cv));
 		}
+		
+		//d field
+		
+		
 		return ret;
 	}
 

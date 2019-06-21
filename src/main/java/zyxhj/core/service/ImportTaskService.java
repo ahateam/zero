@@ -3,19 +3,28 @@ package zyxhj.core.service;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alicloud.openservices.tablestore.SyncClient;
+import com.alicloud.openservices.tablestore.model.Column;
+import com.alicloud.openservices.tablestore.model.PrimaryKey;
 
 import zyxhj.core.domain.ImportTask;
 import zyxhj.core.domain.ImportTempRecord;
 import zyxhj.core.repository.ImportTaskRepository;
 import zyxhj.core.repository.ImportTempRecordRepository;
+import zyxhj.utils.CodecUtils;
+import zyxhj.utils.ExcelUtils;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.data.ts.ColumnBuilder;
+import zyxhj.utils.data.ts.PrimaryKeyBuilder;
 
 public class ImportTaskService {
 
@@ -24,8 +33,13 @@ public class ImportTaskService {
 	private ImportTaskRepository taskRepository;
 	private ImportTempRecordRepository tempRecordRepository;
 
+//	private static TSAutoCloseableClient client;
+
 	public ImportTaskService() {
 		try {
+
+//			client = (TSAutoCloseableClient) DataSourceUtils.getDataSource("tsDefault").openConnection();
+
 			taskRepository = Singleton.ins(ImportTaskRepository.class);
 			tempRecordRepository = Singleton.ins(ImportTempRecordRepository.class);
 		} catch (Exception e) {

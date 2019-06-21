@@ -20,8 +20,8 @@ import zyxhj.utils.data.ts.TSEntity;
 public class ImportTempRecord extends TSEntity {
 
 	public static enum STATUS implements ENUMVALUE {
-		PENDING((byte) 0, "准备导入"), //
 		SUCCESS((byte) 1, "成功"), //
+		PENDING((byte) 0, "准备导入"), //
 		FAILURE((byte) 2, "失败"),//
 		;
 		private byte v;

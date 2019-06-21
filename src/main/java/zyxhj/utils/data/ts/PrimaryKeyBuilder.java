@@ -22,6 +22,8 @@ public class PrimaryKeyBuilder {
 			return PrimaryKeyValue.fromLong((Integer) value);
 		} else if (javaType.equals(byte[].class)) {
 			return PrimaryKeyValue.fromBinary((byte[]) value);
+		} else if (javaType.equals(PrimaryKeyValue.class)) {
+			return (PrimaryKeyValue) value;
 		} else {
 			return PrimaryKeyValue.fromString((String) value);
 		}
