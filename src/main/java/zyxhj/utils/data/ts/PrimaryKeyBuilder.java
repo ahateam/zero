@@ -35,6 +35,11 @@ public class PrimaryKeyBuilder {
 		return this;
 	}
 
+	public PrimaryKeyBuilder addAutoIncermentKey(String name) {
+		pkb.addPrimaryKeyColumn(name, PrimaryKeyValue.AUTO_INCREMENT);
+		return this;
+	}
+
 	public PrimaryKey build() {
 		return pkb.build();
 	}
