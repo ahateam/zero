@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.SyncClient;
@@ -25,6 +27,7 @@ import com.alicloud.openservices.tablestore.model.PrimaryKey;
 import com.alicloud.openservices.tablestore.model.PutRowRequest;
 import com.alicloud.openservices.tablestore.model.RangeRowQueryCriteria;
 import com.alicloud.openservices.tablestore.model.Row;
+import com.alicloud.openservices.tablestore.model.RowChange;
 import com.alicloud.openservices.tablestore.model.RowDeleteChange;
 import com.alicloud.openservices.tablestore.model.RowExistenceExpectation;
 import com.alicloud.openservices.tablestore.model.RowPutChange;
@@ -151,93 +154,6 @@ public abstract class TSRepository<T extends TSEntity> {
 			client.putRow(new PutRowRequest(putChange));
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_PUT_ERROR, e.getMessage());
-		}
-	}
-
-	/**
-	 * 批量插入，主键数组和字段数组必须按顺序一一对应
-	 * 
-	 * @param tableName
-	 *            表名
-	 * @param pks
-	 *            主键列表
-	 * @param columnsList
-	 *            字段数组列表
-	 * @param cover
-	 *            如果已经有值，是否覆盖
-	 */
-	public static void nativeBatchInsert(SyncClient client, String tableName, List<PrimaryKey> pks,
-			List<List<Column>> columnsList, boolean cover) throws ServerException {
-
-		BatchWriteRowRequest batchWriteRowRequest = new BatchWriteRowRequest();
-
-		for (int i = 0; i < pks.size(); i++) {
-			PrimaryKey pk = pks.get(i);
-			List<Column> columns = columnsList.get(i);
-			RowPutChange putChange = new RowPutChange(tableName, pk);
-
-			if (!cover) {
-				// 不覆盖
-				// 预期不存在，如果存在则异常
-				putChange.setCondition(new Condition(RowExistenceExpectation.EXPECT_NOT_EXIST));
-			}
-
-			for (Column col : columns) {
-				if (null == col) {
-					// 如果为空，则跳过，不写入也不更新
-				} else {
-					putChange.addColumn(col);
-				}
-			}
-
-			batchWriteRowRequest.addRowChange(putChange);
-		}
-
-		BatchWriteRowResponse response = client.batchWriteRow(batchWriteRowRequest);
-		if (!response.isAllSucceed()) {
-			for (BatchWriteRowResponse.RowResult rowResult : response.getFailedRows()) {
-				System.out.println("失败的行:" + batchWriteRowRequest
-						.getRowChange(rowResult.getTableName(), rowResult.getIndex()).getPrimaryKey());
-				System.out.println("失败原因:" + rowResult.getError());
-			}
-			/**
-			 * 可以通过createRequestForRetry方法再构造一个请求对失败的行进行重试.这里只给出构造重试请求的部分.
-			 * 推荐的重试方法是使用SDK的自定义重试策略功能, 支持对batch操作的部分行错误进行重试. 设定重试策略后, 调用接口处即不需要增加重试代码.
-			 */
-			BatchWriteRowRequest retryRequest = batchWriteRowRequest.createRequestForRetry(response.getFailedRows());
-		}
-	}
-
-	/**
-	 * 批量删除
-	 * 
-	 * @param tableName
-	 *            表名
-	 * @param pks
-	 *            主键列表
-	 */
-	public static void nativeBatchDelete(SyncClient client, String tableName, List<PrimaryKey> pks)
-			throws ServerException {
-		BatchWriteRowRequest batchWriteRowRequest = new BatchWriteRowRequest();
-
-		for (int i = 0; i < pks.size(); i++) {
-			PrimaryKey pk = pks.get(i);
-			RowDeleteChange delChange = new RowDeleteChange(tableName, pk);
-			batchWriteRowRequest.addRowChange(delChange);
-		}
-
-		BatchWriteRowResponse response = client.batchWriteRow(batchWriteRowRequest);
-		if (!response.isAllSucceed()) {
-			for (BatchWriteRowResponse.RowResult rowResult : response.getFailedRows()) {
-				System.out.println("失败的行:" + batchWriteRowRequest
-						.getRowChange(rowResult.getTableName(), rowResult.getIndex()).getPrimaryKey());
-				System.out.println("失败原因:" + rowResult.getError());
-			}
-			/**
-			 * 可以通过createRequestForRetry方法再构造一个请求对失败的行进行重试.这里只给出构造重试请求的部分.
-			 * 推荐的重试方法是使用SDK的自定义重试策略功能, 支持对batch操作的部分行错误进行重试. 设定重试策略后, 调用接口处即不需要增加重试代码.
-			 */
-			BatchWriteRowRequest retryRequest = batchWriteRowRequest.createRequestForRetry(response.getFailedRows());
 		}
 	}
 
@@ -401,6 +317,40 @@ public abstract class TSRepository<T extends TSEntity> {
 			}
 		}
 		return ret;
+	}
+
+	/**
+	 * 同步批量写
+	 * 
+	 * @param tableName
+	 *            表名
+	 * @param rowChanges
+	 *            要更改的行
+	 */
+	public static BatchWriteRowResponse nativeBatchWrite(SyncClient client, List<RowChange> rowChanges)
+			throws ServerException {
+
+		BatchWriteRowRequest batchWriteRowRequest = new BatchWriteRowRequest();
+
+		for (RowChange rc : rowChanges) {
+			batchWriteRowRequest.addRowChange(rc);
+		}
+
+		return client.batchWriteRow(batchWriteRowRequest);
+		// if (!response.isAllSucceed()) {
+		// for (BatchWriteRowResponse.RowResult rowResult : response.getFailedRows()) {
+		// System.out.println(StringUtils.join"失败的行:" + batchWriteRowRequest
+		// .getRowChange(rowResult.getTableName(),
+		// rowResult.getIndex()).getPrimaryKey());
+		// System.out.println("失败原因:" + rowResult.getError());
+		// }
+		// /**
+		// * 可以通过createRequestForRetry方法再构造一个请求对失败的行进行重试.这里只给出构造重试请求的部分.
+		// * 推荐的重试方法是使用SDK的自定义重试策略功能, 支持对batch操作的部分行错误进行重试. 设定重试策略后, 调用接口处即不需要增加重试代码.
+		// */
+		// BatchWriteRowRequest retryRequest =
+		// batchWriteRowRequest.createRequestForRetry(response.getFailedRows());
+		// }
 	}
 
 	/**
