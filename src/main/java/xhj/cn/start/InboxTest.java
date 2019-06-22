@@ -31,8 +31,8 @@ import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.ts.ColumnBuilder;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
 import zyxhj.utils.data.ts.TSQL;
+import zyxhj.utils.data.ts.TSQL.OP;
 import zyxhj.utils.data.ts.TSRepository;
-import zyxhj.utils.data.ts.TSSyncClient;
 
 //https://SizeStore.cn-hangzhou.ots.aliyuncs.com
 //LTAIJ9mYIjuW54Cj
@@ -94,12 +94,12 @@ public class InboxTest {
 
 		// batchGetRow(client);
 
-		 indexTest(syncClient);
+		indexTest(syncClient);
 
 		// 动态字段测试
 		// dynamicFieldsTest(client);
 
-//		autoTest();
+		// autoTest();
 	}
 
 	private static void autoTest() {
@@ -207,7 +207,7 @@ public class InboxTest {
 			TSQL ts = new TSQL();
 			// ts.setFirstTerms("tags", "tag1", "tag3").ANDTerm("status",
 			// 1L).ANDTerm("cate", "类3");
-			ts.setFirstTerm("cate", "类1").ORTerm("status", 1L);
+			ts.setFirstTerm("cate", "类1").linkTerm(OP.OR, "status", 1L);
 			ts.setLimit(10);
 			ts.setOffset(0);
 			ts.setGetTotalCount(true);

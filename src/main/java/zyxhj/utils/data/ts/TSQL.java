@@ -1,13 +1,26 @@
 package zyxhj.utils.data.ts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.alicloud.openservices.tablestore.model.ColumnValue;
 import com.alicloud.openservices.tablestore.model.search.SearchQuery;
 import com.alicloud.openservices.tablestore.model.search.query.BoolQuery;
+import com.alicloud.openservices.tablestore.model.search.query.GeoBoundingBoxQuery;
+import com.alicloud.openservices.tablestore.model.search.query.GeoDistanceQuery;
+import com.alicloud.openservices.tablestore.model.search.query.GeoPolygonQuery;
+import com.alicloud.openservices.tablestore.model.search.query.MatchAllQuery;
+import com.alicloud.openservices.tablestore.model.search.query.MatchPhraseQuery;
+import com.alicloud.openservices.tablestore.model.search.query.MatchQuery;
+import com.alicloud.openservices.tablestore.model.search.query.PrefixQuery;
 import com.alicloud.openservices.tablestore.model.search.query.Query;
+import com.alicloud.openservices.tablestore.model.search.query.RangeQuery;
 import com.alicloud.openservices.tablestore.model.search.query.TermQuery;
 import com.alicloud.openservices.tablestore.model.search.query.TermsQuery;
+import com.alicloud.openservices.tablestore.model.search.query.WildcardQuery;
 import com.alicloud.openservices.tablestore.model.search.sort.Sort;
 import com.alicloud.openservices.tablestore.model.search.sort.Sort.Sorter;
 
@@ -16,9 +29,15 @@ import zyxhj.utils.api.ServerException;
 
 public class TSQL {
 
-	private static final int AND = 0;
-	private static final int OR = 1;
-	private static final int NOT = 2;
+	public static enum OP {
+		AND, OR, NOT, NONE
+	}
+
+	public static enum RANGE {
+		GREATER_THAN, GREATER_THAN_OR_EQUAL, //
+		LESS_THAN, LESS_THAN_OR_EQUAL, //
+		FROM, TO
+	}
 
 	private Integer offset = 0;
 	private Integer limit = 10;
@@ -34,153 +53,12 @@ public class TSQL {
 	 */
 	private ArrayList<Sorter> sorts;
 
-	private int op = -1;
+	private OP op = OP.NONE;
 
 	public TSQL() {
 		queries = new ArrayList<>();
 		sorts = new ArrayList<>();
 	}
-
-	public TSQL setFirst(Query query) {
-		queries.clear();
-		queries.add(query);
-		return this;
-	}
-
-	public TSQL setFirst(TSQL query) {
-		queries.clear();
-		queries.add(query);
-		return this;
-	}
-
-	private TSQL link(int op, Object query) throws ServerException {
-		if (query != null) {
-			if (op == AND || op == OR || op == NOT) {
-				if (queries.size() <= 0) {
-					// 空，直接添加
-					queries.add(query);
-				} else if (queries.size() == 1) {
-					// 只有一个节点，无需判断之前的操作符op是否相同
-					this.op = op;
-					queries.add(query);
-				} else {
-					// 数组中已经有节点
-					if (this.op != op) {
-						// 操作符与之前不符，则添加应该抛异常
-						throw new ServerException(BaseRC.REPOSITORY_TABLESTORE_OP_ERROR);
-					} else {
-						queries.add(query);
-					}
-				}
-			} else {
-				// 操作符不合法
-				throw new ServerException(BaseRC.REPOSITORY_TABLESTORE_OP_ERROR);
-			}
-		}
-		return this;
-	}
-
-	public TSQL AND(Query query) throws ServerException {
-		return link(AND, query);
-	}
-
-	public TSQL AND(TSQL query) throws ServerException {
-		return link(AND, query);
-	}
-
-	public TSQL OR(Query query) throws ServerException {
-		return link(OR, query);
-	}
-
-	public TSQL OR(TSQL query) throws ServerException {
-		return link(OR, query);
-	}
-
-	public TSQL NOT(Query query) throws ServerException {
-		return link(NOT, query);
-	}
-
-	public TSQL NOT(TSQL query) throws ServerException {
-		return link(NOT, query);
-	}
-
-	///////// TermQuery
-
-	private TSQL linkTerm(int op, String fieldName, Object key) throws ServerException {
-		if (null != key) {
-			TermQuery q = new TermQuery();
-			q.setFieldName(fieldName);
-			q.setTerm(ColumnBuilder.buildColumnValue(key)); // 设置要匹配的值
-			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstTerm(String fieldName, Object key) {
-		if (null != key) {
-			TermQuery q = new TermQuery();
-			q.setFieldName(fieldName);
-			q.setTerm(ColumnBuilder.buildColumnValue(key)); // 设置要匹配的值
-			setFirst(q);
-		}
-		return this;
-	}
-
-	public TSQL ANDTerm(String fieldName, Object key) throws ServerException {
-		return linkTerm(AND, fieldName, key);
-	}
-
-	public TSQL ORTerm(String fieldName, Object key) throws ServerException {
-		return linkTerm(OR, fieldName, key);
-	}
-
-	public TSQL NOTTerm(String fieldName, Object key) throws ServerException {
-		return linkTerm(NOT, fieldName, key);
-	}
-
-	///////// TermsQuery
-
-	private TSQL linkTerms(int op, String fieldName, Object... keys) throws ServerException {
-		if (keys != null && keys.length > 0) {
-			TermsQuery q = new TermsQuery();
-			q.setFieldName(fieldName);
-			for (Object key : keys) {
-				q.addTerm(ColumnBuilder.buildColumnValue(key));
-			}
-			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstTerms(String fieldName, Object... keys) throws ServerException {
-		if (keys != null && keys.length > 0) {
-			TermsQuery q = new TermsQuery();
-			q.setFieldName(fieldName);
-			for (Object key : keys) {
-				q.addTerm(ColumnBuilder.buildColumnValue(key));
-			}
-			setFirst(q);
-		}
-		return this;
-	}
-
-	public TSQL ANDTerms(String fieldName, Object... keys) throws ServerException {
-		return linkTerms(AND, fieldName, keys);
-	}
-
-	public TSQL ORTerms(String fieldName, Object... keys) throws ServerException {
-		return linkTerms(OR, fieldName, keys);
-	}
-
-	public TSQL NOTTerms(String fieldName, Object... keys) throws ServerException {
-		return linkTerms(NOT, fieldName, keys);
-	}
-
-	///////// MatchAllQuery
-
-	///////// MatchQuery
-
-	///////// MatchPhraseQuery
 
 	public void setOffset(Integer offset) {
 		this.offset = offset;
@@ -224,12 +102,12 @@ public class TSQL {
 					qs.add((Query) obj);
 				}
 			}
-			if (op == AND) {
+			if (op == OP.AND) {
 				ret.setMustQueries(qs);
-			} else if (op == OR) {
+			} else if (op == OP.OR) {
 				ret.setMinimumShouldMatch(1);// 至少满足一个条件
 				ret.setShouldQueries(qs);
-			} else if (op == NOT) {
+			} else if (op == OP.NOT) {
 				ret.setMustNotQueries(qs);
 			} else {
 				throw new ServerException(BaseRC.REPOSITORY_TABLESTORE_OP_ERROR);
@@ -258,4 +136,306 @@ public class TSQL {
 		return ret;
 	}
 
+	public TSQL setFirst(Query query) {
+		queries.clear();
+		queries.add(query);
+		return this;
+	}
+
+	public TSQL setFirst(TSQL query) {
+		queries.clear();
+		queries.add(query);
+		return this;
+	}
+
+	private TSQL link(OP op, Object query) throws ServerException {
+		if (query != null) {
+			if (op == OP.AND || op == OP.OR || op == OP.NOT) {
+				if (queries.size() <= 0) {
+					// 空，直接添加
+					queries.add(query);
+				} else if (queries.size() == 1) {
+					// 只有一个节点，无需判断之前的操作符op是否相同
+					this.op = op;
+					queries.add(query);
+				} else {
+					// 数组中已经有节点
+					if (this.op != op) {
+						// 操作符与之前不符，则添加应该抛异常
+						throw new ServerException(BaseRC.REPOSITORY_TABLESTORE_OP_ERROR);
+					} else {
+						queries.add(query);
+					}
+				}
+			} else {
+				// 操作符不合法
+				throw new ServerException(BaseRC.REPOSITORY_TABLESTORE_OP_ERROR);
+			}
+		}
+		return this;
+	}
+
+	///////// TermQuery，精确匹配
+	// https://help.aliyun.com/document_detail/100416.html?spm=a2c4g.11186623.6.812.f8cd494dyqoi7J
+
+	public TSQL linkTerm(OP op, String fieldName, Object key) throws ServerException {
+		if (null != key) {
+			TermQuery q = new TermQuery();
+			q.setFieldName(fieldName);
+			q.setTerm(ColumnBuilder.buildColumnValue(key)); // 设置要匹配的值
+			link(op, q);
+		}
+		return this;
+	}
+
+	public TSQL setFirstTerm(String fieldName, Object key) {
+		if (null != key) {
+			TermQuery q = new TermQuery();
+			q.setFieldName(fieldName);
+			q.setTerm(ColumnBuilder.buildColumnValue(key)); // 设置要匹配的值
+			setFirst(q);
+		}
+		return this;
+	}
+
+	///////// TermsQuery，多值精确匹配
+	// https://help.aliyun.com/document_detail/100416.html?spm=a2c4g.11186623.6.812.f8cd494dyqoi7J
+
+	public TSQL linkTerms(OP op, String fieldName, Object... keys) throws ServerException {
+		if (keys != null && keys.length > 0) {
+			TermsQuery q = new TermsQuery();
+			q.setFieldName(fieldName);
+			for (Object key : keys) {
+				q.addTerm(ColumnBuilder.buildColumnValue(key));
+			}
+			link(op, q);
+		}
+		return this;
+	}
+
+	public TSQL setFirstTerms(String fieldName, Object... keys) throws ServerException {
+		if (keys != null && keys.length > 0) {
+			TermsQuery q = new TermsQuery();
+			q.setFieldName(fieldName);
+			for (Object key : keys) {
+				q.addTerm(ColumnBuilder.buildColumnValue(key));
+			}
+			setFirst(q);
+		}
+		return this;
+	}
+
+	///////// MatchAllQuery，全匹配，相当于任意匹配
+	// https://help.aliyun.com/document_detail/100417.html?spm=a2c4g.11186623.6.813.2cb45bd8MLAGSE
+
+	public TSQL linkMatchAll(OP op) throws ServerException {
+		if (limit > 0) {
+			MatchAllQuery q = new MatchAllQuery();
+			link(op, q);
+		}
+		return this;
+	}
+
+	public TSQL setFirstMatchAll() {
+		if (limit > 0) {
+			MatchAllQuery q = new MatchAllQuery();
+			setFirst(q);
+		}
+		return this;
+	}
+
+	///////// MatchQuery，关键词近似匹配
+	// https://help.aliyun.com/document_detail/100417.html?spm=a2c4g.11186623.6.813.2cb45bd8MLAGSE
+
+	public TSQL linkMatch(OP op, String fieldName, String text) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
+			MatchQuery q = new MatchQuery(); // 设置查询类型为MatchQuery
+			q.setFieldName(fieldName); // 设置要匹配的字段
+			q.setText(text); // 设置要匹配的值
+			link(op, q);
+		}
+		return this;
+	}
+
+	public TSQL setFirstMatch(String fieldName, String text) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
+			MatchQuery q = new MatchQuery(); // 设置查询类型为MatchQuery
+			q.setFieldName(fieldName); // 设置要匹配的字段
+			q.setText(text); // 设置要匹配的值
+			setFirst(q);
+		}
+		return this;
+	}
+
+	///////// MatchPhraseQuery，短语匹配，关键词顺序不会乱
+	// https://help.aliyun.com/document_detail/100417.html?spm=a2c4g.11186623.6.813.2cb45bd8MLAGSE
+
+	public TSQL linkMatchPhrase(OP op, String fieldName, String text) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
+			MatchPhraseQuery q = new MatchPhraseQuery(); // 设置查询类型为MatchPhraseQuery
+			q.setFieldName(fieldName); // 设置要匹配的字段
+			q.setText(text); // 设置要匹配的值
+			link(op, q);
+		}
+		return this;
+	}
+
+	public TSQL setFirstMatchPhrase(String fieldName, String text) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
+			MatchPhraseQuery q = new MatchPhraseQuery(); // 设置查询类型为MatchPhraseQuery
+			q.setFieldName(fieldName); // 设置要匹配的字段
+			q.setText(text); // 设置要匹配的值
+			setFirst(q);
+		}
+		return this;
+	}
+
+	///////// PrefixQuery，前缀匹配
+	// https://help.aliyun.com/document_detail/100418.html?spm=a2c4g.11186623.6.814.7b2e7c3bll5VE4
+
+	public TSQL linkPrefix(OP op, String fieldName, String text) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
+			PrefixQuery q = new PrefixQuery(); // 设置查询类型为PrefixQuery
+			q.setFieldName(fieldName);
+			q.setPrefix(text);
+			link(op, q);
+		}
+		return this;
+	}
+
+	public TSQL setFirstPrefix(String fieldName, String text) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
+			PrefixQuery q = new PrefixQuery(); // 设置查询类型为PrefixQuery
+			q.setFieldName(fieldName);
+			q.setPrefix(text);
+			setFirst(q);
+		}
+		return this;
+	}
+
+	///////// RangeQuery，范围查询
+	// https://help.aliyun.com/document_detail/117496.html?spm=a2c4g.11186623.6.669.50df6c98z8c5zA
+
+	// TODO 有问题，仍未实现
+
+	public TSQL linkRange(OP op, String fieldName, RANGE range, Object value) throws ServerException {
+		if (value != null) {
+			RangeQuery q = new RangeQuery(); // 设置查询类型为RangeQuery
+			q.setFieldName(fieldName); // 设置针对哪个字段
+			q.greaterThan(ColumnValue.fromLong(3));
+			// link(op, q);
+		}
+		return this;
+	}
+
+	public TSQL setFirstRange(String fieldName, RANGE range, Object value) throws ServerException {
+		if (value != null) {
+		}
+		return this;
+	}
+
+	///////// WildcardQuery，通配符查询，查询关键字中支持通配符
+	// 星号("*")代表任意字符序列，或者用问号("?")代表任意单个字符
+	// https://help.aliyun.com/document_detail/100420.html?spm=a2c4g.11186623.6.816.68817c3b04d8la
+
+	public TSQL linkWildcard(OP op, String fieldName, String text) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
+			WildcardQuery q = new WildcardQuery(); // 设置查询类型为WildcardQuery
+			q.setFieldName(fieldName);
+			q.setValue(text); // wildcardQuery支持通配符
+			link(op, q);
+		}
+		return this;
+	}
+
+	public TSQL setFirstWildcard(String fieldName, String text) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
+			WildcardQuery q = new WildcardQuery(); // 设置查询类型为WildcardQuery
+			q.setFieldName(fieldName);
+			q.setValue(text); // wildcardQuery支持通配符
+			setFirst(q);
+		}
+		return this;
+	}
+
+	///////// GeoBoundingBoxQuery，地理位置边界框查询，返回矩形范围内的数据
+	// https://help.aliyun.com/document_detail/100421.html?spm=a2c4g.11186623.6.817.24445ed7NBQCdN
+
+	public TSQL linkGeoBoundingBox(OP op, String fieldName, String topLeft, String bottomRight) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(topLeft)
+				&& StringUtils.isNotBlank(bottomRight)) {
+			GeoBoundingBoxQuery q = new GeoBoundingBoxQuery(); // 设置查询类型为GeoBoundingBoxQuery
+			q.setFieldName(fieldName); // 设置比较哪个字段的值
+			q.setTopLeft(topLeft); // 设置矩形左上角
+			q.setBottomRight(bottomRight); // 设置矩形右下角
+			link(op, q);
+		}
+		return this;
+	}
+
+	public TSQL setFirstGeoBoundingBox(String fieldName, String topLeft, String bottomRight) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(topLeft)
+				&& StringUtils.isNotBlank(bottomRight)) {
+			GeoBoundingBoxQuery q = new GeoBoundingBoxQuery(); // 设置查询类型为GeoBoundingBoxQuery
+			q.setFieldName(fieldName); // 设置比较哪个字段的值
+			q.setTopLeft(topLeft); // 设置矩形左上角
+			q.setBottomRight(bottomRight); // 设置矩形右下角
+			setFirst(q);
+		}
+		return this;
+	}
+
+	///////// GeoDistanceQuery，地理位置距离查询，返回有效距离内的数据
+	// https://help.aliyun.com/document_detail/100421.html?spm=a2c4g.11186623.6.817.24445ed7NBQCdN
+
+	public TSQL linkGeoDistance(OP op, String fieldName, String centerPoint, int distanceInMeter)
+			throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(centerPoint) && distanceInMeter > 0) {
+			GeoDistanceQuery q = new GeoDistanceQuery(); // 设置查询类型为GeoDistanceQuery
+			q.setFieldName(fieldName);
+			q.setCenterPoint(centerPoint); // 设置中心点
+			q.setDistanceInMeter(distanceInMeter); // 设置到中心点的距离
+			link(op, q);
+		}
+		return this;
+	}
+
+	public TSQL setFirstGeoDistance(String fieldName, String centerPoint, int distanceInMeter) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(centerPoint) && distanceInMeter > 0) {
+			GeoDistanceQuery q = new GeoDistanceQuery(); // 设置查询类型为GeoDistanceQuery
+			q.setFieldName(fieldName);
+			q.setCenterPoint(centerPoint); // 设置中心点
+			q.setDistanceInMeter(distanceInMeter); // 设置到中心点的距离
+			setFirst(q);
+		}
+		return this;
+	}
+
+	///////// GeoPolygonQuery，地理位置多边形查询，返回多边形内的数据
+	// https://help.aliyun.com/document_detail/100421.html?spm=a2c4g.11186623.6.817.24445ed7NBQCdN
+
+	public TSQL linkGeoPolygon(OP op, String fieldName, String... geoPoints) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && geoPoints != null && geoPoints.length > 0) {
+			GeoPolygonQuery q = new GeoPolygonQuery(); // 设置查询类型为GeoPolygonQuery
+			q.setFieldName(fieldName);
+			q.setPoints(Arrays.asList(geoPoints)); // 设置多边形的顶点
+			link(op, q);
+		}
+		return this;
+	}
+
+	public TSQL setFirstGeoPolygon(String fieldName, String... geoPoints) throws ServerException {
+		if (StringUtils.isNotBlank(fieldName) && geoPoints != null && geoPoints.length > 0) {
+			GeoPolygonQuery q = new GeoPolygonQuery(); // 设置查询类型为GeoPolygonQuery
+			q.setFieldName(fieldName);
+			q.setPoints(Arrays.asList(geoPoints)); // 设置多边形的顶点
+			setFirst(q);
+		}
+		return this;
+	}
+
+	///////// NestedQuery，嵌套查询，返回多边形内的数据
+	// https://help.aliyun.com/document_detail/100423.html?spm=a2c4g.11186623.6.819.503811d8kerlWU
+
+	// TODO 暂时不支持
 }
