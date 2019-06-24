@@ -1,7 +1,7 @@
 package zyxhj.utils.data.ts;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * TS对象基类，用于存储动态字段
@@ -9,5 +9,5 @@ import java.util.Map;
  */
 public class TSEntity {
 
-	public Map<String, Object> dynamicFields = new HashMap<>();
+	public Map<String, Object> dynamicFields = new TreeMap<>();
 }

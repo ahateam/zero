@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.AsyncClient;
 import com.alicloud.openservices.tablestore.SyncClient;
+import com.alicloud.openservices.tablestore.model.BatchWriteRowRequest;
 import com.alicloud.openservices.tablestore.model.Column;
 import com.alicloud.openservices.tablestore.model.ColumnValue;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
@@ -33,6 +34,7 @@ import zyxhj.utils.data.ts.PrimaryKeyBuilder;
 import zyxhj.utils.data.ts.TSQL;
 import zyxhj.utils.data.ts.TSQL.OP;
 import zyxhj.utils.data.ts.TSRepository;
+import zyxhj.utils.data.ts.TSUtils;
 
 //https://SizeStore.cn-hangzhou.ots.aliyuncs.com
 //LTAIJ9mYIjuW54Cj
@@ -99,28 +101,83 @@ public class InboxTest {
 		// 动态字段测试
 		// dynamicFieldsTest(client);
 
-		// autoTest();
+		// 按主键范围查询
+		// getRanges(syncClient);
+		// batchWriteRow(client);
+		autoTest(syncClient);
 	}
 
-	private static void autoTest() {
+	private static void batchWriteRow(SyncClient client) {
+		BatchWriteRowRequest batchWriteRowRequest = new BatchWriteRowRequest();
+
+		// for (int i = 0; i < 3; i++) {
+		// PrimaryKeyBuilder primaryKeyBuilder =
+		// PrimaryKeyBuilder.createPrimaryKeyBuilder();
+		// primaryKeyBuilder.addPrimaryKeyColumn("taskId",
+		// PrimaryKeyValue.fromLong(123));
+		// primaryKeyBuilder.addPrimaryKeyColumn("recordId",
+		// PrimaryKeyValue.AUTO_INCREMENT);
+		// RowPutChange putChange = new RowPutChange("ImportTempRecord",
+		// primaryKeyBuilder.build());
+		////
+		//// // 添加一些列
+		//// for (int i = 0; i < 10; i++) {
+		//// putChange.addColumn(new Column("Col" + i, ColumnValue.fromLong(i)));
+		//// }
+		//
+		// putChange.addColumn(new Column("result", ColumnValue.fromString("122")))
+		// .addColumn(new Column("status", ColumnValue.fromLong(2)));
+		// batchWriteRowRequest.addRowChange(putChange);
+		// }
+		// BatchWriteRowResponse batchWriteRow =
+		// client.batchWriteRow(batchWriteRowRequest);
+		//
+		// System.out.println(JSON.toJSONString(batchWriteRow, true));
+		// System.out.println("是否全部成功:" + batchWriteRow.isAllSucceed());
+
+	}
+
+	private static void getRanges(SyncClient client) {
+		// // 设置起始主键
+		// PrimaryKey pkStart = new PrimaryKeyBuilder().add(PK1, 123).add(PK2,
+		// ).build();
+		//
+		// // 设置结束主键
+		// PrimaryKey pkEnd = new PrimaryKeyBuilder().add(PK1, 123).add(PK2,
+		// ).build();// 不包含此id列
+		//
+		// try {
+		// JSONArray range = cateInfoRepository.getRange(client, pkStart, pkEnd, 512,
+		// 0);
+		// System.out.println(JSON.toJSONString(range, true));
+		//// JSONArray array = TSRepository.nativeGetRange(client, TABLE_NAME, pkStart,
+		// pkEnd, 10, 2, "Col1", "Col5",
+		//// "xxx");
+		//// System.out.println(JSON.toJSONString(array, true));
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
+	}
+
+	private static void autoTest(SyncClient client) {
 		// 测试创建表
-		// TSUtils.createTableByEntity(client, ImportTempRecord.class);
+		TSUtils.createTableByEntity(client, ImportTempRecord.class);
 
 		// 测试删除表
-		// TSUtils.drapTableByEntity(client, CateInfo.class);
+		// TSUtils.drapTableByEntity(client, ImportTempRecord.class);
 
-		ImportTempRecord itr = new ImportTempRecord();
-		itr.taskId = 123L;
-		itr.recordId = null;// 自增列，随便怎么赋值，都会被忽略
-		itr.status = 1L;
-		itr.result = "result";
-
-		try {
-			importTempRecordRepository.insert(syncClient, itr, true);
-		} catch (ServerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		// ImportTempRecord itr = new ImportTempRecord();
+		// itr.taskId = 123L;
+		// itr.recordId = null;// 自增列，随便怎么赋值，都会被忽略
+		// itr.status = 1L;
+		// itr.result = "result";
+		//
+		// try {
+		// importTempRecordRepository.insert(syncClient, itr, true);
+		// } catch (ServerException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 	}
 
 	private static void dynamicFieldsTest(SyncClient client) {
@@ -171,7 +228,9 @@ public class InboxTest {
 
 		// 查询数据
 		// tttt(client);
-		testSearch(client);
+
+		// testSearch(client);
+
 	}
 
 	private static void testSearch(SyncClient client) {
@@ -333,10 +392,10 @@ public class InboxTest {
 	private static void getRange(SyncClient client) {
 
 		// 设置起始主键
-		PrimaryKey pkStart = new PrimaryKeyBuilder().add(PK1, 123l).add(PK2, 999l).build();
+		PrimaryKey pkStart = new PrimaryKeyBuilder().add(PK1, 123l).add("recordId", "min(recordId)").build();
 
 		// 设置结束主键
-		PrimaryKey pkEnd = new PrimaryKeyBuilder().add(PK1, 123l).add(PK2, 199999l).build();
+		PrimaryKey pkEnd = new PrimaryKeyBuilder().add(PK1, 123l).add("recordId", "max(recordId)").build();
 
 		try {
 			JSONArray array = TSRepository.nativeGetRange(client, TABLE_NAME, pkStart, pkEnd, 10, 2, "Col1", "Col5",
@@ -355,7 +414,7 @@ public class InboxTest {
 		}
 
 		try {
-			JSONArray array = TSRepository.nativeBatchGet(client, TABLE_NAME, pks, "Col3", "Col5", "sdf");
+			JSONArray array = TSRepository.nativeBatchGet(client, TABLE_NAME, pks);
 			System.out.println(JSON.toJSONString(array, true));
 		} catch (ServerException e) {
 			e.printStackTrace();
