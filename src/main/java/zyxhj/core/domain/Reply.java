@@ -1,40 +1,78 @@
 package zyxhj.core.domain;
 
-import zyxhj.utils.data.rds.RDSAnnEntity;
-import zyxhj.utils.data.rds.RDSAnnField;
-import zyxhj.utils.data.rds.RDSAnnID;
+import java.util.Date;
+
+import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
+import com.alicloud.openservices.tablestore.model.search.FieldType;
+
+import zyxhj.utils.data.ts.TSAnnEntity;
+import zyxhj.utils.data.ts.TSAnnField;
+import zyxhj.utils.data.ts.TSAnnID;
+import zyxhj.utils.data.ts.TSAnnIndex;
 
 /**
- * 回复配置
+ * 回复
  *
  */
-@RDSAnnEntity(alias = "tb_reply")
+@TSAnnEntity(alias = "Reply")
 public class Reply {
-	
-	public static final Byte STATUS_OPEN = 0;
-	public static final Byte STATUS_CLOSE = 1;
-	
 
-	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.ID)
+	/**
+	 * 回复所属对象编号
+	 */
+	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.INTEGER)
+	public Long partId;
+
+	/**
+	 * 编号
+	 */
+	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER, AUTO_INCREMENT = true)
 	public Long id;
+
+	/**
+	 * 状态
+	 */
+	@TSAnnIndex(name = "ReplyIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long status;
+
+	/**
+	 * 创建时间
+	 */
+	@TSAnnIndex(name = "ReplyIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Date createTime;
+
+	/**
+	 * 上传用户编号
+	 */
+	@TSAnnIndex(name = "ReplyIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long upUserId;
+
+	/**
+	 * 被@的用户编号
+	 */
+	@TSAnnIndex(name = "ReplyIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long atUserId;
 
 	/**
 	 * 标题
 	 */
-	@RDSAnnField(column = RDSAnnField.TEXT_TITLE)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String title;
 
 	/**
-	 * 文本
+	 * 文本（可存html信息）
 	 */
-	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String text;
-	
+
 	/**
-	 * 状态
+	 * 扩展信息，可用JSON格式自行扩展
 	 */
-	@RDSAnnField(column = RDSAnnField.BYTE)
-	public Byte status;
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String ext;
 
 }
