@@ -9,6 +9,4 @@ public class CateInfoRepository extends TSRepository<CateInfo> {
 		super(CateInfo.class);
 	}
 
-	public void test() {
-	}
 }

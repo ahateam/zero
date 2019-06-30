@@ -136,26 +136,11 @@ public class TSQL {
 		return ret;
 	}
 
-	public TSQL setFirst(Query query) {
-		queries.clear();
-		queries.add(query);
-		return this;
-	}
-
-	public TSQL setFirst(TSQL query) {
-		queries.clear();
-		queries.add(query);
-		return this;
-	}
-
 	private TSQL link(OP op, Object query) throws ServerException {
 		if (query != null) {
 			if (op == OP.AND || op == OP.OR || op == OP.NOT) {
 				if (queries.size() <= 0) {
 					// 空，直接添加
-					queries.add(query);
-				} else if (queries.size() == 1) {
-					// 只有一个节点，无需判断之前的操作符op是否相同
 					this.op = op;
 					queries.add(query);
 				} else {
@@ -178,22 +163,12 @@ public class TSQL {
 	///////// TermQuery，精确匹配
 	// https://help.aliyun.com/document_detail/100416.html?spm=a2c4g.11186623.6.812.f8cd494dyqoi7J
 
-	public TSQL linkTerm(OP op, String fieldName, Object key) throws ServerException {
+	public TSQL Term(OP op, String fieldName, Object key) throws ServerException {
 		if (null != key) {
 			TermQuery q = new TermQuery();
 			q.setFieldName(fieldName);
 			q.setTerm(ColumnBuilder.buildColumnValue(key)); // 设置要匹配的值
 			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstTerm(String fieldName, Object key) {
-		if (null != key) {
-			TermQuery q = new TermQuery();
-			q.setFieldName(fieldName);
-			q.setTerm(ColumnBuilder.buildColumnValue(key)); // 设置要匹配的值
-			setFirst(q);
 		}
 		return this;
 	}
@@ -201,7 +176,7 @@ public class TSQL {
 	///////// TermsQuery，多值精确匹配
 	// https://help.aliyun.com/document_detail/100416.html?spm=a2c4g.11186623.6.812.f8cd494dyqoi7J
 
-	public TSQL linkTerms(OP op, String fieldName, Object... keys) throws ServerException {
+	public TSQL Terms(OP op, String fieldName, Object... keys) throws ServerException {
 		if (keys != null && keys.length > 0) {
 			TermsQuery q = new TermsQuery();
 			q.setFieldName(fieldName);
@@ -209,18 +184,6 @@ public class TSQL {
 				q.addTerm(ColumnBuilder.buildColumnValue(key));
 			}
 			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstTerms(String fieldName, Object... keys) throws ServerException {
-		if (keys != null && keys.length > 0) {
-			TermsQuery q = new TermsQuery();
-			q.setFieldName(fieldName);
-			for (Object key : keys) {
-				q.addTerm(ColumnBuilder.buildColumnValue(key));
-			}
-			setFirst(q);
 		}
 		return this;
 	}
@@ -228,18 +191,10 @@ public class TSQL {
 	///////// MatchAllQuery，全匹配，相当于任意匹配
 	// https://help.aliyun.com/document_detail/100417.html?spm=a2c4g.11186623.6.813.2cb45bd8MLAGSE
 
-	public TSQL linkMatchAll(OP op) throws ServerException {
+	public TSQL MatchAll(OP op) throws ServerException {
 		if (limit > 0) {
 			MatchAllQuery q = new MatchAllQuery();
 			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstMatchAll() {
-		if (limit > 0) {
-			MatchAllQuery q = new MatchAllQuery();
-			setFirst(q);
 		}
 		return this;
 	}
@@ -247,22 +202,12 @@ public class TSQL {
 	///////// MatchQuery，关键词近似匹配
 	// https://help.aliyun.com/document_detail/100417.html?spm=a2c4g.11186623.6.813.2cb45bd8MLAGSE
 
-	public TSQL linkMatch(OP op, String fieldName, String text) throws ServerException {
+	public TSQL Match(OP op, String fieldName, String text) throws ServerException {
 		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
 			MatchQuery q = new MatchQuery(); // 设置查询类型为MatchQuery
 			q.setFieldName(fieldName); // 设置要匹配的字段
 			q.setText(text); // 设置要匹配的值
 			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstMatch(String fieldName, String text) throws ServerException {
-		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
-			MatchQuery q = new MatchQuery(); // 设置查询类型为MatchQuery
-			q.setFieldName(fieldName); // 设置要匹配的字段
-			q.setText(text); // 设置要匹配的值
-			setFirst(q);
 		}
 		return this;
 	}
@@ -270,22 +215,12 @@ public class TSQL {
 	///////// MatchPhraseQuery，短语匹配，关键词顺序不会乱
 	// https://help.aliyun.com/document_detail/100417.html?spm=a2c4g.11186623.6.813.2cb45bd8MLAGSE
 
-	public TSQL linkMatchPhrase(OP op, String fieldName, String text) throws ServerException {
+	public TSQL MatchPhrase(OP op, String fieldName, String text) throws ServerException {
 		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
 			MatchPhraseQuery q = new MatchPhraseQuery(); // 设置查询类型为MatchPhraseQuery
 			q.setFieldName(fieldName); // 设置要匹配的字段
 			q.setText(text); // 设置要匹配的值
 			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstMatchPhrase(String fieldName, String text) throws ServerException {
-		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
-			MatchPhraseQuery q = new MatchPhraseQuery(); // 设置查询类型为MatchPhraseQuery
-			q.setFieldName(fieldName); // 设置要匹配的字段
-			q.setText(text); // 设置要匹配的值
-			setFirst(q);
 		}
 		return this;
 	}
@@ -293,22 +228,12 @@ public class TSQL {
 	///////// PrefixQuery，前缀匹配
 	// https://help.aliyun.com/document_detail/100418.html?spm=a2c4g.11186623.6.814.7b2e7c3bll5VE4
 
-	public TSQL linkPrefix(OP op, String fieldName, String text) throws ServerException {
+	public TSQL Prefix(OP op, String fieldName, String text) throws ServerException {
 		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
 			PrefixQuery q = new PrefixQuery(); // 设置查询类型为PrefixQuery
 			q.setFieldName(fieldName);
 			q.setPrefix(text);
 			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstPrefix(String fieldName, String text) throws ServerException {
-		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
-			PrefixQuery q = new PrefixQuery(); // 设置查询类型为PrefixQuery
-			q.setFieldName(fieldName);
-			q.setPrefix(text);
-			setFirst(q);
 		}
 		return this;
 	}
@@ -318,7 +243,7 @@ public class TSQL {
 
 	// TODO 有问题，仍未实现
 
-	public TSQL linkRange(OP op, String fieldName, RANGE range, Object value) throws ServerException {
+	public TSQL Range(OP op, String fieldName, RANGE range, Object value) throws ServerException {
 		if (value != null) {
 			RangeQuery q = new RangeQuery(); // 设置查询类型为RangeQuery
 			q.setFieldName(fieldName); // 设置针对哪个字段
@@ -328,32 +253,16 @@ public class TSQL {
 		return this;
 	}
 
-	public TSQL setFirstRange(String fieldName, RANGE range, Object value) throws ServerException {
-		if (value != null) {
-		}
-		return this;
-	}
-
 	///////// WildcardQuery，通配符查询，查询关键字中支持通配符
 	// 星号("*")代表任意字符序列，或者用问号("?")代表任意单个字符
 	// https://help.aliyun.com/document_detail/100420.html?spm=a2c4g.11186623.6.816.68817c3b04d8la
 
-	public TSQL linkWildcard(OP op, String fieldName, String text) throws ServerException {
+	public TSQL Wildcard(OP op, String fieldName, String text) throws ServerException {
 		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
 			WildcardQuery q = new WildcardQuery(); // 设置查询类型为WildcardQuery
 			q.setFieldName(fieldName);
 			q.setValue(text); // wildcardQuery支持通配符
 			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstWildcard(String fieldName, String text) throws ServerException {
-		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(text)) {
-			WildcardQuery q = new WildcardQuery(); // 设置查询类型为WildcardQuery
-			q.setFieldName(fieldName);
-			q.setValue(text); // wildcardQuery支持通配符
-			setFirst(q);
 		}
 		return this;
 	}
@@ -361,7 +270,7 @@ public class TSQL {
 	///////// GeoBoundingBoxQuery，地理位置边界框查询，返回矩形范围内的数据
 	// https://help.aliyun.com/document_detail/100421.html?spm=a2c4g.11186623.6.817.24445ed7NBQCdN
 
-	public TSQL linkGeoBoundingBox(OP op, String fieldName, String topLeft, String bottomRight) throws ServerException {
+	public TSQL GeoBoundingBox(OP op, String fieldName, String topLeft, String bottomRight) throws ServerException {
 		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(topLeft)
 				&& StringUtils.isNotBlank(bottomRight)) {
 			GeoBoundingBoxQuery q = new GeoBoundingBoxQuery(); // 设置查询类型为GeoBoundingBoxQuery
@@ -369,18 +278,6 @@ public class TSQL {
 			q.setTopLeft(topLeft); // 设置矩形左上角
 			q.setBottomRight(bottomRight); // 设置矩形右下角
 			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstGeoBoundingBox(String fieldName, String topLeft, String bottomRight) throws ServerException {
-		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(topLeft)
-				&& StringUtils.isNotBlank(bottomRight)) {
-			GeoBoundingBoxQuery q = new GeoBoundingBoxQuery(); // 设置查询类型为GeoBoundingBoxQuery
-			q.setFieldName(fieldName); // 设置比较哪个字段的值
-			q.setTopLeft(topLeft); // 设置矩形左上角
-			q.setBottomRight(bottomRight); // 设置矩形右下角
-			setFirst(q);
 		}
 		return this;
 	}
@@ -388,25 +285,13 @@ public class TSQL {
 	///////// GeoDistanceQuery，地理位置距离查询，返回有效距离内的数据
 	// https://help.aliyun.com/document_detail/100421.html?spm=a2c4g.11186623.6.817.24445ed7NBQCdN
 
-	public TSQL linkGeoDistance(OP op, String fieldName, String centerPoint, int distanceInMeter)
-			throws ServerException {
+	public TSQL GeoDistance(OP op, String fieldName, String centerPoint, int distanceInMeter) throws ServerException {
 		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(centerPoint) && distanceInMeter > 0) {
 			GeoDistanceQuery q = new GeoDistanceQuery(); // 设置查询类型为GeoDistanceQuery
 			q.setFieldName(fieldName);
 			q.setCenterPoint(centerPoint); // 设置中心点
 			q.setDistanceInMeter(distanceInMeter); // 设置到中心点的距离
 			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstGeoDistance(String fieldName, String centerPoint, int distanceInMeter) throws ServerException {
-		if (StringUtils.isNotBlank(fieldName) && StringUtils.isNotBlank(centerPoint) && distanceInMeter > 0) {
-			GeoDistanceQuery q = new GeoDistanceQuery(); // 设置查询类型为GeoDistanceQuery
-			q.setFieldName(fieldName);
-			q.setCenterPoint(centerPoint); // 设置中心点
-			q.setDistanceInMeter(distanceInMeter); // 设置到中心点的距离
-			setFirst(q);
 		}
 		return this;
 	}
@@ -414,22 +299,12 @@ public class TSQL {
 	///////// GeoPolygonQuery，地理位置多边形查询，返回多边形内的数据
 	// https://help.aliyun.com/document_detail/100421.html?spm=a2c4g.11186623.6.817.24445ed7NBQCdN
 
-	public TSQL linkGeoPolygon(OP op, String fieldName, String... geoPoints) throws ServerException {
+	public TSQL GeoPolygon(OP op, String fieldName, String... geoPoints) throws ServerException {
 		if (StringUtils.isNotBlank(fieldName) && geoPoints != null && geoPoints.length > 0) {
 			GeoPolygonQuery q = new GeoPolygonQuery(); // 设置查询类型为GeoPolygonQuery
 			q.setFieldName(fieldName);
 			q.setPoints(Arrays.asList(geoPoints)); // 设置多边形的顶点
 			link(op, q);
-		}
-		return this;
-	}
-
-	public TSQL setFirstGeoPolygon(String fieldName, String... geoPoints) throws ServerException {
-		if (StringUtils.isNotBlank(fieldName) && geoPoints != null && geoPoints.length > 0) {
-			GeoPolygonQuery q = new GeoPolygonQuery(); // 设置查询类型为GeoPolygonQuery
-			q.setFieldName(fieldName);
-			q.setPoints(Arrays.asList(geoPoints)); // 设置多边形的顶点
-			setFirst(q);
 		}
 		return this;
 	}

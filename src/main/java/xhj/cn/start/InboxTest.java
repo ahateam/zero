@@ -22,6 +22,7 @@ import com.alicloud.openservices.tablestore.model.search.query.TermsQuery;
 
 import zyxhj.core.domain.CateInfo;
 import zyxhj.core.domain.ImportTempRecord;
+import zyxhj.core.domain.Valid;
 import zyxhj.core.repository.CateInfoRepository;
 import zyxhj.core.repository.ImportTempRecordRepository;
 import zyxhj.utils.CodecUtils;
@@ -104,7 +105,7 @@ public class InboxTest {
 		// 按主键范围查询
 		// getRanges(syncClient);
 		// batchWriteRow(client);
-		autoTest(syncClient);
+		// autoTest(syncClient);
 	}
 
 	private static void batchWriteRow(SyncClient client) {
@@ -200,7 +201,7 @@ public class InboxTest {
 			// PrimaryKey pk = new PrimaryKeyBuilder().add("_id",
 			// "986372771269207efa6146eccf0f12f8")
 			// .add("id", 399580393241531L).build();
- 
+
 			JSONObject obj = TSRepository.nativeGet(client, "CateInfo", pk);
 			System.out.println(JSON.toJSONString(obj, true));
 
@@ -218,7 +219,7 @@ public class InboxTest {
 
 	private static void indexTest(SyncClient client) {
 		// 测试创建表
-		// TSUtils.createTableByEntity(client, CateInfo.class);
+		TSUtils.createTableByEntity(client, Valid.class);
 
 		// 测试删除表
 		// TSUtils.drapTableByEntity(client, CateInfo.class);
@@ -266,13 +267,13 @@ public class InboxTest {
 			TSQL ts = new TSQL();
 			// ts.setFirstTerms("tags", "tag1", "tag3").ANDTerm("status",
 			// 1L).ANDTerm("cate", "类3");
-			ts.setFirstTerm("cate", "类1").linkTerm(OP.OR, "status", 1L);
+			ts.Term(OP.OR, "cate", "类1").Term(OP.OR, "status", 1L);
 			ts.setLimit(10);
 			ts.setOffset(0);
 			ts.setGetTotalCount(true);
 			SearchQuery myQuery = ts.build();
 
-			TSRepository.Response resp = cateInfoRepository.search(client, "CateInfoIndex", myQuery);
+			JSONObject resp = cateInfoRepository.search(client, "CateInfoIndex", myQuery);
 
 			System.out.println(JSON.toJSONString(resp, true));
 
@@ -310,7 +311,7 @@ public class InboxTest {
 				}
 
 				CateInfo ci = new CateInfo();
-				ci._id = CodecUtils.md52Hex(IDUtils.simpleId2Hex(id), CodecUtils.CHARSET_UTF8);
+				ci._id = IDUtils.simpleId2Hex(id).substring(0, 4);
 				ci.id = id;
 				ci.region = region;
 				ci.cate = cate;
