@@ -200,7 +200,7 @@ public class InboxTest {
 			// PrimaryKey pk = new PrimaryKeyBuilder().add("_id",
 			// "986372771269207efa6146eccf0f12f8")
 			// .add("id", 399580393241531L).build();
-
+ 
 			JSONObject obj = TSRepository.nativeGet(client, "CateInfo", pk);
 			System.out.println(JSON.toJSONString(obj, true));
 
@@ -349,7 +349,7 @@ public class InboxTest {
 	}
 
 	private static void updateRow(SyncClient client, Long pk1, Long pk2) {
-		PrimaryKey pk = new PrimaryKeyBuilder().add(PK1, pk1).add(PK2, pk2).build();
+		PrimaryKey pk = new PrimaryKeyBuilder().add("taskId", 55).add("recordId", 1561445674528991L).build();
 		ColumnBuilder cb = new ColumnBuilder();
 		for (int i = 0; i < 5; i++) {
 			cb.add("Col" + i, i + 5);
@@ -357,7 +357,7 @@ public class InboxTest {
 		List<Column> columns = cb.build();
 
 		try {
-			TSRepository.nativeUpdate(client, TABLE_NAME, pk, columns);
+			TSRepository.nativeUpdate(client, "ImportTempRecord", pk, columns);
 		} catch (ServerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

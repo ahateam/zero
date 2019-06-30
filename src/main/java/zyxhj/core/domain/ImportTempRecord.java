@@ -43,6 +43,8 @@ public class ImportTempRecord extends TSEntity {
 		}
 	}
 
+
+
 	/**
 	 * 任务编号n分片键
 	 */

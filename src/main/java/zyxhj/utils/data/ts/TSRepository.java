@@ -125,14 +125,10 @@ public abstract class TSRepository<T extends TSEntity> {
 	/**
 	 * 原生接口，插入一行数据
 	 * 
-	 * @param tableName
-	 *            表名
-	 * @param pk
-	 *            主键
-	 * @param columns
-	 *            要存储的数据列表
-	 * @param cover
-	 *            如果已经有值，是否覆盖
+	 * @param tableName 表名
+	 * @param pk        主键
+	 * @param columns   要存储的数据列表
+	 * @param cover     如果已经有值，是否覆盖
 	 */
 	public static void nativeInsert(SyncClient client, String tableName, PrimaryKey pk, List<Column> columns,
 			boolean cover) throws ServerException {
@@ -164,12 +160,9 @@ public abstract class TSRepository<T extends TSEntity> {
 	/**
 	 * 原生接口，更新一行数据，空数据会自动跳过
 	 * 
-	 * @param tableName
-	 *            表名
-	 * @param pk
-	 *            主键
-	 * @param columns
-	 *            要存储的数据列表
+	 * @param tableName 表名
+	 * @param pk        主键
+	 * @param columns   要存储的数据列表
 	 */
 	public static void nativeUpdate(SyncClient client, String tableName, PrimaryKey pk, List<Column> columns)
 			throws ServerException {
@@ -194,12 +187,9 @@ public abstract class TSRepository<T extends TSEntity> {
 	/**
 	 * 原生接口，查询一行数据
 	 * 
-	 * @param tableName
-	 *            表名
-	 * @param pk
-	 *            主键
-	 * @param selections
-	 *            可选参数，要查询的列名，不填则查询所有列
+	 * @param tableName  表名
+	 * @param pk         主键
+	 * @param selections 可选参数，要查询的列名，不填则查询所有列
 	 * @return 查询到的记录，JSONObject格式
 	 */
 	public static JSONObject nativeGet(SyncClient client, String tableName, PrimaryKey pk, String... selections)
@@ -215,10 +205,8 @@ public abstract class TSRepository<T extends TSEntity> {
 	/**
 	 * 原生接口，删除一行数据
 	 * 
-	 * @param tableName
-	 *            表名
-	 * @param pk
-	 *            主键
+	 * @param tableName 表名
+	 * @param pk        主键
 	 */
 	public static void nativeDel(SyncClient client, String tableName, PrimaryKey pk) throws ServerException {
 		try {
@@ -239,18 +227,12 @@ public abstract class TSRepository<T extends TSEntity> {
 	 * 因此，offset跳过的数据，也会产生读取操作并消耗资源</br>
 	 * 总之必须小心使用本方法，避免滥用，offset + count的总数应该避免过大。
 	 * 
-	 * @param tableName
-	 *            表名
-	 * @param pkStart
-	 *            开始主键
-	 * @param pkEnd
-	 *            结束主键
-	 * @param count
-	 *            查询数量，数量不宜过大
-	 * @param offset
-	 *            起始偏移位置，数量不宜过大
-	 * @param selections
-	 *            可选参数，要查询的列名，不填则查询所有列
+	 * @param tableName  表名
+	 * @param pkStart    开始主键
+	 * @param pkEnd      结束主键
+	 * @param count      查询数量，数量不宜过大
+	 * @param offset     起始偏移位置，数量不宜过大
+	 * @param selections 可选参数，要查询的列名，不填则查询所有列
 	 * @return 查询到的记录，JSONArray格式
 	 */
 	public static JSONArray nativeGetRange(SyncClient client, String tableName, PrimaryKey pkStart, PrimaryKey pkEnd,
@@ -300,12 +282,9 @@ public abstract class TSRepository<T extends TSEntity> {
 	/**
 	 * 原生接口，按主键列表批量查询</br>
 	 * 
-	 * @param tableName
-	 *            表名
-	 * @param pks
-	 *            主键列表
-	 * @param selections
-	 *            可选参数，要查询的列名，不填则查询所有列
+	 * @param tableName  表名
+	 * @param pks        主键列表
+	 * @param selections 可选参数，要查询的列名，不填则查询所有列
 	 * @return 查询到的记录，JSONArray格式
 	 */
 	public static JSONArray nativeBatchGet(SyncClient client, String tableName, List<PrimaryKey> pks,
@@ -326,10 +305,8 @@ public abstract class TSRepository<T extends TSEntity> {
 	/**
 	 * 同步批量写
 	 * 
-	 * @param tableName
-	 *            表名
-	 * @param rowChanges
-	 *            要更改的行
+	 * @param tableName  表名
+	 * @param rowChanges 要更改的行
 	 */
 	public static BatchWriteRowResponse nativeBatchWrite(SyncClient client, List<RowChange> rowChanges)
 			throws ServerException {
@@ -348,12 +325,9 @@ public abstract class TSRepository<T extends TSEntity> {
 	 * 
 	 * tableName 表名
 	 * 
-	 * @param indexName
-	 *            索引名
-	 * @param query
-	 *            TableStore查询对象
-	 * @param selections
-	 *            可选参数，要查询的列名，不填则查询所有列
+	 * @param indexName  索引名
+	 * @param query      TableStore查询对象
+	 * @param selections 可选参数，要查询的列名，不填则查询所有列
 	 * @return 查询到的记录，JSONObject格式</br>
 	 *         包含isAllSuccess是否全部成功标记，totalCount查询匹配总行数，以及list查询结果（JSONArray）
 	 */
@@ -390,6 +364,14 @@ public abstract class TSRepository<T extends TSEntity> {
 	}
 
 	/**
+	 * 更新对象
+	 */
+	public void update(SyncClient client, T t) throws ServerException {
+		nativeUpdate(client, mapper.getTableName(), mapper.getPrimaryKeyFromObjects(t),
+				mapper.getColumnListFromObject(t));
+	}
+
+	/**
 	 * 根据主键获取对象
 	 */
 	public T get(SyncClient client, PrimaryKey pk, String... selections) throws Exception {
@@ -404,16 +386,11 @@ public abstract class TSRepository<T extends TSEntity> {
 	/**
 	 * 按主键范围查询
 	 * 
-	 * @param pkStart
-	 *            开始主键
-	 * @param pkEnd
-	 *            结束主键
-	 * @param count
-	 *            查询数量，数量不宜过大
-	 * @param offset
-	 *            起始偏移位置，数量不宜过大
-	 * @param selections
-	 *            可选参数，要查询的列名，不填则查询所有列
+	 * @param pkStart    开始主键
+	 * @param pkEnd      结束主键
+	 * @param count      查询数量，数量不宜过大
+	 * @param offset     起始偏移位置，数量不宜过大
+	 * @param selections 可选参数，要查询的列名，不填则查询所有列
 	 */
 	public JSONArray getRange(SyncClient client, PrimaryKey pkStart, PrimaryKey pkEnd, Integer count, Integer offset,
 			String... selections) throws Exception {

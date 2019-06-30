@@ -42,10 +42,8 @@ public class TSObjectMapper<T extends TSEntity> {
 	 * OTS第一个是主键（分片键），同时还允许有3个副键（索引键）。<br>
 	 * OTS的4个索引，左闭右开。。。<br>
 	 * 
-	 * @param primaryKey
-	 *            主键（分片键）
-	 * @param otherKeys
-	 *            副键（其它索引键）
+	 * @param primaryKey 主键（分片键）
+	 * @param otherKeys  副键（其它索引键）
 	 */
 	public TSObjectMapper(Class<T> clazz) {
 		this.clazz = clazz;
@@ -194,6 +192,21 @@ public class TSObjectMapper<T extends TSEntity> {
 	}
 
 	/**
+	 * 从对象实例构造PrimaryKey 只获取PrimaryKey 不管自增</br>
+	 * 
+	 * @throws Exception
+	 */
+	public PrimaryKey getPrimaryKeyFromObjects(T t) throws ServerException {
+		PrimaryKeyBuilder primaryKeyBuilder = PrimaryKeyBuilder.createPrimaryKeyBuilder();
+
+		// 因为在构造时，已经将PrimaryKey按顺序排好了，所以这里可以直接按数组里的顺序去取。
+		for (TSFieldMapper<T> pk : primaryKeyList) {
+			primaryKeyBuilder.addPrimaryKeyColumn(pk.alias, (PrimaryKeyValue) pk.getFieldValueFromObject(t));
+		}
+		return primaryKeyBuilder.build();
+	}
+
+	/**
 	 * 从对象实例构造Column列表
 	 */
 	public List<Column> getColumnListFromObject(T t) throws ServerException {
@@ -203,10 +216,9 @@ public class TSObjectMapper<T extends TSEntity> {
 			ColumnValue cv = (ColumnValue) c.getFieldValueFromObject(t);
 			ret.add(new Column(cn, cv));
 		}
-		
-		//d field
-		
-		
+
+		// d field
+
 		return ret;
 	}
 

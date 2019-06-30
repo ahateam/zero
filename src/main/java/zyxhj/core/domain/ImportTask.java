@@ -51,6 +51,12 @@ public class ImportTask {
 	public Long id;
 
 	/**
+	 * 组织编号
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long orgId;
+
+	/**
 	 * 任务标题
 	 */
 	@RDSAnnField(column = RDSAnnField.TEXT_TITLE)

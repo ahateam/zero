@@ -2,11 +2,14 @@ package zyxhj.core.repository;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alibaba.druid.pool.DruidPooledConnection;
 
 import zyxhj.core.domain.ImportTask;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.rds.RDSRepository;
+import zyxhj.utils.data.rds.SQL;
 
 public class ImportTaskRepository extends RDSRepository<ImportTask> {
 
@@ -30,5 +33,30 @@ public class ImportTaskRepository extends RDSRepository<ImportTask> {
 			return getList(conn, "WHERE origin=? AND status=? ORDER BY create_time DESC",
 					new Object[] { origin, status }, count, offset);
 		}
+	}
+
+	// 组织查询任务列表
+	public List<ImportTask> getListImportTask(DruidPooledConnection conn, Long orgId, Integer count, Integer offset)
+			throws Exception {
+		StringBuffer sb = new StringBuffer("WHERE org_id = ").append(orgId).append(" ORDER BY create_time DESC");
+		return getList(conn, sb.toString(), new Object[] {}, count, offset);
+	}
+
+	public void countORGUserImportCompletionTask(DruidPooledConnection conn, Long importTaskId) throws Exception {
+		StringBuffer sb = new StringBuffer("WHERE ");
+		SQL sql = new SQL();
+		sql.addEx("id = ? ", importTaskId);
+		sql.fillSQL(sb);
+		this.update(conn, StringUtils.join("SET success_count = success_count+1,completed_count = completed_count + 1"),
+				null, sb.toString(), sql.getParams());
+	}
+
+	public void countORGUserImportNotCompletionTask(DruidPooledConnection conn, Long importTaskId) throws Exception {
+		StringBuffer sb = new StringBuffer("WHERE ");
+		SQL sql = new SQL();
+		sql.addEx("id = ? ", importTaskId);
+		sql.fillSQL(sb);
+		this.update(conn, StringUtils.join("SET failure_count = failure_count+1,completed_count = completed_count + 1"),
+				null, sb.toString(), sql.getParams());
 	}
 }
