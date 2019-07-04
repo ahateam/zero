@@ -82,7 +82,7 @@ public class Car extends TSEntity {
 	/**
 	 * 标题
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = false, store = false)
+	@TSAnnIndex(name = "CarInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = false, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String title;
 
@@ -93,37 +93,51 @@ public class Car extends TSEntity {
 	public String content;
 
 	/**
+	 * 出发地
+	 */
+	@TSAnnIndex(name = "CarInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String departure;
+
+	/**
+	 * 目的地
+	 */
+	@TSAnnIndex(name = "CarInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String destination;
+
+	/**
 	 * 地区（最低一级行政区参与索引）
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(name = "CarInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String region;
 
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(name = "CarInfoIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long status;
 
 	/**
 	 * 标签
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
+	@TSAnnIndex(name = "CarInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String tags;
 
 	/**
 	 * 位置
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.GEO_POINT, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(name = "CarInfoIndex", type = FieldType.GEO_POINT, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String pos;
 
 	/**
 	 * 时间
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(name = "CarInfoIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Date time;
 
@@ -142,7 +156,7 @@ public class Car extends TSEntity {
 	/**
 	 * 类型 人打车 或者 车找人
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(name = "CarInfoIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long type;
 
