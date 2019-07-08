@@ -117,7 +117,7 @@ public abstract class TSRepository<T extends TSEntity> {
 			columnsToGet.setReturnAll(true);
 		}
 		searchRequest.setColumnsToGet(columnsToGet);
-
+  
 		return client.search(searchRequest);
 	}
 

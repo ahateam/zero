@@ -43,11 +43,10 @@ public class ImportTempRecord extends TSEntity {
 		}
 	}
 
-
-
 	/**
 	 * 任务编号n分片键
 	 */
+	@TSAnnIndex(name = "ImportTempRecordIndex", type = FieldType.LONG, enableSortAndAgg = false, store = true)
 	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.INTEGER)
 	public Long taskId;
 

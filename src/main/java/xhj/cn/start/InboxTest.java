@@ -219,10 +219,10 @@ public class InboxTest {
 
 	private static void indexTest(SyncClient client) {
 		// 测试创建表
-		TSUtils.createTableByEntity(client, Valid.class);
+		TSUtils.createTableByEntity(client, ImportTempRecord.class);
 
 		// 测试删除表
-		// TSUtils.drapTableByEntity(client, CateInfo.class);
+//		 TSUtils.drapTableByEntity(client, ImportTempRecord.class);
 
 		// 增加数据
 		// testAddData(client);
