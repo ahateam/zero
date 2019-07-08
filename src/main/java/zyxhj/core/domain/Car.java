@@ -137,7 +137,6 @@ public class Car extends TSEntity {
 	/**
 	 * 时间
 	 */
-	@TSAnnIndex(name = "CarInfoIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Date time;
 
