@@ -42,7 +42,7 @@ public interface BaseRC {
 	static final RC REPOSITORY_CONNECTION_ERROR = new RC("repo-0010", "connection error");// 插入错误
 	static final RC REPOSITORY_QUERY_EMPTY = new RC("repo-0011", "query empty");// 什么都没查到
 	static final RC REPOSITORY_NOT_WHERE = new RC("repo-0012", "not where ex");// 什么都没查到
-	
+
 	static final RC REPOSITORY_TABLESTORE_FIELD_ERROR = new RC("repo-0013", "TableStore field convert error");
 	static final RC REPOSITORY_TABLESTORE_OP_ERROR = new RC("repo-0014", "TableStore query op error");
 	static final RC REPOSITORY_TABLESTORE_QUERY_ERROR = new RC("repo-0014", "TableStore query error");
@@ -100,6 +100,12 @@ public interface BaseRC {
 	static final RC STARGROUP_NOT_EXISET = new RC("300010", "StarGroup不存在");
 
 	/**
+	 * 流程引擎错误
+	 * 
+	 */
+	static final RC ACTIVITY_NAME_EXIST = new RC("flow-0010", "Activity名称已存在");
+
+	/**
 	 * 集体经济项目错误
 	 * 
 	 */
@@ -125,4 +131,5 @@ public interface BaseRC {
 	static final RC ECM_NO_PERMISSION = new RC("ecm-0023", "无此权限");
 
 	static final RC ECM_ORG_USER_SHARECERNO = new RC("ecm-0024", "股权证号已存在");
+
 }

@@ -1,21 +1,28 @@
 package zyxhj.flow.domain;
 
+import com.alibaba.fastjson.JSONObject;
+
 public class Asset {
 
-	public Long activityId;
-	
-	public Long id;
+	public static final String TYPE_FORM = "form";
+	public static final String TYPE_FILE = "file";
+	public static final String TYPE_PART = "part";
 
 	/**
-	 * 类型</br>
-	 * Form表单，Attach附件等
+	 * 资产名称
 	 */
-	public Byte type;
-
 	public String name;
 
 	/**
-	 * 资产内容，JSON结构
+	 * 是否必须
 	 */
-	public String content;
+	public boolean necessary;
+
+	/**
+	 * 资产数据，JSON结构，{type:"form",content:"1234345"}</br>
+	 * type为form表单时，存放表单编号</br>
+	 * type为file文件时，存放文件地址</br>
+	 * type为part附件时，存放附件编号</br>
+	 */
+	public JSONObject data;
 }

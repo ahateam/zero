@@ -1,10 +1,12 @@
 package zyxhj.flow.domain;
 
+import com.alibaba.fastjson.JSONArray;
+
 public class Action {
 
-	public Long activityId;
-
-	public Long id;
+	public static final String TYPE_TIMEOUT = "timeout";// 超时
+	public static final String TYPE_SUBMIT = "submit";// 提交
+	public static final String TYPE_JUDGE = "judge";// 审批
 
 	/**
 	 * 类型</br>
@@ -12,18 +14,11 @@ public class Action {
 	 * 终止。。。还待细节设计</br>
 	 * 时间到期事件
 	 */
-	public Byte type;
-
-	public String name;
+	public String type;
 
 	/**
-	 * 资产内容，JSON结构
+	 * 规则引擎脚本(包含跳转目标target)
 	 */
-	public String content;
+	public JSONArray rules;
 
-	/**
-	 * 行为结果目标列表，JSONArray格式</br>
-	 * 包含rule规则，可以根据不同条件跳转不同target
-	 */
-	public String targets;
 }
