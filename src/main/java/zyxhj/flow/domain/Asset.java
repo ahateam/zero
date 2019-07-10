@@ -2,11 +2,15 @@ package zyxhj.flow.domain;
 
 import com.alibaba.fastjson.JSONObject;
 
+/**
+ * 资产表
+ *
+ */
 public class Asset {
 
-	public static final String TYPE_FORM = "form";
-	public static final String TYPE_FILE = "file";
-	public static final String TYPE_PART = "part";
+	public static final String TYPE_FORM = "form"; //表单
+	public static final String TYPE_FILE = "file"; //文件
+	public static final String TYPE_PART = "part"; //附件
 
 	/**
 	 * 资产名称

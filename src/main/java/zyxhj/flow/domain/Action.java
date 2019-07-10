@@ -2,6 +2,10 @@ package zyxhj.flow.domain;
 
 import com.alibaba.fastjson.JSONArray;
 
+/**
+ * 行为
+ *
+ */
 public class Action {
 
 	public static final String TYPE_TIMEOUT = "timeout";// 超时

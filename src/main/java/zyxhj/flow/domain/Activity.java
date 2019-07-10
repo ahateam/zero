@@ -15,7 +15,7 @@ public class Activity {
 	 */
 	public String alias;
 
-	/**
+	/**   
 	 * submit，judge
 	 */
 	public String type;

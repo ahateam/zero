@@ -15,6 +15,7 @@ import com.alicloud.openservices.tablestore.model.BatchWriteRowRequest;
 import com.alicloud.openservices.tablestore.model.Column;
 import com.alicloud.openservices.tablestore.model.ColumnValue;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
+import com.alicloud.openservices.tablestore.model.PrimaryKeyValue;
 import com.alicloud.openservices.tablestore.model.search.SearchQuery;
 import com.alicloud.openservices.tablestore.model.search.query.BoolQuery;
 import com.alicloud.openservices.tablestore.model.search.query.TermQuery;
@@ -25,6 +26,7 @@ import zyxhj.core.domain.ImportTempRecord;
 import zyxhj.core.domain.Valid;
 import zyxhj.core.repository.CateInfoRepository;
 import zyxhj.core.repository.ImportTempRecordRepository;
+import zyxhj.flow.domain.Part;
 import zyxhj.utils.CodecUtils;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
@@ -75,7 +77,7 @@ public class InboxTest {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		// SyncClient client = new
 		// SyncClient("https://SizeStore.cn-hangzhou.ots.aliyuncs.com",
 		// "LTAIJ9mYIjuW54Cj",
@@ -97,7 +99,7 @@ public class InboxTest {
 
 		// batchGetRow(client);
 
-		indexTest(syncClient);
+//		indexTest(syncClient);
 
 		// 动态字段测试
 		// dynamicFieldsTest(client);
@@ -106,6 +108,35 @@ public class InboxTest {
 		// getRanges(syncClient);
 		// batchWriteRow(client);
 		// autoTest(syncClient);
+
+		// 模糊匹配
+//		MatchQuery(syncClient);
+
+		// 查询所有
+//		getCate(syncClient);
+	}
+
+	private static void getCate(SyncClient client) throws Exception {
+		// 设置起始主键
+		PrimaryKey pkStart = new PrimaryKeyBuilder().add("_id", PrimaryKeyValue.INF_MIN)
+				.add("id", PrimaryKeyValue.INF_MIN).build();
+
+		// 设置结束主键
+		PrimaryKey pkEnd = new PrimaryKeyBuilder().add("_id", PrimaryKeyValue.INF_MAX)
+				.add("id", PrimaryKeyValue.INF_MAX).build();
+		JSONArray s = TSRepository.nativeGetRange(client, cateInfoRepository.getTableName(), pkStart, pkEnd, 100, 0);
+		System.out.println(JSON.toJSONString(s, true));
+	}
+
+	private static void MatchQuery(SyncClient client) throws Exception {
+		TSQL ts = new TSQL();
+		ts.Wildcard(OP.AND, "taskId", "4*3");
+		ts.setLimit(100);
+		ts.setOffset(0);
+		SearchQuery query = ts.build();
+		JSONObject j = TSRepository.nativeSearch(client, importTempRecordRepository.getTableName(),
+				"ImportTempRecordIndex", query);
+		System.out.println(JSON.toJSONString(j, true));
 	}
 
 	private static void batchWriteRow(SyncClient client) {
@@ -219,7 +250,7 @@ public class InboxTest {
 
 	private static void indexTest(SyncClient client) {
 		// 测试创建表
-		TSUtils.createTableByEntity(client, ImportTempRecord.class);
+		TSUtils.createTableByEntity(client, Part.class);
 
 		// 测试删除表
 //		 TSUtils.drapTableByEntity(client, ImportTempRecord.class);

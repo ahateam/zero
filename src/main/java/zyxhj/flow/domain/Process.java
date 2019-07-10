@@ -2,6 +2,10 @@ package zyxhj.flow.domain;
 
 import java.util.Date;
 
+/**
+ * 流程
+ *
+ */
 public class Process {
 
 	public Long pdId;

@@ -84,7 +84,6 @@ public class Content extends TSEntity {
 	/**
 	 * 编号
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.LONG, enableSortAndAgg = false, store = true)
 	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
 	public Long id;
 
@@ -126,7 +125,7 @@ public class Content extends TSEntity {
 	/**
 	 * 标题
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.KEYWORD, enableSortAndAgg = false, store = false)
+	@TSAnnIndex(name = "ContentIndex", type = FieldType.TEXT, enableSortAndAgg = false, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String title;
 
