@@ -17,7 +17,8 @@ public class Action {
 	public String type;
 
 	/**
-	 * 规则引擎脚本(包含跳转目标target)
+	 * 规则引擎脚本</br>
+	 * 
 	 */
 	public JSONArray rules;
 

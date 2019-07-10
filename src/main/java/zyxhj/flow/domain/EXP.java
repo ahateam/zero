@@ -2,15 +2,24 @@ package zyxhj.flow.domain;
 
 /**
  * 规则表达式
- *
  */
 public class EXP {
 
-	public static final String AND = "AND";
-	public static final String OR = "OR";
-	public static final String NOT = "NOT";
+	/**
+	 * 左操作数，或其引用</br>
+	 * val，表示值，ref，表示引用
+	 */
+	public String left;
 
-	public Rule role;
+	/**
+	 * 运算符</br>
+	 * > , < , != , == , >= , <= , && , || </br>
+	 */
+	public String op;
 
-	public String rel;
+	/**
+	 * 要比对的值，或其引用，或子表达式</br>
+	 * val，表示值，ref，表示引用，exp，表示子表达式
+	 */
+	public String right;
 }

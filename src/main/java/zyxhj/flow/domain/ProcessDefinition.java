@@ -13,7 +13,7 @@ public class ProcessDefinition {
 	 * 流程图泳道名称列表，泳道名称不可重复</br>
 	 * JSONArray格式
 	 */
-	public JSONArray parts;
+	public JSONArray lanes;
 
 	/**
 	 * 流程节点结构体</br>
@@ -26,7 +26,7 @@ public class ProcessDefinition {
 	 * 资产</br>
 	 * 文件，合同等
 	 */
-	public JSONObject assets;
+	public JSONArray assets;
 
 	/**
 	 * startPoint，流程起点位置</br>
