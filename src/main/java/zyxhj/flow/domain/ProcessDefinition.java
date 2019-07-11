@@ -3,6 +3,10 @@ package zyxhj.flow.domain;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+/**
+ * 流程定义
+ *
+ */
 public class ProcessDefinition {
 
 	public Long id;

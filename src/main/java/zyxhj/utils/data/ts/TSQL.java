@@ -243,13 +243,13 @@ public class TSQL {
 
 	// TODO 有问题，仍未实现
 
-	public TSQL Range(OP op, String fieldName, RANGE range, Object value) throws ServerException {
-		if (value != null) {
-			RangeQuery q = new RangeQuery(); // 设置查询类型为RangeQuery
-			q.setFieldName(fieldName); // 设置针对哪个字段
-			q.greaterThan(ColumnValue.fromLong(3));
-			// link(op, q);
-		}
+	public TSQL Range(OP op, String fieldName, ColumnValue from, ColumnValue to) throws ServerException {
+		RangeQuery q = new RangeQuery(); // 设置查询类型为RangeQuery
+		q.setFieldName(fieldName); // 设置针对哪个字段
+		q.setFrom(from); // 开始位置值
+		q.setTo(to); // 结束位置值
+		q.greaterThan(ColumnValue.fromLong(3));
+		// link(op, q);
 		return this;
 	}
 

@@ -1,20 +1,40 @@
 package zyxhj.flow.service;
 
+import java.util.Date;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alicloud.openservices.tablestore.SyncClient;
+import com.alicloud.openservices.tablestore.model.Column;
+import com.alicloud.openservices.tablestore.model.PrimaryKey;
+import com.alicloud.openservices.tablestore.model.PrimaryKeyValue;
 
 import zyxhj.flow.domain.Activity;
 import zyxhj.flow.domain.Asset;
+import zyxhj.flow.domain.Part;
 import zyxhj.flow.domain.ProcessDefinition;
+import zyxhj.flow.repository.PartRepository;
+import zyxhj.utils.IDUtils;
+import zyxhj.utils.Singleton;
+import zyxhj.utils.data.ts.ColumnBuilder;
+import zyxhj.utils.data.ts.PrimaryKeyBuilder;
+import zyxhj.utils.data.ts.TSRepository;
 
 public class FlowService {
 
 	private static Logger log = LoggerFactory.getLogger(FlowService.class);
+	private PartRepository partRepository;
 
 	public FlowService() {
+		try {
+			partRepository = Singleton.ins(PartRepository.class);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
 	}
 
 	/**
@@ -81,4 +101,58 @@ public class FlowService {
 	public void setVisualization(ProcessDefinition pd, JSONObject visualization) {
 		pd.visualization = visualization;
 	}
+
+	/**
+	 * 创建附件
+	 */
+	public Part createPart(SyncClient client, String name, String url, String ext) throws Exception {
+		Part p = new Part();
+		Long id = IDUtils.getSimpleId();
+		p._id = IDUtils.simpleId2Hex(id).substring(0, 4);
+		p.id = id;
+		p.name = name;
+		p.url = url;
+		p.ext = ext;
+		p.createTime = new Date();
+		partRepository.insert(client, p, false);
+		return p;
+	}
+
+	/**
+	 * 删除附件
+	 */
+	public void delPart(SyncClient client, String id, Long partId) throws Exception {
+		PrimaryKey pk = new PrimaryKeyBuilder().add("_id", id).add("id", partId).build();
+		TSRepository.nativeDel(client, partRepository.getTableName(), pk);
+	}
+
+	/**
+	 * 修改附件信息
+	 */
+	public void editPart(SyncClient client, String id, Long partId, String name, String url, String ext)
+			throws Exception {
+		PrimaryKey pk = new PrimaryKeyBuilder().add("_id", id).add("id", partId).build();
+		ColumnBuilder cb = new ColumnBuilder();
+		cb.add("name", name);
+		cb.add("url", url);
+		cb.add("ext", ext);
+		List<Column> columns = cb.build();
+		TSRepository.nativeUpdate(client, partRepository.getTableName(), pk, columns);
+	}
+
+	/**
+	 * 获取所有附件信息
+	 */
+	public JSONArray getParts(SyncClient client, Integer count, Integer offset) throws Exception {
+		// 设置起始主键
+		PrimaryKey pkStart = new PrimaryKeyBuilder().add("_id", PrimaryKeyValue.INF_MIN)
+				.add("id", PrimaryKeyValue.INF_MIN).build();
+
+		// 设置结束主键
+		PrimaryKey pkEnd = new PrimaryKeyBuilder().add("_id", PrimaryKeyValue.INF_MAX)
+				.add("id", PrimaryKeyValue.INF_MAX).build();
+
+		return TSRepository.nativeGetRange(client, partRepository.getTableName(), pkStart, pkEnd, count, offset);
+	}
+
 }
