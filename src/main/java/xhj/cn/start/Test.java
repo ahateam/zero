@@ -2,7 +2,7 @@ package xhj.cn.start;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
-import zyxhj.core.domain.ImportTask;
+import zyxhj.flow.domain.RDSObject;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.rds.RDSUtils;
 
@@ -22,7 +22,7 @@ public class Test {
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 
-			 RDSUtils.createTableByEntity(dds, ImportTask.class);
+			// RDSUtils.createTableByEntity(dds, RDSObject.class);
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

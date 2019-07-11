@@ -5,6 +5,7 @@ import java.lang.reflect.Modifier;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -101,7 +103,29 @@ public class RDSObjectMapper {
 		while (rs.next()) {
 			Object[] objs = new Object[columnCount];
 			for (int i = 0; i < columnCount; i++) {
-				objs[i] = rs.getObject(i + 1);
+				Object o = rs.getObject(i + 1);
+
+				if (objs[i] instanceof String) {
+					// 普通字符串或者对象
+					// 转换为JSONObject，并且包含_java_和_data_字段
+					try {
+						JSONObject tjo = JSON.parseObject((String) o);
+						String javaType = tjo.getString("_java_");
+						String data = tjo.getString("_data_");
+
+						if (StringUtils.isNotBlank(javaType) && StringUtils.isNoneBlank(data)) {
+							// 两个都不为空，则是特殊对象
+							// 去除javaType后，直接拼接
+							objs[i] = JSON.parseObject((String) o);
+						} else {
+							objs[i] = o;
+						}
+					} catch (Exception eee) {
+						objs[i] = o;
+					}
+				} else {
+					objs[i] = o;
+				}
 			}
 			ret.add(objs);
 		}
@@ -118,7 +142,29 @@ public class RDSObjectMapper {
 		while (rs.next()) {
 			JSONObject jsonObject = new JSONObject();// 将每一个结果集放入到jsonObject对象中
 			for (int i = 1; i <= columnCount; i++) {
-				jsonObject.put(RDSUtils.camelName(md.getColumnName(i)), rs.getObject(i));// 列值一一对应
+				Object o = rs.getObject(i);
+				if (o instanceof String) {
+					// 普通字符串或者对象
+					// 转换为JSONObject，并且包含_java_和_data_字段
+					try {
+						JSONObject tjo = JSON.parseObject((String) o);
+						String javaType = tjo.getString("_java_");
+						String data = tjo.getString("_data_");
+
+						if (StringUtils.isNotBlank(javaType) && StringUtils.isNoneBlank(data)) {
+							// 两个都不为空，则是特殊对象
+							// 去除javaType后，直接拼接
+							jsonObject.put(RDSUtils.camelName(md.getColumnName(i)), JSON.parseObject((String) o));
+						} else {
+							jsonObject.put(RDSUtils.camelName(md.getColumnName(i)), o);// 列值一一对应
+						}
+					} catch (Exception eee) {
+						jsonObject.put(RDSUtils.camelName(md.getColumnName(i)), o);// 列值一一对应
+					}
+				} else {
+					// 其它基础类型
+					jsonObject.put(RDSUtils.camelName(md.getColumnName(i)), o);// 列值一一对应
+				}
 			}
 			ret.add(jsonObject);
 		}
@@ -126,7 +172,7 @@ public class RDSObjectMapper {
 	}
 
 	/**
-	 * 发序列化到对象列表
+	 * 发序列化到对象列表done
 	 */
 	public <T> List<T> deserialize(ResultSet rs, Class<T> clazz) throws Exception {
 		List<T> ret = new ArrayList<>();
@@ -154,7 +200,39 @@ public class RDSObjectMapper {
 			Entry<String, RDSFieldMapper> entry = it.next();
 			RDSFieldMapper mapper = entry.getValue();
 			Object value = mapper.getFieldValue(t);
-			ret.put(mapper.alias, value);
+
+			if (value instanceof Boolean) {
+				ret.put(mapper.alias, value);
+			} else if (value instanceof Byte) {
+				ret.put(mapper.alias, value);
+			} else if (value instanceof Short) {
+				ret.put(mapper.alias, value);
+			} else if (value instanceof Integer) {
+				ret.put(mapper.alias, value);
+			} else if (value instanceof Long) {
+				ret.put(mapper.alias, value);
+			} else if (value instanceof Float) {
+				ret.put(mapper.alias, value);
+			} else if (value instanceof Double) {
+				ret.put(mapper.alias, value);
+			} else if (value instanceof String) {
+				ret.put(mapper.alias, value);
+			} else if (value instanceof Date) {
+				ret.put(mapper.alias, value);
+			}
+			// else if (value instanceof JSONObject) {
+			// ret.put(mapper.alias, ((JSONObject) value).toJSONString());
+			// } else if (value instanceof JSONArray) {
+			// ret.put(mapper.alias, ((JSONArray) value).toJSONString());
+			// }
+			else {
+				// 其它的特有对象
+				JSONObject jo = new JSONObject();
+				jo.put("_java_", value.getClass().getName());
+				jo.put("_data_", JSON.toJSONString(value));
+				ret.put(mapper.alias, jo.toJSONString());
+			}
+
 		}
 		return ret;
 	}

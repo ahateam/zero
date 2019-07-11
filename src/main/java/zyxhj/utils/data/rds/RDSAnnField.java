@@ -33,6 +33,8 @@ public @interface RDSAnnField {
 
 	public static final String JSON = "JSON";
 
+	public static final String OBJECT = "JSON";
+
 	/**
 	 * 数据库字段别名</br>
 	 * 数据库字段命名规则：小写，下划线分割</br>
