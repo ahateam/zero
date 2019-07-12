@@ -1,17 +1,42 @@
 package zyxhj.flow.domain;
 
-import com.alibaba.fastjson.JSON;
-
+import zyxhj.utils.api.Controller.ENUMVALUE;
+import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
-import zyxhj.utils.data.ts.TSAnnEntity;
-import zyxhj.utils.data.ts.TSEntity;
 
 /**
  * 表结构
  */
-@TSAnnEntity(alias = "TableSchema")
-public class TableSchema extends TSEntity {
+@RDSAnnEntity(alias = "TableSchema")
+public class TableSchema {
+
+	public static enum TYPE implements ENUMVALUE {
+		QUERYTABLE((byte) 0, "独立建表模式，可以查询"), //
+		VIRTUALQUERYTABLE((byte) 1, "RDS的JSON内嵌虚拟表模式，可以查询"), //
+		VIRTUALTABLE((byte) 2, "TableStore存储，不能查询"), //
+		;
+
+		private byte v;
+		private String txt;
+
+		private TYPE(Byte v, String txt) {
+			this.v = v;
+			this.txt = txt;
+		}
+
+		@Override
+		public byte v() {
+			return v;
+		}
+
+		@Override
+		public String txt() {
+			return txt;
+		}
+	}
+	
+	
 
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
@@ -33,12 +58,18 @@ public class TableSchema extends TSEntity {
 	 * 字段数量
 	 */
 	@RDSAnnField(column = RDSAnnField.INTEGER)
-	public Long columnCount;
+	public Integer columnCount;
+
+	/**
+	 * 表类型
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte type;
 
 	/**
 	 * 数据列
 	 */
 	@RDSAnnField(column = RDSAnnField.JSON)
-	public JSON columns;
+	public String columns;
 
 }

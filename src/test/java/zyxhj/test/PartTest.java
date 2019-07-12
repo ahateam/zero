@@ -1,11 +1,17 @@
 package zyxhj.test;
 
+import java.util.Date;
+import java.util.List;
+
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.AsyncClient;
 import com.alicloud.openservices.tablestore.SyncClient;
 
+import zyxhj.flow.domain.TableData;
+import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.service.FlowService;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.data.DataSource;
@@ -56,6 +62,16 @@ public class PartTest {
 		// 获取所有附件
 //		getPart(syncClient);
 
+//		createTableSchemas(conn);
+
+//		getTableSchemas(conn);
+
+//		createTableData(conn);
+
+//		getTableData(conn);
+
+		getTableDataByWhere(conn);
+
 	}
 
 	private static void getPart(SyncClient client) throws Exception {
@@ -86,6 +102,80 @@ public class PartTest {
 		String url = "http://jitijingji-test1.oss-cn-hangzhou.aliyuncs.com/asset/399314046162276/399314203051983/15598211122310403%25E8%25B5%2584%25E4%25BA%25A7%25E6%2595%25B0%25E6%258D%25AE.xlsx";
 		String ext = "";
 		System.out.println(flowService.createPart(client, name, url, ext));
+	}
+
+	private static void createTableSchemas(DruidPooledConnection conn) throws Exception {
+		String name = "资产表";
+		String alias = "tb_test";
+		Integer columnCount = 16;
+		Byte type = 0;
+		JSONArray json = new JSONArray();
+		JSONObject jo = new JSONObject();
+		jo.put("alias", "name");
+		jo.put("dataType", "[String,50]");
+		jo.put("type", 1);
+		jo.put("necessary", 1);
+
+		json.add(jo);
+
+		jo = new JSONObject();
+		jo.put("alias", "age");
+		jo.put("dataType", "[Integer,10]");
+		jo.put("type", 1);
+		jo.put("necessary", 1);
+
+		json.add(jo);
+
+		jo = new JSONObject();
+		jo.put("alias", "create_time");
+		jo.put("dataType", "[date]");
+		jo.put("type", 1);
+		jo.put("necessary", 1);
+		json.add(jo);
+		String columns = json.toJSONString();
+
+		flowService.createTableSchema(conn, name, alias, columnCount, type, columns);
+	}
+
+	private static void getTableSchemas(DruidPooledConnection conn2) throws Exception {
+		Integer count = 10;
+		Integer offset = 0;
+		List<TableSchema> li = flowService.getTableSchema(conn2, count, offset);
+		for (TableSchema tableSchema : li) {
+			System.out.println(tableSchema.columns);
+		}
+
+	}
+
+	private static void createTableData(DruidPooledConnection conn) throws Exception {
+		Long tableSchemaId = 400106952179199L;
+		JSONObject jo = new JSONObject();
+		jo.put("name", "李王五");
+		jo.put("age", 30);
+		jo.put("create_time", new Date());
+
+		flowService.createTableData(conn, tableSchemaId, jo.toJSONString());
+	}
+
+	private static void getTableData(DruidPooledConnection conn) throws Exception {
+
+		List<TableData> li = flowService.getTableData(conn, 10, 0);
+		for (TableData tableData : li) {
+			System.out.println(tableData.data);
+		}
+	}
+
+	private static void getTableDataByWhere(DruidPooledConnection conn) throws Exception {
+
+		Long tableSchemaId = 400106952179199L;
+		String alias = "create_time";
+		Object value = new Date().getTime();
+		String queryMethod = "<";
+		List<TableData> li = flowService.getTableDataByWhere(conn, tableSchemaId, alias, value, queryMethod, 10, 0);
+		for (TableData tableData : li) {
+			System.out.println(tableData.data);
+		}
+
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.SyncClient;
@@ -17,9 +18,13 @@ import zyxhj.flow.domain.Activity;
 import zyxhj.flow.domain.Asset;
 import zyxhj.flow.domain.Part;
 import zyxhj.flow.domain.ProcessDefinition;
+import zyxhj.flow.domain.RDSObject;
 import zyxhj.flow.domain.TableData;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.repository.PartRepository;
+import zyxhj.flow.repository.RDSObjectRepository;
+import zyxhj.flow.repository.TableDataRepository;
+import zyxhj.flow.repository.TableSchemaRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.data.ts.ColumnBuilder;
@@ -30,10 +35,16 @@ public class FlowService {
 
 	private static Logger log = LoggerFactory.getLogger(FlowService.class);
 	private PartRepository partRepository;
+	private TableSchemaRepository tableSchemaRepository;
+	private RDSObjectRepository testRepository;
+	private TableDataRepository tableDataRepository;
 
 	public FlowService() {
 		try {
 			partRepository = Singleton.ins(PartRepository.class);
+			tableSchemaRepository = Singleton.ins(TableSchemaRepository.class);
+			testRepository = Singleton.ins(RDSObjectRepository.class);
+			tableDataRepository = Singleton.ins(TableDataRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -158,23 +169,69 @@ public class FlowService {
 	}
 
 	// 创建表结构
-	public void createTableSchema() {
+	public TableSchema createTableSchema(DruidPooledConnection conn, String name, String alias, Integer columnCount,
+			Byte type, String columns) throws Exception {
+		if (type == TableSchema.TYPE.QUERYTABLE.v()) {
+			// queryTable 独立建表模式，可以查询
+			TableSchema ts = new TableSchema();
+			ts.id = IDUtils.getSimpleId();
+			ts.name = name;
+			ts.alias = alias;
+			ts.columnCount = columnCount;
+			ts.type = type;
+			ts.columns = columns;
+			tableSchemaRepository.insert(conn, ts);
+			return ts;
+		} else if (type == TableSchema.TYPE.VIRTUALQUERYTABLE.v()) {
+			// RDS的JSON内嵌虚拟表模式，可以查询
+			RDSObject rd = new RDSObject();
+			rd.id = IDUtils.getSimpleId();
+			rd.name = name;
+			TableSchema ts = new TableSchema();
+			ts.id = IDUtils.getSimpleId();
+			ts.name = name;
+			ts.alias = alias;
+			ts.columnCount = columnCount;
+			ts.type = type;
+			ts.columns = columns;
 
+			rd.tsObject = ts;
+			testRepository.insert(conn, rd);
+
+			return ts;
+		} else if (type == TableSchema.TYPE.VIRTUALTABLE.v()) {
+			// TableStore存储，不能查询
+			return null;
+		} else {
+			return null;
+		}
 	}
 
-	// 获取数据表结构
-	public TableSchema getTableSchema() {
-		return null;
+	// 获取所有数据表
+	public List<TableSchema> getTableSchema(DruidPooledConnection conn, Integer count, Integer offset)
+			throws Exception {
+		return tableSchemaRepository.getList(conn, count, offset);
 	}
 
 	// 添加表数据
-	public void createTableData() {
-
+	public TableData createTableData(DruidPooledConnection conn, Long tableSchemaId, String data) throws Exception {
+		TableData td = new TableData();
+		td.id = IDUtils.getSimpleId();
+		td.tableSchemaId = tableSchemaId;
+		td.data = data;
+		tableDataRepository.insert(conn, td);
+		return td;
 	}
 
 	// 获取数据
-	public TableData getTableData() {
-		return null;
+	public List<TableData> getTableData(DruidPooledConnection conn, Integer count, Integer offset) throws Exception {
+		return tableDataRepository.getList(conn, count, offset);
+	}
+
+	// 根据条件查询
+	public List<TableData> getTableDataByWhere(DruidPooledConnection conn, Long tableSchemaId, String alias,
+			Object value, String queryMethod, Integer count, Integer offset) throws Exception {
+		return tableDataRepository.getTableDataByWhere(conn, tableSchemaId, alias, value, queryMethod, count, offset);
 	}
 
 	// 创建查询规则
@@ -186,7 +243,5 @@ public class FlowService {
 	public JSONArray getTableDataByFormula() {
 		return null;
 	}
-	
-	public 
 
 }

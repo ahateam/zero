@@ -1,7 +1,5 @@
 package zyxhj.flow.domain;
 
-import com.alibaba.fastjson.JSON;
-
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
 import zyxhj.utils.data.ts.TSAnnEntity;

@@ -24,5 +24,8 @@ public class RDSObject {
 	public JSONArray jsonArray;
 
 	@RDSAnnField(column = RDSAnnField.OBJECT)
-	public TableSchema object;
+	public TableSchema tsObject;
+
+	@RDSAnnField(column = RDSAnnField.OBJECT)
+	public Asset assetObject;
 }

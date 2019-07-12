@@ -53,11 +53,11 @@ public class RDSObjectTest {
 		rr.jsonArray = ar;
 
 		TableSchema ts = new TableSchema();
-		ts.id = IDUtils.getHexSimpleId();
+		ts.id = IDUtils.getSimpleId();
 		ts.name = "xxxxx";
 		ts.alias = "斯柯达法哈萨克";
 
-		rr.object = ts;
+//		rr.object = ts;
 
 		try {
 			testRepository.insert(conn, rr);

@@ -1,17 +1,16 @@
 package zyxhj.flow.domain;
 
-import com.alibaba.fastjson.JSON;
-
+import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
 import zyxhj.utils.data.ts.TSAnnEntity;
 
 /**
- * 表运算方式
+ * 表数据
  *
  */
-@TSAnnEntity(alias = "TableData")
-public class TableData  {
+@RDSAnnEntity(alias = "TableData")
+public class TableData {
 
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
@@ -24,15 +23,9 @@ public class TableData  {
 	public Long tableSchemaId;
 
 	/**
-	 * 表计运算公式
+	 * 运算表数据
 	 */
 	@RDSAnnField(column = RDSAnnField.JSON)
-	public String formula;
-
-	/**
-	 * 运算返回结果集
-	 */
-	@RDSAnnField(column = RDSAnnField.JSON)
-	public JSON resultData;
+	public String data;
 
 }
