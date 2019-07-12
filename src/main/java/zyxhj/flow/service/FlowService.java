@@ -17,6 +17,8 @@ import zyxhj.flow.domain.Activity;
 import zyxhj.flow.domain.Asset;
 import zyxhj.flow.domain.Part;
 import zyxhj.flow.domain.ProcessDefinition;
+import zyxhj.flow.domain.TableData;
+import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.repository.PartRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
@@ -154,5 +156,37 @@ public class FlowService {
 
 		return TSRepository.nativeGetRange(client, partRepository.getTableName(), pkStart, pkEnd, count, offset);
 	}
+
+	// 创建表结构
+	public void createTableSchema() {
+
+	}
+
+	// 获取数据表结构
+	public TableSchema getTableSchema() {
+		return null;
+	}
+
+	// 添加表数据
+	public void createTableData() {
+
+	}
+
+	// 获取数据
+	public TableData getTableData() {
+		return null;
+	}
+
+	// 创建查询规则
+	public void createTableQuery() {
+
+	}
+
+	// 根据规则查询数据
+	public JSONArray getTableDataByFormula() {
+		return null;
+	}
+	
+	public 
 
 }

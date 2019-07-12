@@ -2,9 +2,7 @@ package xhj.cn.start;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
-import zyxhj.flow.domain.RDSObject;
 import zyxhj.utils.data.DataSource;
-import zyxhj.utils.data.rds.RDSUtils;
 
 public class Test {
 
