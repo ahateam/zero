@@ -27,6 +27,9 @@ public class RDSObjectMapper {
 
 	private Map<String, RDSFieldMapper> fieldMapperMap = new HashMap<>();
 
+	public static final String JAVA_KEY = "c_class";
+	public static final String JAVA_DATA = "c_data";
+
 	public RDSObjectMapper(Class<?> clazz) {
 		RDSAnnEntity annEntity = clazz.getAnnotation(RDSAnnEntity.class);
 		this.tableName = annEntity.alias();
@@ -110,8 +113,8 @@ public class RDSObjectMapper {
 					// 转换为JSONObject，并且包含_java_和_data_字段
 					try {
 						JSONObject tjo = JSON.parseObject((String) o);
-						String javaType = tjo.getString("_java_");
-						String data = tjo.getString("_data_");
+						String javaType = tjo.getString(JAVA_KEY);
+						String data = tjo.getString(JAVA_DATA);
 
 						if (StringUtils.isNotBlank(javaType) && StringUtils.isNoneBlank(data)) {
 							// 两个都不为空，则是特殊对象
@@ -148,8 +151,8 @@ public class RDSObjectMapper {
 					// 转换为JSONObject，并且包含_java_和_data_字段
 					try {
 						JSONObject tjo = JSON.parseObject((String) o);
-						String javaType = tjo.getString("_java_");
-						String data = tjo.getString("_data_");
+						String javaType = tjo.getString(JAVA_KEY);
+						String data = tjo.getString(JAVA_DATA);
 
 						if (StringUtils.isNotBlank(javaType) && StringUtils.isNoneBlank(data)) {
 							// 两个都不为空，则是特殊对象
@@ -228,8 +231,8 @@ public class RDSObjectMapper {
 			else {
 				// 其它的特有对象
 				JSONObject jo = new JSONObject();
-				jo.put("_java_", value.getClass().getName());
-				jo.put("_data_", JSON.toJSONString(value));
+				jo.put(JAVA_KEY, value.getClass().getName());
+				jo.put(JAVA_DATA, value);
 				ret.put(mapper.alias, jo.toJSONString());
 			}
 

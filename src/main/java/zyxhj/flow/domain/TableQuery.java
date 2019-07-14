@@ -1,15 +1,16 @@
 package zyxhj.flow.domain;
 
+import com.alibaba.fastjson.JSONObject;
+
+import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
-import zyxhj.utils.data.ts.TSAnnEntity;
-import zyxhj.utils.data.ts.TSEntity;
 
 /**
- * 表结构
+ * 表查询
  */
-@TSAnnEntity(alias = "tb_table_query")
-public class TableQuery extends TSEntity {
+@RDSAnnEntity(alias = "tb_table_query")
+public class TableQuery {
 
 	/**
 	 * 表ID
@@ -26,6 +27,17 @@ public class TableQuery extends TSEntity {
 	 * 查询语句
 	 */
 	@RDSAnnField(column = RDSAnnField.TEXT)
-	public String query;
+	public JSONObject queryFormula;
 
+	public static class Exp {
+		public Object left;
+		public String op;
+		public Object right;
+
+		public Exp(Object left, String op, Object right) {
+			this.left = left;
+			this.op = op;
+			this.right = right;
+		}
+	}
 }

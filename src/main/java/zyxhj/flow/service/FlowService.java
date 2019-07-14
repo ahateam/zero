@@ -27,10 +27,11 @@ import zyxhj.flow.domain.Asset;
 import zyxhj.flow.domain.Part;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.TableData;
+import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.repository.PartRepository;
-import zyxhj.flow.repository.RDSObjectRepository;
 import zyxhj.flow.repository.TableDataRepository;
+import zyxhj.flow.repository.TableQueryRepository;
 import zyxhj.flow.repository.TableSchemaRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
@@ -46,8 +47,8 @@ public class FlowService {
 	private static Logger log = LoggerFactory.getLogger(FlowService.class);
 	private PartRepository partRepository;
 	private TableSchemaRepository tableSchemaRepository;
-	private RDSObjectRepository testRepository;
 	private TableDataRepository tableDataRepository;
+	private TableQueryRepository tableQueryRepository;
 
 	private ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
 
@@ -55,8 +56,8 @@ public class FlowService {
 		try {
 			partRepository = Singleton.ins(PartRepository.class);
 			tableSchemaRepository = Singleton.ins(TableSchemaRepository.class);
-			testRepository = Singleton.ins(RDSObjectRepository.class);
 			tableDataRepository = Singleton.ins(TableDataRepository.class);
+			tableQueryRepository = Singleton.ins(TableQueryRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -235,7 +236,7 @@ public class FlowService {
 	}
 
 	// 创建表结构
-	public TableSchema createTableSchema(DruidPooledConnection conn, String alias, Byte type, JSONArray columns)
+	public void createTableSchema(DruidPooledConnection conn, String alias, Byte type, JSONArray columns)
 			throws Exception {
 
 		// TODO 暂时只支持VIRTUAL_QUERY_TABLE
@@ -248,8 +249,6 @@ public class FlowService {
 		ts.columns = columns;
 
 		tableSchemaRepository.insert(conn, ts);
-
-		return ts;
 	}
 
 	public int updateTableSchema(DruidPooledConnection conn, Long id, String alias, JSONArray columns)
@@ -272,7 +271,7 @@ public class FlowService {
 	}
 
 	// 添加表数据
-	public TableData insertTableData(DruidPooledConnection conn, Long tableSchemaId, JSONObject data) throws Exception {
+	public void insertTableData(DruidPooledConnection conn, Long tableSchemaId, JSONObject data) throws Exception {
 
 		TableData td = new TableData();
 		td.tableSchemaId = tableSchemaId;
@@ -301,9 +300,7 @@ public class FlowService {
 			}
 
 			tableDataRepository.insert(conn, td);
-			return td;
 		}
-
 	}
 
 	public int updateTableData(DruidPooledConnection conn, Long tableSchemaId, Long dataId, JSONObject data)
@@ -344,12 +341,37 @@ public class FlowService {
 		}
 	}
 
+	/**
+	 * 创建表查询
+	 */
+	public void createTableQuery(DruidPooledConnection conn, Long tableSchemaId, JSONObject query) throws Exception {
+		TableQuery tq = new TableQuery();
+		tq.tableSchemaId = tableSchemaId;
+		tq.id = IDUtils.getSimpleId();
+		tq.queryFormula = query;
+
+		tableQueryRepository.insert(conn, tq);
+	}
+
+	// 获取查询
+	public List<TableQuery> getTableQuerys(DruidPooledConnection conn, Long tableSchemaId, Integer count,
+			Integer offset) throws Exception {
+		return tableQueryRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);
+	}
+
+	// 删除查询
+	public int delTableQuery(DruidPooledConnection conn, Long tableSchemaId, Long dataId) throws Exception {
+		return tableQueryRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
+				new Object[] { tableSchemaId, dataId });
+	}
+
 	// 获取数据
-	public List<TableData> getTableData(DruidPooledConnection conn, Long tableSchemaId, Integer count, Integer offset)
+	public List<TableData> getTableDatas(DruidPooledConnection conn, Long tableSchemaId, Integer count, Integer offset)
 			throws Exception {
 		return tableDataRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);
 	}
 
+	// 删除数据
 	public int delTableData(DruidPooledConnection conn, Long tableSchemaId, Long dataId) throws Exception {
 		return tableDataRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
 				new Object[] { tableSchemaId, dataId });
@@ -357,21 +379,17 @@ public class FlowService {
 
 	/**
 	 * 根据条件查询</br>
-	 * TODO 要根据查询语句重写，多条件查询
 	 */
-	public List<TableData> getTableDataByWhere(DruidPooledConnection conn, Long tableSchemaId, String alias,
-			Object value, String queryMethod, Integer count, Integer offset) throws Exception {
-		return tableDataRepository.getTableDataByWhere(conn, tableSchemaId, alias, value, queryMethod, count, offset);
-	}
+	public List<TableData> queryTableDatas(DruidPooledConnection conn, Long tableSchemaId, Long queryId, Integer count,
+			Integer offset) throws Exception {
 
-	// 创建查询规则
-	public void createTableQuery() {
-
-	}
-
-	// 根据规则查询数据
-	public JSONArray getTableDataByFormula() {
-		return null;
+		TableQuery tq = tableQueryRepository.getByANDKeys(conn, new String[] { "table_schema_id", "id" },
+				new Object[] { tableSchemaId, queryId });
+		if (tq == null || tq.queryFormula == null) {
+			throw new ServerException(BaseRC.FLOW_FORM_TABLE_QUERY_NOT_FOUND);
+		} else {
+			return tableDataRepository.getTableDatasByQuery(conn, tableSchemaId, tq.queryFormula, count, offset);
+		}
 	}
 
 }

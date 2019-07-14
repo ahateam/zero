@@ -33,12 +33,6 @@ public class TSQL {
 		AND, OR, NOT, NONE
 	}
 
-	public static enum RANGE {
-		GREATER_THAN, GREATER_THAN_OR_EQUAL, //
-		LESS_THAN, LESS_THAN_OR_EQUAL, //
-		FROM, TO
-	}
-
 	private Integer offset = 0;
 	private Integer limit = 10;
 	private boolean getTotalCount = false;

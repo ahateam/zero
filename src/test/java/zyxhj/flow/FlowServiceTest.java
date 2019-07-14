@@ -18,6 +18,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import zyxhj.flow.domain.TableData;
+import zyxhj.flow.domain.TableExp;
+import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.service.FlowService;
 import zyxhj.utils.Singleton;
@@ -112,8 +115,14 @@ public class FlowServiceTest {
 		conn.close();
 	}
 
+	private static final Long schemaId = 400159699711499L;
+
+	private static final Long dataId = 400159711950692L;
+
+	private static final Long queryId = 400159724862966L;
+
 	@Test
-	public void testCreateTableSchemas() {
+	public void testCreateTableSchema() {
 		Byte type = 1;
 
 		JSONArray columns = new JSONArray();
@@ -143,8 +152,7 @@ public class FlowServiceTest {
 		columns.add(jo);
 
 		try {
-			TableSchema ts = flowService.createTableSchema(conn, "表的别名", type, columns);
-			System.out.println(JSON.toJSONString(ts));
+			flowService.createTableSchema(conn, "表的别名", type, columns);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -162,7 +170,7 @@ public class FlowServiceTest {
 		jo.put("COL5", 123);
 
 		try {
-			flowService.insertTableData(conn, 400153987171707L, jo);
+			flowService.insertTableData(conn, schemaId, jo);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -181,11 +189,42 @@ public class FlowServiceTest {
 		jo.put("COL5", 2);
 
 		try {
-			flowService.updateTableData(conn, 400153987171707L, 400154471082991L, jo);
+			flowService.updateTableData(conn, schemaId, dataId, jo);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
+	@Test
+	public void testCreateTableQuery() {
+
+		TableQuery.Exp exp1 = new TableQuery.Exp("'COL5'", "=", 2);
+
+		TableQuery.Exp exp2 = new TableQuery.Exp("'TOTAL1'", ">", 100);
+
+		TableQuery.Exp exp = new TableQuery.Exp(exp1, "AND", exp2);
+
+		System.out.println(JSON.toJSONString(exp));
+		JSONObject jo = JSON.parseObject(JSON.toJSONString(exp));
+		System.out.println(jo.toString());
+
+		try {
+			flowService.createTableQuery(conn, schemaId, jo);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testQueryTableDatas() {
+		try {
+			List<TableData> datas = flowService.queryTableDatas(conn, schemaId, queryId, 10, 0);
+			System.out.println(JSON.toJSONString(datas));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }

@@ -69,8 +69,6 @@ public class PartTest {
 
 		// getTableData(conn);
 
-		getTableDataByWhere(conn);
-
 	}
 
 	private static void editPart(SyncClient client) throws Exception {
@@ -149,23 +147,10 @@ public class PartTest {
 
 	private static void getTableData(DruidPooledConnection conn) throws Exception {
 
-		List<TableData> li = flowService.getTableData(conn, 123L, 10, 0);
+		List<TableData> li = flowService.getTableDatas(conn, 123L, 10, 0);
 		for (TableData tableData : li) {
 			System.out.println(tableData.data);
 		}
-	}
-
-	private static void getTableDataByWhere(DruidPooledConnection conn) throws Exception {
-
-		Long tableSchemaId = 400106952179199L;
-		String alias = "create_time";
-		Object value = new Date().getTime();
-		String queryMethod = "<";
-		List<TableData> li = flowService.getTableDataByWhere(conn, tableSchemaId, alias, value, queryMethod, 10, 0);
-		for (TableData tableData : li) {
-			System.out.println(tableData.data);
-		}
-
 	}
 
 }

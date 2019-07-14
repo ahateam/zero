@@ -110,6 +110,7 @@ public interface BaseRC {
 	 */
 	static final RC FLOW_FORM_TABLE_SCHEMA_NOT_FOUND = new RC("flow-0020", "流程表单结构不存在");
 	static final RC FLOW_FORM_TABLE_DATA_NOT_FOUND = new RC("flow-0021", "流程表单数据不存在");
+	static final RC FLOW_FORM_TABLE_QUERY_NOT_FOUND = new RC("flow-0022", "流程表单查询不存在");
 
 	/**
 	 * 集体经济项目错误

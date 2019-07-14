@@ -8,6 +8,7 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 /**
@@ -51,18 +52,6 @@ public class RDSFieldMapper {
 	protected Object getFieldValue(Object obj) throws Exception {
 		return field.get(obj);
 	}
-
-	// private Object get(ResultSet rs, String columnName) {
-	// try {
-	// if (rs.findColumn(columnName) >= 0) {
-	// rs.getObject(columnIndex)
-	// }else {
-	// return null;
-	// }
-	// } catch (SQLException e) {
-	// return null;
-	// }
-	// }
 
 	protected void putFieldValue(Object[] objs, int ind, ResultSet rs) throws Exception {
 		boolean hasColumn = true;
@@ -116,9 +105,10 @@ public class RDSFieldMapper {
 				String temp = rs.getString(alias);
 				if (StringUtils.isNoneBlank(temp)) {
 					JSONObject jo = JSON.parseObject(temp);
-					String javaType = jo.getString("java");
-					String data = jo.getString("data");
-					Object o = JSON.parseObject(data, Class.forName(javaType));
+					String javaType = jo.getString(RDSObjectMapper.JAVA_KEY);
+					// String data = jo.getString(RDSObjectMapper.JAVA_DATA);
+					// Object o = JSON.parseObject(data, Class.forName(javaType));
+					Object o = jo.getObject(RDSObjectMapper.JAVA_DATA, Class.forName(javaType));
 					objs[ind] = o;
 				} else {
 					objs[ind] = null;
@@ -187,9 +177,10 @@ public class RDSFieldMapper {
 				String temp = rs.getString(alias);
 				if (StringUtils.isNoneBlank(temp)) {
 					JSONObject jo = JSON.parseObject(temp);
-					String javaType = jo.getString("_java_");
-					String data = jo.getString("_data_");
-					Object o = JSON.parseObject(data, Class.forName(javaType));
+					String javaType = jo.getString(RDSObjectMapper.JAVA_KEY);
+					// String data = jo.getString(RDSObjectMapper.JAVA_DATA);
+					// Object o = JSON.parseObject(data, Class.forName(javaType));
+					Object o = jo.getObject(RDSObjectMapper.JAVA_DATA, Class.forName(javaType));
 					field.set(obj, o);
 				} else {
 					field.set(obj, null);
