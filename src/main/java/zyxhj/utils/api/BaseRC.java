@@ -106,6 +106,12 @@ public interface BaseRC {
 	static final RC ACTIVITY_NAME_EXIST = new RC("flow-0010", "Activity名称已存在");
 
 	/**
+	 * 表单引擎错误
+	 */
+	static final RC FLOW_FORM_TABLE_SCHEMA_NOT_FOUND = new RC("flow-0020", "流程表单结构不存在");
+	static final RC FLOW_FORM_TABLE_DATA_NOT_FOUND = new RC("flow-0021", "流程表单数据不存在");
+
+	/**
 	 * 集体经济项目错误
 	 * 
 	 */

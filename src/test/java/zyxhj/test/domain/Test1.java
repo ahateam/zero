@@ -1,4 +1,4 @@
-package zyxhj.test;
+package zyxhj.test.domain;
 
 import java.util.List;
 
@@ -6,7 +6,6 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import zyxhj.test.domain.Test;
 import zyxhj.test.repository.TestRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.data.DataSource;

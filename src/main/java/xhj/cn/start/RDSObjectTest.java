@@ -54,10 +54,9 @@ public class RDSObjectTest {
 
 		TableSchema ts = new TableSchema();
 		ts.id = IDUtils.getSimpleId();
-		ts.name = "xxxxx";
 		ts.alias = "斯柯达法哈萨克";
 
-//		rr.object = ts;
+		// rr.object = ts;
 
 		try {
 			testRepository.insert(conn, rr);

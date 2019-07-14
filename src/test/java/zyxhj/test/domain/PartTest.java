@@ -1,10 +1,9 @@
-package zyxhj.test;
+package zyxhj.test.domain;
 
 import java.util.Date;
 import java.util.List;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.AsyncClient;
@@ -51,34 +50,27 @@ public class PartTest {
 
 	public static void main(String[] args) throws Exception {
 		// 创建附件
-//			createPart(syncClient);
+		// createPart(syncClient);
 
 		// 删除附件
-//		delPart(syncClient);
+		// delPart(syncClient);
 
 		// 修改附件
-//		editPart(syncClient);
+		// editPart(syncClient);
 
 		// 获取所有附件
-//		getPart(syncClient);
+		// getPart(syncClient);
 
-//		createTableSchemas(conn);
+		// createTableSchemas(conn);
 
-//		getTableSchemas(conn);
+		// getTableSchemas(conn);
 
-//		createTableData(conn);
+		// createTableData(conn);
 
-//		getTableData(conn);
+		// getTableData(conn);
 
 		getTableDataByWhere(conn);
 
-	}
-
-	private static void getPart(SyncClient client) throws Exception {
-		Integer count = 10;
-		Integer offset = 10;
-		JSONArray p = flowService.getParts(client, count, offset);
-		System.out.println(JSON.toJSONString(p, true));
 	}
 
 	private static void editPart(SyncClient client) throws Exception {
@@ -94,7 +86,7 @@ public class PartTest {
 		String id = "16bd";
 		Long partId = 400061553356077L;
 
-		flowService.delPart(client, id, partId);
+		flowService.delPart(client, partId);
 	}
 
 	private static void createPart(SyncClient client) throws Exception {
@@ -105,8 +97,7 @@ public class PartTest {
 	}
 
 	private static void createTableSchemas(DruidPooledConnection conn) throws Exception {
-		String name = "资产表";
-		String alias = "tb_test";
+		String alias = "资产表";
 		Integer columnCount = 16;
 		Byte type = 0;
 		JSONArray json = new JSONArray();
@@ -132,9 +123,8 @@ public class PartTest {
 		jo.put("type", 1);
 		jo.put("necessary", 1);
 		json.add(jo);
-		String columns = json.toJSONString();
 
-		flowService.createTableSchema(conn, name, alias, columnCount, type, columns);
+		flowService.createTableSchema(conn, alias, type, json);
 	}
 
 	private static void getTableSchemas(DruidPooledConnection conn2) throws Exception {
@@ -154,12 +144,12 @@ public class PartTest {
 		jo.put("age", 30);
 		jo.put("create_time", new Date());
 
-		flowService.createTableData(conn, tableSchemaId, jo.toJSONString());
+		flowService.insertTableData(conn, tableSchemaId, jo);
 	}
 
 	private static void getTableData(DruidPooledConnection conn) throws Exception {
 
-		List<TableData> li = flowService.getTableData(conn, 10, 0);
+		List<TableData> li = flowService.getTableData(conn, 123L, 10, 0);
 		for (TableData tableData : li) {
 			System.out.println(tableData.data);
 		}

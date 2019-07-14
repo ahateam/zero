@@ -99,7 +99,7 @@ public class InboxTest {
 
 		// batchGetRow(client);
 
-//		indexTest(syncClient);
+		// indexTest(syncClient);
 
 		// 动态字段测试
 		// dynamicFieldsTest(client);
@@ -110,10 +110,10 @@ public class InboxTest {
 		// autoTest(syncClient);
 
 		// 模糊匹配
-//		MatchQuery(syncClient);
+		// MatchQuery(syncClient);
 
 		// 查询所有
-//		getCate(syncClient);
+		// getCate(syncClient);
 	}
 
 	private static void getCate(SyncClient client) throws Exception {
@@ -218,8 +218,7 @@ public class InboxTest {
 		try {
 
 			PrimaryKey pk = new PrimaryKeyBuilder()
-					.add("_id", CodecUtils.md52Hex(IDUtils.simpleId2Hex(id), CodecUtils.CHARSET_UTF8)).add("id", id)
-					.build();
+					.add("_id", CodecUtils.md52Hex(TSUtils.get_id(id), CodecUtils.CHARSET_UTF8)).add("id", id).build();
 
 			ColumnBuilder cb = new ColumnBuilder();
 			for (int i = 0; i < 3; i++) {
@@ -253,7 +252,7 @@ public class InboxTest {
 		TSUtils.createTableByEntity(client, Part.class);
 
 		// 测试删除表
-//		 TSUtils.drapTableByEntity(client, ImportTempRecord.class);
+		// TSUtils.drapTableByEntity(client, ImportTempRecord.class);
 
 		// 增加数据
 		// testAddData(client);
@@ -342,7 +341,7 @@ public class InboxTest {
 				}
 
 				CateInfo ci = new CateInfo();
-				ci._id = IDUtils.simpleId2Hex(id).substring(0, 4);
+				ci._id = TSUtils.get_id(id);
 				ci.id = id;
 				ci.region = region;
 				ci.cate = cate;

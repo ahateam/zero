@@ -20,9 +20,14 @@ import com.alicloud.openservices.tablestore.model.search.DeleteSearchIndexReques
 import com.alicloud.openservices.tablestore.model.search.FieldSchema;
 import com.alicloud.openservices.tablestore.model.search.IndexSchema;
 
+import zyxhj.utils.IDUtils;
 import zyxhj.utils.data.ts.TSAnnID.Key;
 
 public class TSUtils {
+
+	public static String get_id(Long id) {
+		return IDUtils.simpleId2Hex(id).substring(0, 4);
+	}
 
 	public static void createTableByEntity(SyncClient client, Class entityClass) {
 		try {

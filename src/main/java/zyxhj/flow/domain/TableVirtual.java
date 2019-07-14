@@ -6,10 +6,10 @@ import zyxhj.utils.data.ts.TSAnnEntity;
 import zyxhj.utils.data.ts.TSEntity;
 
 /**
- * 表结构
+ * 表格可视化样式
  */
-@TSAnnEntity(alias = "tb_table_query")
-public class TableQuery extends TSEntity {
+@TSAnnEntity(alias = "tb_table_virtual")
+public class TableVirtual extends TSEntity {
 
 	/**
 	 * 表ID
@@ -23,9 +23,9 @@ public class TableQuery extends TSEntity {
 	public Long id;
 
 	/**
-	 * 查询语句
+	 * 可视化定义（具体前端定）
 	 */
-	@RDSAnnField(column = RDSAnnField.TEXT)
-	public String query;
+	@RDSAnnField(column = RDSAnnField.JSON)
+	public String virtual;
 
 }
