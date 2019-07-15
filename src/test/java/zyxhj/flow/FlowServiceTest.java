@@ -19,7 +19,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.flow.domain.TableData;
-import zyxhj.flow.domain.TableExp;
 import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.service.FlowService;
@@ -200,9 +199,7 @@ public class FlowServiceTest {
 	public void testCreateTableQuery() {
 
 		TableQuery.Exp exp1 = new TableQuery.Exp("'COL5'", "=", 2);
-
 		TableQuery.Exp exp2 = new TableQuery.Exp("'TOTAL1'", ">", 100);
-
 		TableQuery.Exp exp = new TableQuery.Exp(exp1, "AND", exp2);
 
 		System.out.println(JSON.toJSONString(exp));
