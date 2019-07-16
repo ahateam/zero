@@ -1,7 +1,7 @@
 package zyxhj.flow.domain;
 
-import java.util.Date;
-
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
 
 import zyxhj.utils.data.ts.TSAnnEntity;
@@ -9,11 +9,8 @@ import zyxhj.utils.data.ts.TSAnnField;
 import zyxhj.utils.data.ts.TSAnnID;
 import zyxhj.utils.data.ts.TSEntity;
 
-/**
- * 流程实例
- */
-@TSAnnEntity(alias = "Process")
-public class Process extends TSEntity {
+@TSAnnEntity(alias = "ProcessActivity")
+public class ProcessActivity extends TSEntity{
 
 	/**
 	 * 分片编号，MD5(id)，避免数据热点
@@ -40,27 +37,35 @@ public class Process extends TSEntity {
 	public String title;
 
 	/**
-	 * 当前Activity节点
+	 * 所属泳道
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public ProcessActivity currActivity;
+	public String part;
 
 	/**
-	 * 当前节点的操作记录
+	 * 接收者（departments部门，roles角色，users用户）
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public ProcessRecord currRecord;
+	public JSONObject receivers;
 
-	/**
-	 * 进入节点时间
-	 */
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Date timestamp;
-
-	/**
-	 * 备注
-	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String remark;
+	public JSONArray assets;// 资产(文件，合同，表单等)
 
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public JSONObject actions;// 行为
+
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public JSONObject visualization;// 展示信息
+
+	public static class Receiver {
+
+		public static final String TYPE_DEPARTMENT = "department";
+		public static final String TYPE_ROLE = "role";
+		public static final String TYPE_USER = "user";
+
+		public String type;// 类型
+		public Long id;// 编号
+		public String label;// 标题
+		public String remark;// 备注
+	}
 }

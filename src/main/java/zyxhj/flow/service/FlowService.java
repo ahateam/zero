@@ -18,27 +18,31 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.SyncClient;
-import com.alicloud.openservices.tablestore.model.Column;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
-import com.alicloud.openservices.tablestore.model.PrimaryKeyValue;
+import com.alicloud.openservices.tablestore.model.search.SearchQuery;
 
-import zyxhj.flow.domain.Activity;
-import zyxhj.flow.domain.Asset;
 import zyxhj.flow.domain.Part;
+import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.TableData;
 import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.repository.PartRepository;
+import zyxhj.flow.repository.ProcessActivityRepository;
+import zyxhj.flow.repository.ProcessDefinitionRepository;
+import zyxhj.flow.repository.ProcessRecordRepository;
+import zyxhj.flow.repository.ProcessRepository;
 import zyxhj.flow.repository.TableDataRepository;
 import zyxhj.flow.repository.TableQueryRepository;
 import zyxhj.flow.repository.TableSchemaRepository;
+import zyxhj.flow.repository.TableVirtualRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
-import zyxhj.utils.data.ts.ColumnBuilder;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
+import zyxhj.utils.data.ts.TSQL;
+import zyxhj.utils.data.ts.TSQL.OP;
 import zyxhj.utils.data.ts.TSRepository;
 import zyxhj.utils.data.ts.TSUtils;
 
@@ -46,18 +50,33 @@ public class FlowService {
 
 	private static Logger log = LoggerFactory.getLogger(FlowService.class);
 	private PartRepository partRepository;
+
 	private TableSchemaRepository tableSchemaRepository;
 	private TableDataRepository tableDataRepository;
 	private TableQueryRepository tableQueryRepository;
+	private TableVirtualRepository tableVirtualRepository;
+
+	private ProcessRepository processRepository;
+	private ProcessDefinitionRepository processDefinitionRepository;
+	private ProcessActivityRepository processActivityRepository;
+	private ProcessRecordRepository processRecordRepository;
 
 	private ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
 
 	public FlowService() {
 		try {
 			partRepository = Singleton.ins(PartRepository.class);
+
 			tableSchemaRepository = Singleton.ins(TableSchemaRepository.class);
 			tableDataRepository = Singleton.ins(TableDataRepository.class);
 			tableQueryRepository = Singleton.ins(TableQueryRepository.class);
+			tableVirtualRepository = Singleton.ins(TableVirtualRepository.class);
+
+			processRepository = Singleton.ins(ProcessRepository.class);
+			processDefinitionRepository = Singleton.ins(ProcessDefinitionRepository.class);
+			processActivityRepository = Singleton.ins(ProcessActivityRepository.class);
+			processRecordRepository = Singleton.ins(ProcessRecordRepository.class);
+
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -118,66 +137,88 @@ public class FlowService {
 	/**
 	 * 创建流程定义
 	 */
-	public ProcessDefinition createProcessDefinition(String name) {
-		ProcessDefinition ret = new ProcessDefinition();
-		ret.id = 1L;
-		ret.name = name;
+	public void createProcessDefinition(SyncClient client, String module, JSONArray tags, String title, JSONArray lanes,
+			JSONArray assets, JSONArray actions, JSONObject visualization) throws Exception {
+		Long id = IDUtils.getSimpleId();
+		ProcessDefinition pd = new ProcessDefinition();
+		pd._id = TSUtils.get_id(id);
+		pd.id = id;
+		pd.tags = tags;
+		pd.module = module;
+		pd.title = title;
 
-		return ret;
+		pd.lanes = lanes;
+		pd.assets = assets;
+		pd.actions = actions;
+		pd.visualization = visualization;
+
+		processDefinitionRepository.insert(client, pd, false);
 	}
 
-	/**
-	 * 设置流程定义泳道
-	 */
-	public void setPDLanes(ProcessDefinition pd, JSONArray lanes) {
-		pd.lanes = lanes;
+	public JSONObject queryProcessDefinition(SyncClient client, String module, JSONArray tags, Integer count,
+			Integer offset) throws Exception {
+
+		SearchQuery query = new TSQL().Term(OP.AND, "module", module)//
+				.Terms(OP.AND, "tags", tags.toArray()).build();
+
+		query.setOffset(offset);
+		query.setLimit(count);
+		query.setGetTotalCount(false);
+
+		return processActivityRepository.search(client, "MakeTaskIndex", query);
 	}
 
 	/**
 	 * 设置流程节点，没有就增加，有就设置</br>
 	 * 重名会被覆盖
 	 */
-	public void putPDActivity(ProcessDefinition pd, Activity activity) throws Exception {
-		if (pd.activityMap == null) {
-			pd.activityMap = new JSONObject();
+	public void addPDActivity(SyncClient client, Long pdId, String title, String part, JSONObject receivers,
+			JSONArray assets, JSONObject actions, JSONObject visualization) throws Exception {
+		Long id = IDUtils.getSimpleId();
+		ProcessActivity pa = new ProcessActivity();
+		pa._id = TSUtils.get_id(id);
+		pa.pdId = pdId;
+		pa.id = id;
 
-		}
-		pd.activityMap.put(activity.sn, activity);
+		pa.title = title;
+		pa.part = part;
+		pa.receivers = receivers;
+		pa.assets = assets;
+		pa.actions = actions;
+		pa.visualization = visualization;
+
+		processActivityRepository.insert(client, pa, false);
 	}
 
 	/**
 	 * 删除流程节点
 	 */
-	public void delPDActivity(ProcessDefinition pd, String sn) {
-		if (pd.activityMap != null) {
-			pd.activityMap.remove(sn);
-		}
+	public void delPDActivity(SyncClient client, Long pdId, Long id) throws Exception {
+
+		PrimaryKey pk = new PrimaryKeyBuilder().add("_id", TSUtils.get_id(id)).add("id", id).build();
+
+		processActivityRepository.delete(client, pk);
 	}
 
 	/**
-	 * 添加流程资产
+	 * 编辑流程节点
 	 */
-	public void addPDAsset(ProcessDefinition pd, Asset asset) {
-		if (pd.assets == null) {
-			pd.assets = new JSONArray();
-		}
-		pd.assets.add(asset);
-	}
+	public void editPDActivity(SyncClient client, Long pdId, Long id, String title, String part, JSONObject receivers,
+			JSONArray assets, JSONObject actions, JSONObject visualization) throws Exception {
 
-	/**
-	 * 删除流程资产
-	 */
-	public void delPDAsset(ProcessDefinition pd, int index) {
-		if (pd.assets != null) {
-			pd.assets.remove(index);
-		}
-	}
+		ProcessActivity pa = new ProcessActivity();
+		pa._id = TSUtils.get_id(id);
+		pa.pdId = pdId;
+		pa.id = id;
 
-	/**
-	 * 设置可视化信息
-	 */
-	public void setVisualization(ProcessDefinition pd, JSONObject visualization) {
-		pd.visualization = visualization;
+		pa.title = title;
+		pa.part = part;
+		pa.receivers = receivers;
+		pa.assets = assets;
+		pa.actions = actions;
+		pa.visualization = visualization;
+
+		processActivityRepository.update(client, pa);
 	}
 
 	/**
@@ -208,15 +249,17 @@ public class FlowService {
 	/**
 	 * 修改附件信息
 	 */
-	public void editPart(SyncClient client, String id, Long partId, String name, String url, String ext)
-			throws Exception {
-		PrimaryKey pk = new PrimaryKeyBuilder().add("_id", id).add("id", partId).build();
-		ColumnBuilder cb = new ColumnBuilder();
-		cb.add("name", name);
-		cb.add("url", url);
-		cb.add("ext", ext);
-		List<Column> columns = cb.build();
-		TSRepository.nativeUpdate(client, partRepository.getTableName(), pk, columns);
+	public void editPart(SyncClient client, Long id, String name, String url, String ext) throws Exception {
+
+		Part p = new Part();
+		p._id = TSUtils.get_id(id);
+		p.id = id;
+		p.name = name;
+		p.createTime = new Date();
+		p.url = url;
+		p.ext = ext;
+
+		partRepository.update(client, p);
 	}
 
 	/**
@@ -225,14 +268,8 @@ public class FlowService {
 	 */
 	public JSONArray queryParts(SyncClient client, Integer count, Integer offset) throws Exception {
 		// 设置起始主键
-		PrimaryKey pkStart = new PrimaryKeyBuilder().add("_id", PrimaryKeyValue.INF_MIN)
-				.add("id", PrimaryKeyValue.INF_MIN).build();
-
-		// 设置结束主键
-		PrimaryKey pkEnd = new PrimaryKeyBuilder().add("_id", PrimaryKeyValue.INF_MAX)
-				.add("id", PrimaryKeyValue.INF_MAX).build();
-
-		return TSRepository.nativeGetRange(client, partRepository.getTableName(), pkStart, pkEnd, count, offset);
+		// TODO 待实现
+		return null;
 	}
 
 	// 创建表结构

@@ -2,6 +2,7 @@ package zyxhj.flow.domain;
 
 import java.util.Date;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
 import com.alicloud.openservices.tablestore.model.search.FieldType;
 
@@ -36,6 +37,13 @@ public class Part extends TSEntity {
 	@TSAnnIndex(name = "PartIndex", type = FieldType.TEXT, enableSortAndAgg = false, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String name;
+
+	/**
+	 * 标签列表
+	 */
+	@TSAnnIndex(name = "PartIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public JSONArray tags;
 
 	/**
 	 * 创建时间

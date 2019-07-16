@@ -5,6 +5,8 @@ import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.model.ColumnValue;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
 import com.alicloud.openservices.tablestore.model.PrimaryKeyValue;
@@ -122,8 +124,10 @@ public class TSFieldMapper<T extends TSEntity> {
 			} else if (javaType.equals(Date.class)) {
 				return ColumnValue.fromLong(((Date) t).getTime());
 			} else {
-				throw new ServerException(BaseRC.REPOSITORY_TABLESTORE_FIELD_ERROR,
-						StringUtils.join("unknown ots type:", javaType));
+				JSONObject jo = new JSONObject();
+				jo.put(TSObjectMapper.JAVA_KEY, javaType.getClass().getName());
+				jo.put(TSObjectMapper.JAVA_DATA, t);
+				return ColumnValue.fromString(jo.toJSONString());
 			}
 		}
 	}
@@ -163,7 +167,16 @@ public class TSFieldMapper<T extends TSEntity> {
 					} else if (javaType.equals(Date.class)) {
 						field.set(obj, new Date(cv.asLong()));
 					} else {
-						throw new Exception(StringUtils.join("ots unsupported data type:", javaType.toString()));
+						// 其它的特有对象
+						String temp = cv.asString();
+						if (StringUtils.isNoneBlank(temp)) {
+							JSONObject jo = JSON.parseObject(temp);
+							String javaType = jo.getString(TSObjectMapper.JAVA_KEY);
+							Object o = jo.getObject(TSObjectMapper.JAVA_DATA, Class.forName(javaType));
+							field.set(obj, o);
+						} else {
+							field.set(obj, null);
+						}
 					}
 				}
 			}
