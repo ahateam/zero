@@ -23,12 +23,12 @@ import com.alibaba.fastjson.JSONObject;
  */
 public class RDSObjectMapper {
 
+	public static final String JAVA_KEY = "c_class";
+	public static final String JAVA_DATA = "c_data";
+
 	private String tableName;
 
 	private Map<String, RDSFieldMapper> fieldMapperMap = new HashMap<>();
-
-	public static final String JAVA_KEY = "c_class";
-	public static final String JAVA_DATA = "c_data";
 
 	public RDSObjectMapper(Class<?> clazz) {
 		RDSAnnEntity annEntity = clazz.getAnnotation(RDSAnnEntity.class);

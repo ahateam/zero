@@ -23,6 +23,9 @@ import zyxhj.utils.data.ts.TSAnnID.Key;
 
 public class TSObjectMapper<T extends TSEntity> {
 
+	public static final String JAVA_KEY = "c_class";
+	public static final String JAVA_DATA = "c_data";
+
 	private Class<T> clazz;
 
 	private String tableName;
@@ -42,8 +45,10 @@ public class TSObjectMapper<T extends TSEntity> {
 	 * OTS第一个是主键（分片键），同时还允许有3个副键（索引键）。<br>
 	 * OTS的4个索引，左闭右开。。。<br>
 	 * 
-	 * @param primaryKey 主键（分片键）
-	 * @param otherKeys  副键（其它索引键）
+	 * @param primaryKey
+	 *            主键（分片键）
+	 * @param otherKeys
+	 *            副键（其它索引键）
 	 */
 	public TSObjectMapper(Class<T> clazz) {
 		this.clazz = clazz;

@@ -219,7 +219,7 @@ public class InboxTest {
 		try {
 
 			PrimaryKey pk = new PrimaryKeyBuilder()
-					.add("_id", CodecUtils.md52Hex(TSUtils.get_id(id), CodecUtils.CHARSET_UTF8)).add("id", id).build();
+					.add("_id", TSUtils.get_id(id)).add("id", id).build();
 
 			ColumnBuilder cb = new ColumnBuilder();
 			for (int i = 0; i < 3; i++) {

@@ -1,15 +1,14 @@
 package zyxhj.flow.domain;
 
+import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
-import zyxhj.utils.data.ts.TSAnnEntity;
-import zyxhj.utils.data.ts.TSEntity;
 
 /**
  * 表格可视化样式
  */
-@TSAnnEntity(alias = "tb_table_virtual")
-public class TableVirtual extends TSEntity {
+@RDSAnnEntity(alias = "tb_table_virtual")
+public class TableVirtual {
 
 	/**
 	 * 表ID

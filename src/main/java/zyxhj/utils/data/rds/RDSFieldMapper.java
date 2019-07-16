@@ -106,8 +106,6 @@ public class RDSFieldMapper {
 				if (StringUtils.isNoneBlank(temp)) {
 					JSONObject jo = JSON.parseObject(temp);
 					String javaType = jo.getString(RDSObjectMapper.JAVA_KEY);
-					// String data = jo.getString(RDSObjectMapper.JAVA_DATA);
-					// Object o = JSON.parseObject(data, Class.forName(javaType));
 					Object o = jo.getObject(RDSObjectMapper.JAVA_DATA, Class.forName(javaType));
 					objs[ind] = o;
 				} else {
@@ -178,8 +176,6 @@ public class RDSFieldMapper {
 				if (StringUtils.isNoneBlank(temp)) {
 					JSONObject jo = JSON.parseObject(temp);
 					String javaType = jo.getString(RDSObjectMapper.JAVA_KEY);
-					// String data = jo.getString(RDSObjectMapper.JAVA_DATA);
-					// Object o = JSON.parseObject(data, Class.forName(javaType));
 					Object o = jo.getObject(RDSObjectMapper.JAVA_DATA, Class.forName(javaType));
 					field.set(obj, o);
 				} else {

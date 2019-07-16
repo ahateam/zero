@@ -88,7 +88,7 @@ public class Content extends TSEntity {
 	public Long id;
 
 	/**
-	 * 内容所属模块
+	 * 所属模块
 	 */
 	@TSAnnIndex(name = "ContentIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)

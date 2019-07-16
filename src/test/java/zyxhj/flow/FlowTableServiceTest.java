@@ -25,7 +25,7 @@ import zyxhj.flow.service.FlowService;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.data.DataSource;
 
-public class FlowServiceTest {
+public class FlowTableServiceTest {
 
 	private static DruidPooledConnection conn;
 
@@ -42,7 +42,6 @@ public class FlowServiceTest {
 				// 没有找到新的{，结束
 				break;
 			} else {
-
 				// 找到{，开始找配对的}
 				end = src.indexOf("}}", start);
 				if (end > start + 3) {

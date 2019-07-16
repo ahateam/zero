@@ -2,6 +2,7 @@ package zyxhj.flow.domain;
 
 import java.util.Date;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
 
 import zyxhj.utils.data.ts.TSAnnEntity;
@@ -10,10 +11,10 @@ import zyxhj.utils.data.ts.TSAnnID;
 import zyxhj.utils.data.ts.TSEntity;
 
 /**
- * 流程实例
+ * 流程实例记录
  */
-@TSAnnEntity(alias = "Process")
-public class Process extends TSEntity {
+@TSAnnEntity(alias = "ProcessRecord")
+public class ProcessRecord extends TSEntity {
 
 	/**
 	 * 分片编号，MD5(id)，避免数据热点
@@ -22,10 +23,10 @@ public class Process extends TSEntity {
 	public String _id;
 
 	/**
-	 * 所属PD编号
+	 * 所属Process编号
 	 */
 	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
-	public Long pdId;
+	public Long pId;
 
 	/**
 	 * 编号
@@ -40,27 +41,56 @@ public class Process extends TSEntity {
 	public String title;
 
 	/**
-	 * 当前Activity节点
+	 * 当前Activity编号
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public ProcessActivity currActivity;
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long activityId;
 
 	/**
-	 * 当前节点的操作记录
+	 * 操作用户编号
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public ProcessRecord currRecord;
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long userId;
 
 	/**
-	 * 进入节点时间
+	 * 操作用户标签
+	 */
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String userLabel;
+
+	/**
+	 * 操作部门编号
+	 */
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long departmentId;
+
+	/**
+	 * 操作部门标签
+	 */
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String departmentLabel;
+
+	/**
+	 * 操作行为
+	 */
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String action;
+
+	/**
+	 * 时间戳
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Date timestamp;
+
+	/**
+	 * 记录扩展数据
+	 */
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public JSONObject ext;
 
 	/**
 	 * 备注
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String remark;
-
 }
