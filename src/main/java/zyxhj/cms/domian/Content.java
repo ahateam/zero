@@ -97,9 +97,9 @@ public class Content extends TSEntity {
 	/**
 	 * 类型
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String type;
+	@TSAnnIndex(name = "ContentIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long type;
 
 	/**
 	 * 创建时间
@@ -146,7 +146,7 @@ public class Content extends TSEntity {
 	/**
 	 * 标签
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
+	@TSAnnIndex(name = "ContentIndex", type = FieldType.TEXT,  enableSortAndAgg = false, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String tags;
 
@@ -161,6 +161,12 @@ public class Content extends TSEntity {
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String data;
+
+	/**
+	 * 付费
+	 */
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long paymentOrNot;
 
 	/**
 	 * 扩展信息，可用JSON格式自行扩展
