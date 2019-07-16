@@ -70,7 +70,7 @@ public class PartService {
 		p.url = url;
 		p.ext = ext;
 
-		partRepository.update(client, p);
+		partRepository.update(client, p, true);
 	}
 
 	/**

@@ -163,7 +163,7 @@ public class FlowService {
 		pd.assets = assets;
 		pd.visualization = visualization;
 
-		processDefinitionRepository.update(client, pd);
+		processDefinitionRepository.update(client, pd, true);
 	}
 
 	public JSONObject queryProcessDefinition(SyncClient client, String module, JSONArray tags, Integer count,
@@ -230,7 +230,7 @@ public class FlowService {
 		pa.actions = actions;
 		pa.visualization = visualization;
 
-		processActivityRepository.update(client, pa);
+		processActivityRepository.update(client, pa, true);
 	}
 
 	// 创建表结构

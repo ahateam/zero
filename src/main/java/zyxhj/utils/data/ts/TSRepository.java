@@ -117,7 +117,7 @@ public abstract class TSRepository<T extends TSEntity> {
 			columnsToGet.setReturnAll(true);
 		}
 		searchRequest.setColumnsToGet(columnsToGet);
-  
+
 		return client.search(searchRequest);
 	}
 
@@ -171,14 +171,13 @@ public abstract class TSRepository<T extends TSEntity> {
 	 * @param columns
 	 *            要存储的数据列表
 	 */
-	public static void nativeUpdate(SyncClient client, String tableName, PrimaryKey pk, List<Column> columns)
-			throws ServerException {
+	public static void nativeUpdate(SyncClient client, String tableName, PrimaryKey pk, boolean skipNull,
+			List<Column> columns) throws ServerException {
 		try {
 			RowUpdateChange updateChange = new RowUpdateChange(tableName, pk);
 
 			for (Column col : columns) {
-
-				if (null == col) {
+				if (null == col && skipNull) {
 					// 如果为空，跳过，不更新
 				} else {
 					updateChange.put(col);
@@ -393,8 +392,8 @@ public abstract class TSRepository<T extends TSEntity> {
 	/**
 	 * 更新对象
 	 */
-	public void update(SyncClient client, T t) throws ServerException {
-		nativeUpdate(client, mapper.getTableName(), mapper.getPrimaryKeyFromObjects(t),
+	public void update(SyncClient client, T t, boolean skipNull) throws ServerException {
+		nativeUpdate(client, mapper.getTableName(), mapper.getPrimaryKeyFromObjects(t), skipNull,
 				mapper.getColumnListFromObject(t));
 	}
 

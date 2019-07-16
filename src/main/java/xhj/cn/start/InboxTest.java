@@ -217,8 +217,7 @@ public class InboxTest {
 
 		try {
 
-			PrimaryKey pk = new PrimaryKeyBuilder()
-					.add("_id", TSUtils.get_id(id)).add("id", id).build();
+			PrimaryKey pk = new PrimaryKeyBuilder().add("_id", TSUtils.get_id(id)).add("id", id).build();
 
 			ColumnBuilder cb = new ColumnBuilder();
 			for (int i = 0; i < 3; i++) {
@@ -388,7 +387,7 @@ public class InboxTest {
 		List<Column> columns = cb.build();
 
 		try {
-			TSRepository.nativeUpdate(client, "ImportTempRecord", pk, columns);
+			TSRepository.nativeUpdate(client, "ImportTempRecord", pk, true, columns);
 		} catch (ServerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
