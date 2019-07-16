@@ -21,6 +21,7 @@ import com.alicloud.openservices.tablestore.model.search.query.BoolQuery;
 import com.alicloud.openservices.tablestore.model.search.query.TermQuery;
 import com.alicloud.openservices.tablestore.model.search.query.TermsQuery;
 
+import zyxhj.cms.domian.Content;
 import zyxhj.core.domain.CateInfo;
 import zyxhj.core.domain.ImportTempRecord;
 import zyxhj.core.domain.Valid;
@@ -107,7 +108,7 @@ public class InboxTest {
 		// 按主键范围查询
 		// getRanges(syncClient);
 		// batchWriteRow(client);
-		// autoTest(syncClient);
+		 autoTest(syncClient);
 
 		// 模糊匹配
 		// MatchQuery(syncClient);
@@ -193,11 +194,11 @@ public class InboxTest {
 
 	private static void autoTest(SyncClient client) {
 		// 测试创建表
-		TSUtils.createTableByEntity(client, ImportTempRecord.class);
+		TSUtils.createTableByEntity(client, Content.class);
 
 		// 测试删除表
-		// TSUtils.drapTableByEntity(client, ImportTempRecord.class);
-
+//		 TSUtils.drapTableByEntity(client, Content.class);
+//
 		// ImportTempRecord itr = new ImportTempRecord();
 		// itr.taskId = 123L;
 		// itr.recordId = null;// 自增列，随便怎么赋值，都会被忽略
