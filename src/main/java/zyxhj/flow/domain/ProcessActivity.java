@@ -10,7 +10,7 @@ import zyxhj.utils.data.ts.TSAnnID;
 import zyxhj.utils.data.ts.TSEntity;
 
 @TSAnnEntity(alias = "ProcessActivity")
-public class ProcessActivity extends TSEntity{
+public class ProcessActivity extends TSEntity {
 
 	/**
 	 * 分片编号，MD5(id)，避免数据热点
@@ -52,7 +52,7 @@ public class ProcessActivity extends TSEntity{
 	public JSONArray assets;// 资产(文件，合同，表单等)
 
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public JSONObject actions;// 行为
+	public JSONArray actions;// 行为
 
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public JSONObject visualization;// 展示信息
@@ -67,5 +67,57 @@ public class ProcessActivity extends TSEntity{
 		public Long id;// 编号
 		public String label;// 标题
 		public String remark;// 备注
+	}
+
+	public static class Asset {
+
+		public static final String TYPE_FORM = "form"; // 表单
+		public static final String TYPE_FILE = "file"; // 文件
+		public static final String TYPE_PART = "part"; // 附件
+
+		public String sn;// 编号，在ProcessDefinition中不可重复
+		public String title;// 标题
+		public boolean necessary;// 是否必须
+
+		/**
+		 * 资产数据，JSON结构，{type:"form",content:"1234345"}</br>
+		 * type为form表单时，存放表单编号</br>
+		 * type为file文件时，存放文件地址</br>
+		 * type为part附件时，存放附件编号</br>
+		 */
+		public JSONObject data;
+	}
+
+	public static class Action {
+
+		/**
+		 * 支持的条件类型</br>
+		 * 1，判断是否提交了不同的资产</br>
+		 * 2，判断表单中的字段值</br>
+		 * 3，人为设定的选项</br>
+		 * 4，时间超时</br>
+		 */
+
+		public static final String TYPE_TIMEOUT = "timeout";// 超时
+		public static final String TYPE_SUBMIT = "submit";// 提交
+
+		/**
+		 * 类型</br>
+		 * 审批通过，拒绝</br>
+		 * 终止。。。还待细节设计</br>
+		 * 时间到期事件
+		 */
+		public String type;
+
+		/**
+		 * 选项
+		 */
+		public JSONArray options;
+
+		/**
+		 * 规则引擎脚本</br>
+		 * if
+		 */
+		public String rule;
 	}
 }

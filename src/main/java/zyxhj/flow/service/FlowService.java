@@ -1,7 +1,6 @@
 package zyxhj.flow.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.script.ScriptEngine;
@@ -21,13 +20,11 @@ import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
 import com.alicloud.openservices.tablestore.model.search.SearchQuery;
 
-import zyxhj.flow.domain.Part;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.TableData;
 import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
-import zyxhj.flow.repository.PartRepository;
 import zyxhj.flow.repository.ProcessActivityRepository;
 import zyxhj.flow.repository.ProcessDefinitionRepository;
 import zyxhj.flow.repository.ProcessRecordRepository;
@@ -43,13 +40,11 @@ import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
 import zyxhj.utils.data.ts.TSQL;
 import zyxhj.utils.data.ts.TSQL.OP;
-import zyxhj.utils.data.ts.TSRepository;
 import zyxhj.utils.data.ts.TSUtils;
 
 public class FlowService {
 
 	private static Logger log = LoggerFactory.getLogger(FlowService.class);
-	private PartRepository partRepository;
 
 	private TableSchemaRepository tableSchemaRepository;
 	private TableDataRepository tableDataRepository;
@@ -65,8 +60,6 @@ public class FlowService {
 
 	public FlowService() {
 		try {
-			partRepository = Singleton.ins(PartRepository.class);
-
 			tableSchemaRepository = Singleton.ins(TableSchemaRepository.class);
 			tableDataRepository = Singleton.ins(TableDataRepository.class);
 			tableQueryRepository = Singleton.ins(TableQueryRepository.class);
@@ -138,34 +131,52 @@ public class FlowService {
 	 * 创建流程定义
 	 */
 	public void createProcessDefinition(SyncClient client, String module, JSONArray tags, String title, JSONArray lanes,
-			JSONArray assets, JSONArray actions, JSONObject visualization) throws Exception {
+			JSONArray assets, JSONObject visualization) throws Exception {
 		Long id = IDUtils.getSimpleId();
 		ProcessDefinition pd = new ProcessDefinition();
 		pd._id = TSUtils.get_id(id);
 		pd.id = id;
 		pd.tags = tags;
 		pd.module = module;
+		pd.status = ProcessDefinition.STATUS_OFF;
 		pd.title = title;
 
 		pd.lanes = lanes;
 		pd.assets = assets;
-		pd.actions = actions;
 		pd.visualization = visualization;
 
 		processDefinitionRepository.insert(client, pd, false);
+	}
+
+	public void editProcessDefinition(SyncClient client, Long id, String module, Byte status, JSONArray tags,
+			String title, JSONArray lanes, JSONArray assets, JSONObject visualization) throws Exception {
+
+		ProcessDefinition pd = new ProcessDefinition();
+		pd._id = TSUtils.get_id(id);
+		pd.id = id;
+		pd.tags = tags;
+		pd.module = module;
+		pd.status = status;
+		pd.title = title;
+
+		pd.lanes = lanes;
+		pd.assets = assets;
+		pd.visualization = visualization;
+
+		processDefinitionRepository.update(client, pd);
 	}
 
 	public JSONObject queryProcessDefinition(SyncClient client, String module, JSONArray tags, Integer count,
 			Integer offset) throws Exception {
 
 		SearchQuery query = new TSQL().Term(OP.AND, "module", module)//
-				.Terms(OP.AND, "tags", tags.toArray()).build();
+				.Terms(OP.AND, "tags", tags == null ? null : tags.toArray()).build();
 
 		query.setOffset(offset);
 		query.setLimit(count);
 		query.setGetTotalCount(false);
 
-		return processActivityRepository.search(client, "MakeTaskIndex", query);
+		return processDefinitionRepository.search(client, "ProcessDefinitionIndex", query);
 	}
 
 	/**
@@ -173,7 +184,7 @@ public class FlowService {
 	 * 重名会被覆盖
 	 */
 	public void addPDActivity(SyncClient client, Long pdId, String title, String part, JSONObject receivers,
-			JSONArray assets, JSONObject actions, JSONObject visualization) throws Exception {
+			JSONArray assets, JSONArray actions, JSONObject visualization) throws Exception {
 		Long id = IDUtils.getSimpleId();
 		ProcessActivity pa = new ProcessActivity();
 		pa._id = TSUtils.get_id(id);
@@ -193,9 +204,10 @@ public class FlowService {
 	/**
 	 * 删除流程节点
 	 */
-	public void delPDActivity(SyncClient client, Long pdId, Long id) throws Exception {
+	public void delPDActivity(SyncClient client, Long pdId, Long activityId) throws Exception {
 
-		PrimaryKey pk = new PrimaryKeyBuilder().add("_id", TSUtils.get_id(id)).add("id", id).build();
+		PrimaryKey pk = new PrimaryKeyBuilder().add("_id", TSUtils.get_id(activityId)).add("pdId", pdId)
+				.add("id", activityId).build();
 
 		processActivityRepository.delete(client, pk);
 	}
@@ -204,7 +216,7 @@ public class FlowService {
 	 * 编辑流程节点
 	 */
 	public void editPDActivity(SyncClient client, Long pdId, Long id, String title, String part, JSONObject receivers,
-			JSONArray assets, JSONObject actions, JSONObject visualization) throws Exception {
+			JSONArray assets, JSONArray actions, JSONObject visualization) throws Exception {
 
 		ProcessActivity pa = new ProcessActivity();
 		pa._id = TSUtils.get_id(id);
@@ -219,57 +231,6 @@ public class FlowService {
 		pa.visualization = visualization;
 
 		processActivityRepository.update(client, pa);
-	}
-
-	/**
-	 * 创建附件
-	 */
-	public Part createPart(SyncClient client, String name, String url, String ext) throws Exception {
-		Part p = new Part();
-		Long id = IDUtils.getSimpleId();
-
-		p._id = TSUtils.get_id(id);
-		p.id = id;
-		p.name = name;
-		p.url = url;
-		p.ext = ext;
-		p.createTime = new Date();
-		partRepository.insert(client, p, false);
-		return p;
-	}
-
-	/**
-	 * 删除附件
-	 */
-	public void delPart(SyncClient client, Long partId) throws Exception {
-		PrimaryKey pk = new PrimaryKeyBuilder().add("_id", TSUtils.get_id(partId)).add("id", partId).build();
-		TSRepository.nativeDel(client, partRepository.getTableName(), pk);
-	}
-
-	/**
-	 * 修改附件信息
-	 */
-	public void editPart(SyncClient client, Long id, String name, String url, String ext) throws Exception {
-
-		Part p = new Part();
-		p._id = TSUtils.get_id(id);
-		p.id = id;
-		p.name = name;
-		p.createTime = new Date();
-		p.url = url;
-		p.ext = ext;
-
-		partRepository.update(client, p);
-	}
-
-	/**
-	 * 获取所有附件信息</br>
-	 * TODO 需要用索引查询
-	 */
-	public JSONArray queryParts(SyncClient client, Integer count, Integer offset) throws Exception {
-		// 设置起始主键
-		// TODO 待实现
-		return null;
 	}
 
 	// 创建表结构

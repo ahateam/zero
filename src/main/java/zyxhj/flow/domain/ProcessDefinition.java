@@ -18,6 +18,9 @@ import zyxhj.utils.data.ts.TSEntity;
 @TSAnnEntity(alias = "ProcessDefinition")
 public class ProcessDefinition extends TSEntity {
 
+	public static final Byte STATUS_ON = 0;
+	public static final Byte STATUS_OFF = 1;
+
 	/**
 	 * 分片编号，MD5(id)，避免数据热点
 	 */
@@ -36,6 +39,13 @@ public class ProcessDefinition extends TSEntity {
 	@TSAnnIndex(name = "ProcessDefinitionIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String module;
+
+	/**
+	 * 状态
+	 */
+	@TSAnnIndex(name = "ProcessDefinitionIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Byte status;
 
 	/**
 	 * 标签列表
@@ -65,56 +75,10 @@ public class ProcessDefinition extends TSEntity {
 	public JSONArray assets;
 
 	/**
-	 * 行为</br>
-	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public JSONArray actions;
-
-	/**
 	 * startPoint，流程起点位置</br>
 	 * endPoint，流程终点位置</br>
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public JSONObject visualization;
 
-	public static class Asset {
-
-		public static final String TYPE_FORM = "form"; // 表单
-		public static final String TYPE_FILE = "file"; // 文件
-		public static final String TYPE_PART = "part"; // 附件
-
-		public String sn;// 编号，在ProcessDefinition中不可重复
-		public String title;// 标题
-		public boolean necessary;// 是否必须
-
-		/**
-		 * 资产数据，JSON结构，{type:"form",content:"1234345"}</br>
-		 * type为form表单时，存放表单编号</br>
-		 * type为file文件时，存放文件地址</br>
-		 * type为part附件时，存放附件编号</br>
-		 */
-		public JSONObject data;
-	}
-
-	public static class Action {
-
-		public static final String TYPE_TIMEOUT = "timeout";// 超时
-		public static final String TYPE_SUBMIT = "submit";// 提交
-		public static final String TYPE_JUDGE = "judge";// 审批
-
-		/**
-		 * 类型</br>
-		 * 审批通过，拒绝</br>
-		 * 终止。。。还待细节设计</br>
-		 * 时间到期事件
-		 */
-		public String type;
-
-		/**
-		 * 规则引擎脚本</br>
-		 * 
-		 */
-		public JSONArray rules;
-
-	}
 }

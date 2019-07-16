@@ -1,10 +1,11 @@
 package xhj.cn.start;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.alicloud.openservices.tablestore.SyncClient;
 
-import zyxhj.flow.domain.TableQuery;
+import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.utils.data.DataSource;
-import zyxhj.utils.data.rds.RDSUtils;
+import zyxhj.utils.data.ts.TSUtils;
 
 public class Test {
 
@@ -19,10 +20,16 @@ public class Test {
 
 		try {
 			DruidDataSource dds = DataSource.getDruidDataSource("rdsDefault.prop");
+			SyncClient client = DataSource.getTableStoreSyncClient("tsDefault.prop");
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 
-			RDSUtils.createTableByEntity(dds, TableQuery.class);
+//			RDSUtils.createTableByEntity(dds, TableQuery.class);
+
+			TSUtils.createTableByEntity(client, ProcessActivity.class);
+			
+			
+			client.shutdown();
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

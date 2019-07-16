@@ -7,8 +7,8 @@ import org.junit.Test;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alicloud.openservices.tablestore.SyncClient;
 
-import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.service.FlowService;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.data.DataSource;
@@ -17,12 +17,16 @@ public class FlowProcessServiceTest {
 
 	private static DruidPooledConnection conn;
 
+	private static SyncClient client;
+
 	private static FlowService flowService;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		try {
 			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
+
+			client = DataSource.getTableStoreSyncClient("tsDefault.prop");
 
 			flowService = Singleton.ins(FlowService.class);
 
@@ -34,49 +38,94 @@ public class FlowProcessServiceTest {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		conn.close();
+		client.shutdown();
 	}
 
-	private static final Long schemaId = 400159699711499L;
+	private static final Long pdId = 400195073090059L;
 
-	private static final Long dataId = 400159711950692L;
+	private static final Long activityId = 400196423643694L;
 
-	private static final Long queryId = 400159724862966L;
+	private static final Long processId = 400159724862966L;
+
+	private static final Long recordId = 400159724862966L;
 
 	@Test
-	public void testCreateProcessDe() {
-		Byte type = 1;
+	public void testCreateProcessDefinition() {
 
-		JSONArray columns = new JSONArray();
+		JSONArray tags = new JSONArray();
+		tags.add("tag1");
+		tags.add("tag2");
 
-		for (int i = 0; i < 5; i++) {
-			TableSchema.Column tsc = new TableSchema.Column();
-			tsc.name = "COL" + i;
-			tsc.alias = "第" + i + "列";
-			tsc.columnType = TableSchema.Column.COLUMN_TYPE_DATA;
-			tsc.dataType = TableSchema.Column.DATA_TYPE_INTEGER;
-			tsc.necessary = true;
+		JSONArray lanes = new JSONArray();
+		lanes.add("lane1");
+		lanes.add("lane2");
 
-			JSONObject jo = new JSONObject();
-			jo.put(tsc.name, tsc);
-			columns.add(jo);
-		}
+		JSONArray assets = new JSONArray();
 
-		TableSchema.Column tscTotal = new TableSchema.Column();
-		tscTotal.name = "TOTAL1";
-		tscTotal.alias = "合计1";
-		tscTotal.columnType = TableSchema.Column.COLUMN_TYPE_COMPUTE;
-		tscTotal.dataType = TableSchema.Column.DATA_TYPE_INTEGER;
-		tscTotal.computeFormula = "{{COL1}} + {{COL2}} + {{COL3}} + {{COL4}} + {{COL5}}";
-
-		JSONObject jo = new JSONObject();
-		jo.put(tscTotal.name, tscTotal);
-		columns.add(jo);
+		JSONObject visualization = new JSONObject();
 
 		try {
-			flowService.createTableSchema(conn, "表的别名", type, columns);
+			flowService.createProcessDefinition(client, "testModule", tags, "testTitle", lanes, assets, visualization);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+
+	@Test
+	public void testQueryProcessDefinition() {
+		try {
+			JSONObject jo = flowService.queryProcessDefinition(client, "testModule", null, 10, 0);
+			System.out.println(jo.toJSONString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testAddPDActivity() {
+
+		JSONObject receivers = new JSONObject();
+
+		JSONArray assets = new JSONArray();
+
+		JSONArray actions = new JSONArray();
+
+		JSONObject visualization = new JSONObject();
+
+		try {
+			flowService.addPDActivity(client, pdId, "testActivity", "part1", receivers, assets, actions, visualization);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testEditPDActivity() {
+		JSONObject receivers = new JSONObject();
+
+		JSONArray assets = new JSONArray();
+
+		JSONArray actions = new JSONArray();
+
+		JSONObject visualization = new JSONObject();
+
+		try {
+			flowService.editPDActivity(client, pdId, activityId, "testActivity", "part2", receivers, assets, actions,
+					visualization);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testDelPDActivity() {
+		try {
+			flowService.delPDActivity(client, pdId, activityId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 
 }

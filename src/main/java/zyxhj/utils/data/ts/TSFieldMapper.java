@@ -125,7 +125,7 @@ public class TSFieldMapper<T extends TSEntity> {
 				return ColumnValue.fromLong(((Date) t).getTime());
 			} else {
 				JSONObject jo = new JSONObject();
-				jo.put(TSObjectMapper.JAVA_KEY, javaType.getClass().getName());
+				jo.put(TSObjectMapper.JAVA_KEY, javaType.getName());
 				jo.put(TSObjectMapper.JAVA_DATA, t);
 				return ColumnValue.fromString(jo.toJSONString());
 			}
