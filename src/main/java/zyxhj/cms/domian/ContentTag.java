@@ -1,21 +1,17 @@
 package zyxhj.cms.domian;
 
-import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
-import com.alicloud.openservices.tablestore.model.search.FieldType;
-
 import zyxhj.utils.api.Controller.ENUMVALUE;
-import zyxhj.utils.data.ts.TSAnnEntity;
-import zyxhj.utils.data.ts.TSAnnField;
-import zyxhj.utils.data.ts.TSAnnID;
-import zyxhj.utils.data.ts.TSAnnIndex;
-import zyxhj.utils.data.ts.TSEntity;
+import zyxhj.utils.data.rds.RDSAnnEntity;
+import zyxhj.utils.data.rds.RDSAnnField;
+import zyxhj.utils.data.rds.RDSAnnID;
 
 /**
  * 
  * 通用标签
  */
-@TSAnnEntity(alias = "ContentTag")
-public class ContentTag  extends TSEntity {
+@RDSAnnEntity(alias = "tb_cms_content_tag")
+public class ContentTag  {
+
 
 	public static enum STATUS implements ENUMVALUE {
 		DISABLED((byte) 0, "禁用"), //
@@ -42,35 +38,36 @@ public class ContentTag  extends TSEntity {
 	}
 
 	/**
-	 * 分片编号，MD5(id)，避免数据热点
+	 * 标签编号
 	 */
-	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.STRING)
-	public String _id;
-
-	/**
-	 * 编号
-	 */
-	@TSAnnIndex(name = "ContentTag", type = FieldType.LONG, enableSortAndAgg = false, store = true)
-	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
+	
+	/**
+	 * 分组id
+	 */
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long groupId;
 
 	/**
 	 * 分组关键字
 	 */
-	@TSAnnIndex(name = "ContentTag", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String groupKeyword;
 
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(name = "ContentTag", type = FieldType.LONG, enableSortAndAgg = true, store = false)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte status;
 
 	/**
 	 * 标签名称，用于展示阅读</br>
 	 */
-	@TSAnnID(key = TSAnnID.Key.PK3, type = PrimaryKeyType.STRING)
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String name;
 }
