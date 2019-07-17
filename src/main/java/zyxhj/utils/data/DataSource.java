@@ -2,6 +2,7 @@ package zyxhj.utils.data;
 
 import java.io.FileInputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -92,5 +93,13 @@ public class DataSource {
 			rdsDruidDataSourceMap.put(configFileName, dds);
 		}
 		return dds;
+	}
+
+	public static <X> X list2Obj(List<X> list) {
+		if (list == null || list.size() <= 0) {
+			return null;
+		} else {
+			return list.get(0);
+		}
 	}
 }

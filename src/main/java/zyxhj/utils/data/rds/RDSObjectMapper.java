@@ -28,9 +28,22 @@ public class RDSObjectMapper {
 
 	private String tableName;
 
-	private Map<String, RDSFieldMapper> fieldMapperMap = new HashMap<>();
+	private Map<String, RDSFieldMapper> dbFieldMapper = new HashMap<>();
+	private Map<String, RDSFieldMapper> javaFieldMapper = new HashMap<>();
 
-	public RDSObjectMapper(Class<?> clazz) {
+	private static Map<String, RDSObjectMapper> objMapper = new HashMap<>();
+
+	public static RDSObjectMapper getInstance(Class<?> clazz) {
+		String className = clazz.getName();
+		RDSObjectMapper ret = objMapper.get(className);
+		if (ret == null) {
+			ret = new RDSObjectMapper(clazz);
+			objMapper.put(className, ret);
+		}
+		return ret;
+	}
+
+	private RDSObjectMapper(Class<?> clazz) {
 		RDSAnnEntity annEntity = clazz.getAnnotation(RDSAnnEntity.class);
 		this.tableName = annEntity.alias();
 
@@ -57,7 +70,8 @@ public class RDSObjectMapper {
 					mapper = new RDSFieldMapper(fieldName, fieldAlias, cf, false);
 				}
 
-				fieldMapperMap.put(mapper.alias, mapper);
+				dbFieldMapper.put(fieldAlias, mapper);
+				javaFieldMapper.put(fieldName, mapper);
 			}
 		}
 	}
@@ -67,7 +81,15 @@ public class RDSObjectMapper {
 	}
 
 	public RDSFieldMapper getFieldMapperByAlias(String alias) {
-		return fieldMapperMap.get(alias);
+		return dbFieldMapper.get(alias);
+	}
+
+	// public RDSFieldMapper getFieldMapperByFieldName(String fieldName) {
+	// return javaFieldMapper.get(fieldName);
+	// }
+
+	public String getAliasByJavaFieldName(String fieldName) {
+		return javaFieldMapper.get(fieldName).alias;
 	}
 
 	/**
@@ -80,7 +102,7 @@ public class RDSObjectMapper {
 		// ResultSet不是标准set，所以不能用stream接口
 		while (rs.next()) {
 
-			Iterator<Entry<String, RDSFieldMapper>> it = fieldMapperMap.entrySet().iterator();
+			Iterator<Entry<String, RDSFieldMapper>> it = dbFieldMapper.entrySet().iterator();
 
 			Object[] objs = new Object[len];
 			for (int i = 0; i < selections.length; i++) {
@@ -183,7 +205,7 @@ public class RDSObjectMapper {
 		while (rs.next()) {
 			T t = clazz.newInstance();
 
-			Iterator<Entry<String, RDSFieldMapper>> it = fieldMapperMap.entrySet().iterator();
+			Iterator<Entry<String, RDSFieldMapper>> it = dbFieldMapper.entrySet().iterator();
 
 			while (it.hasNext()) {
 				Entry<String, RDSFieldMapper> entry = it.next();
@@ -198,7 +220,7 @@ public class RDSObjectMapper {
 	public Map<String, Object> serialize(Object t) throws Exception {
 		Map<String, Object> ret = new HashMap<>();
 
-		Iterator<Entry<String, RDSFieldMapper>> it = fieldMapperMap.entrySet().iterator();
+		Iterator<Entry<String, RDSFieldMapper>> it = dbFieldMapper.entrySet().iterator();
 		while (it.hasNext()) {
 			Entry<String, RDSFieldMapper> entry = it.next();
 			RDSFieldMapper mapper = entry.getValue();

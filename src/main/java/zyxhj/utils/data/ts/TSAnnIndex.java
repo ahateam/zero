@@ -14,8 +14,6 @@ import com.alicloud.openservices.tablestore.model.search.FieldType;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TSAnnIndex {
 
-	public String name();
-
 	/**
 	 * 是否支持索引
 	 */

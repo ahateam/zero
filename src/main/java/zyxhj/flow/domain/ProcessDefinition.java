@@ -15,7 +15,7 @@ import zyxhj.utils.data.ts.TSEntity;
  * 流程定义
  *
  */
-@TSAnnEntity(alias = "ProcessDefinition")
+@TSAnnEntity(alias = "ProcessDefinition", indexName = "ProcessDefinitionIndex")
 public class ProcessDefinition extends TSEntity {
 
 	public static final Byte STATUS_ON = 0;
@@ -36,21 +36,21 @@ public class ProcessDefinition extends TSEntity {
 	/**
 	 * 所属模块
 	 */
-	@TSAnnIndex(name = "ProcessDefinitionIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String module;
 
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(name = "ProcessDefinitionIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Byte status;
 
 	/**
 	 * 标签列表
 	 */
-	@TSAnnIndex(name = "ProcessDefinitionIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public JSONArray tags;
 

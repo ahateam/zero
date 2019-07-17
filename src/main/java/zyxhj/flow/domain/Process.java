@@ -12,7 +12,7 @@ import zyxhj.utils.data.ts.TSEntity;
 /**
  * 流程实例
  */
-@TSAnnEntity(alias = "Process")
+@TSAnnEntity(alias = "Process", indexName = "")
 public class Process extends TSEntity {
 
 	/**

@@ -12,7 +12,7 @@ import zyxhj.utils.data.ts.TSAnnID;
 import zyxhj.utils.data.ts.TSAnnIndex;
 import zyxhj.utils.data.ts.TSEntity;
 
-@TSAnnEntity(alias = "MakeTask")
+@TSAnnEntity(alias = "MakeTask", indexName = "MakeTaskIndex")
 public class MakeTask extends TSEntity {
 
 	public static enum NEED implements ENUMVALUE {
@@ -103,42 +103,42 @@ public class MakeTask extends TSEntity {
 	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
 	public Long id;
 
-	@TSAnnIndex(name = "MakeTaskIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Byte level;
 
 	/**
 	 * 需求
 	 */
-	@TSAnnIndex(name = "MakeTaskIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String needs;
 
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(name = "MakeTaskIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Byte status;
 
 	/**
 	 * 创建者
 	 */
-	@TSAnnIndex(name = "MakeTaskIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long upUserId;
 
 	/**
 	 * 时间
 	 */
-	@TSAnnIndex(name = "MakeTaskIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Date time;
 
 	/**
 	 * 位置
 	 */
-	@TSAnnIndex(name = "MakeTaskIndex", type = FieldType.GEO_POINT, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.GEO_POINT, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String pos;
 

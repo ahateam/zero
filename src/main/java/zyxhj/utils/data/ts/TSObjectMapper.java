@@ -3,7 +3,9 @@ package zyxhj.utils.data.ts;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -41,6 +43,21 @@ public class TSObjectMapper<T extends TSEntity> {
 	 */
 	private List<TSFieldMapper<T>> columnList = new ArrayList<>();
 
+	private Map<String, TSFieldMapper> dbFieldMapper = new HashMap<>();
+	private Map<String, TSFieldMapper> javaFieldMapper = new HashMap<>();
+
+	private static Map<String, TSObjectMapper> objMapper = new HashMap<>();
+
+	public static TSObjectMapper getInstance(Class<?> clazz) {
+		String className = clazz.getName();
+		TSObjectMapper ret = objMapper.get(className);
+		if (ret == null) {
+			ret = new TSObjectMapper(clazz);
+			objMapper.put(className, ret);
+		}
+		return ret;
+	}
+
 	/**
 	 * OTS第一个是主键（分片键），同时还允许有3个副键（索引键）。<br>
 	 * OTS的4个索引，左闭右开。。。<br>
@@ -50,7 +67,7 @@ public class TSObjectMapper<T extends TSEntity> {
 	 * @param otherKeys
 	 *            副键（其它索引键）
 	 */
-	public TSObjectMapper(Class<T> clazz) {
+	private TSObjectMapper(Class<T> clazz) {
 		this.clazz = clazz;
 
 		TSAnnEntity annEntity = clazz.getAnnotation(TSAnnEntity.class);
@@ -66,6 +83,7 @@ public class TSObjectMapper<T extends TSEntity> {
 
 				TSAnnID annId = cf.getAnnotation(TSAnnID.class);
 				TSAnnField annField = cf.getAnnotation(TSAnnField.class);
+				TSAnnIndex annIndex = cf.getAnnotation(TSAnnIndex.class);
 
 				TSFieldMapper<T> mapper = null;
 				if (null != annId) {
@@ -93,6 +111,12 @@ public class TSObjectMapper<T extends TSEntity> {
 						pks[3] = mapper;
 						pkCount = 4;
 					}
+
+					if (annIndex != null) {
+						// 有索引才参与查询
+						dbFieldMapper.put(fieldAlias, mapper);
+						javaFieldMapper.put(fieldName, mapper);
+					}
 				} else {
 					// 普通列
 					if (annField != null) {
@@ -105,6 +129,12 @@ public class TSObjectMapper<T extends TSEntity> {
 
 						mapper = new TSFieldMapper<T>(fieldName, fieldAlias, cf, null, false);
 						columnList.add(mapper);
+
+						if (annIndex != null) {
+							// 有索引才参与查询
+							dbFieldMapper.put(fieldAlias, mapper);
+							javaFieldMapper.put(fieldName, mapper);
+						}
 					} else {
 						// 没有field注解，不参与序列化
 					}

@@ -9,7 +9,7 @@ import zyxhj.utils.data.ts.TSAnnField;
 import zyxhj.utils.data.ts.TSAnnID;
 import zyxhj.utils.data.ts.TSEntity;
 
-@TSAnnEntity(alias = "ProcessActivity")
+@TSAnnEntity(alias = "ProcessActivity", indexName = "")
 public class ProcessActivity extends TSEntity {
 
 	/**

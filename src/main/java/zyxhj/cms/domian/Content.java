@@ -16,7 +16,7 @@ import zyxhj.utils.data.ts.TSEntity;
  * 内容
  *
  */
-@TSAnnEntity(alias = "Content")
+@TSAnnEntity(alias = "Content", indexName = "ContentIndex")
 public class Content extends TSEntity {
 
 	public static enum TYPE implements ENUMVALUE {
@@ -90,63 +90,63 @@ public class Content extends TSEntity {
 	/**
 	 * 所属模块
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String module;
 
 	/**
 	 * 类型
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long type;
 
 	/**
 	 * 创建时间
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Date createTime;
 
 	/**
 	 * 更新时间
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Date updateTime;
 
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long status;
 
 	/**
 	 * 标题
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.TEXT, enableSortAndAgg = false, store = false)
+	@TSAnnIndex(type = FieldType.TEXT, enableSortAndAgg = false, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String title;
 
 	/**
 	 * 上传用户编号
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long upUserId;
 
 	/**
 	 * 上传专栏编号
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long upChannelId;
 
 	/**
 	 * 标签
 	 */
-	@TSAnnIndex(name = "ContentIndex", type = FieldType.TEXT,  enableSortAndAgg = false, store = false)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String tags;
 

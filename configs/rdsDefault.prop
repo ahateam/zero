@@ -24,9 +24,9 @@ validationQuery:SELECT 'x'
 testWhileIdle:true
 testOnBorrow:false
 testOnReturn:false
-#poolPreparedStatements:true
-maxOpenPreparedStatements:200
+poolPreparedStatements:false
+maxOpenPreparedStatements:-1
 
 removeAbandoned:true
 removeAbandonedTimeout:3600
-logAbandoned:true
+logAbandoned:false

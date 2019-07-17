@@ -7,7 +7,7 @@ import zyxhj.utils.data.ts.TSAnnField;
 import zyxhj.utils.data.ts.TSAnnID;
 import zyxhj.utils.data.ts.TSEntity;
 
-@TSAnnEntity(alias = "Valid", timeToLive = 86400) // 保存24个小时，最少也要一天。。。
+@TSAnnEntity(alias = "Valid", timeToLive = 86400, indexName = "") // 保存24个小时，最少也要一天。。。
 public class Valid extends TSEntity {
 
 	/**

@@ -47,6 +47,9 @@ public interface BaseRC {
 	static final RC REPOSITORY_TABLESTORE_OP_ERROR = new RC("repo-0014", "TableStore query op error");
 	static final RC REPOSITORY_TABLESTORE_QUERY_ERROR = new RC("repo-0014", "TableStore query error");
 
+	static final RC REPOSITORY_SIMPLE_QUERY_DOMAIN_ERROR = new RC("repo-0050", "simple query domain error");
+	static final RC REPOSITORY_SIMPLE_QUERY_FIELD_ERROR = new RC("repo-0050", "simple query field error");
+
 	// 开放搜索错误
 	static final RC OPENSEARCH_APPNAME_BLANK = new RC("os-0001", "opensearch appname blank");// 开放搜索appneme错误
 	static final RC OPENSEARCH_SEARCH_ERROR = new RC("os-0002", "opensearch search error");// 开放搜索错误

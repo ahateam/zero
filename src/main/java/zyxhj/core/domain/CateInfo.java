@@ -15,7 +15,7 @@ import zyxhj.utils.data.ts.TSEntity;
  * 分类信息
  *
  */
-@TSAnnEntity(alias = "CateInfo")
+@TSAnnEntity(alias = "CateInfo", indexName = "CateInfoIndex")
 public class CateInfo extends TSEntity {
 
 	/**
@@ -33,49 +33,49 @@ public class CateInfo extends TSEntity {
 	/**
 	 * 地区（最低一级行政区参与索引）
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String region;
 
 	/**
 	 * 分类（最低一级分类参与索引）
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String cate;
 
 	/**
 	 * 标签
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String tags;
 
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long status;
 
 	/**
 	 * 标题
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.KEYWORD, enableSortAndAgg = false, store = false)
+	@TSAnnIndex(type = FieldType.TEXT, enableSortAndAgg = false, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String title;
 
 	/**
 	 * 位置
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.GEO_POINT, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.GEO_POINT, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String pos;
 
 	/**
 	 * 时间
 	 */
-	@TSAnnIndex(name = "CateInfoIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Date time;
 

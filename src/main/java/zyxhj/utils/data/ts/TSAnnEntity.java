@@ -21,4 +21,8 @@ public @interface TSAnnEntity {
 	public int timeToLive() default -1;
 
 	public int maxVersions() default 1;
+
+	public String ds() default "tsDefault.prop";
+
+	public String indexName();
 }

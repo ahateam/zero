@@ -12,7 +12,7 @@ import zyxhj.utils.data.ts.TSAnnID;
  * 用户Session，使用OTS存储</br>
  * 缓存有效期30分钟，OTS存储有效期2天
  */
-@TSAnnEntity(alias = "UserSession")
+@TSAnnEntity(alias = "UserSession", indexName = "")
 public class UserSession {
 
 	/**

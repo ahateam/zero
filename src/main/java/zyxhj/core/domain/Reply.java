@@ -14,7 +14,7 @@ import zyxhj.utils.data.ts.TSAnnIndex;
  * 回复
  *
  */
-@TSAnnEntity(alias = "Reply")
+@TSAnnEntity(alias = "Reply", indexName = "ReplyIndex")
 public class Reply {
 
 	/**
@@ -32,28 +32,28 @@ public class Reply {
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(name = "ReplyIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long status;
 
 	/**
 	 * 创建时间
 	 */
-	@TSAnnIndex(name = "ReplyIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Date createTime;
 
 	/**
 	 * 上传用户编号
 	 */
-	@TSAnnIndex(name = "ReplyIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long upUserId;
 
 	/**
 	 * 被@的用户编号
 	 */
-	@TSAnnIndex(name = "ReplyIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long atUserId;
 

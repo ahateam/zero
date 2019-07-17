@@ -13,7 +13,7 @@ import zyxhj.utils.data.ts.TSEntity;
 /**
  * 流程实例记录
  */
-@TSAnnEntity(alias = "ProcessRecord")
+@TSAnnEntity(alias = "ProcessRecord", indexName = "")
 public class ProcessRecord extends TSEntity {
 
 	/**

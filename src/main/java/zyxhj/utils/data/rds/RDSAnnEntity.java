@@ -17,4 +17,6 @@ public @interface RDSAnnEntity {
 	 * RDS是按数据库规则：小写，下划线分割（加tb前缀，如：tb_user）</br>
 	 */
 	public String alias();
+	
+	public String ds() default "rdsDefault.prop";
 }

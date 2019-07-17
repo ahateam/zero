@@ -16,7 +16,7 @@ import zyxhj.utils.data.ts.TSEntity;
  * @author hunhun
  *
  */
-@TSAnnEntity(alias = "ImportTempRecord")
+@TSAnnEntity(alias = "ImportTempRecord", indexName = "ImportTempRecordIndex")
 public class ImportTempRecord extends TSEntity {
 
 	public static enum STATUS implements ENUMVALUE {
@@ -46,7 +46,6 @@ public class ImportTempRecord extends TSEntity {
 	/**
 	 * 任务编号n分片键
 	 */
-	@TSAnnIndex(name = "ImportTempRecordIndex", type = FieldType.LONG, enableSortAndAgg = false, store = true)
 	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.INTEGER)
 	public Long taskId;
 
@@ -59,7 +58,7 @@ public class ImportTempRecord extends TSEntity {
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(name = "ImportTempRecordIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long status;
 

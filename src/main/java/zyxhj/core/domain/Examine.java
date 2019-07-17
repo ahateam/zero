@@ -15,7 +15,7 @@ import zyxhj.utils.data.ts.TSEntity;
  * 
  *
  */
-@TSAnnEntity(alias = "Examine")
+@TSAnnEntity(alias = "Examine", indexName = "ExamineIndex")
 public class Examine extends TSEntity {
 
 	public static enum TYPE implements ENUMVALUE {
@@ -140,14 +140,14 @@ public class Examine extends TSEntity {
 	/**
 	 * 类型
 	 */
-	@TSAnnIndex(name = "ImportTempRecordIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long type;
 
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(name = "ImportTempRecordIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long status;
 

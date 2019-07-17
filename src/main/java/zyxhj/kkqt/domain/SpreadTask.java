@@ -9,7 +9,7 @@ import zyxhj.utils.data.ts.TSAnnID;
 import zyxhj.utils.data.ts.TSAnnIndex;
 import zyxhj.utils.data.ts.TSEntity;
 
-@TSAnnEntity(alias = "SpreadTask")
+@TSAnnEntity(alias = "SpreadTask", indexName = "SpreadTaskIndex")
 public class SpreadTask extends TSEntity {
 
 	public static enum PATTERN {
@@ -42,14 +42,14 @@ public class SpreadTask extends TSEntity {
 	/**
 	 * 传播模式
 	 */
-	@TSAnnIndex(name = "SpreadTaskIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String pattern;
 
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(name = "SpreadTaskIndex", type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long status;
 }

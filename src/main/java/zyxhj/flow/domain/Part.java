@@ -16,7 +16,7 @@ import zyxhj.utils.data.ts.TSEntity;
  * 附件
  *
  */
-@TSAnnEntity(alias = "Part")
+@TSAnnEntity(alias = "Part", indexName = "PartIndex")
 public class Part extends TSEntity {
 
 	/**
@@ -34,21 +34,21 @@ public class Part extends TSEntity {
 	/**
 	 * 附件名称
 	 */
-	@TSAnnIndex(name = "PartIndex", type = FieldType.TEXT, enableSortAndAgg = false, store = false)
+	@TSAnnIndex(type = FieldType.TEXT, enableSortAndAgg = false, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String name;
 
 	/**
 	 * 标签列表
 	 */
-	@TSAnnIndex(name = "PartIndex", type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public JSONArray tags;
 
 	/**
 	 * 创建时间
 	 */
-	@TSAnnIndex(name = "PartIndex", type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Date createTime;
 

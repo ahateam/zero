@@ -44,7 +44,7 @@ public abstract class TSRepository<T extends TSEntity> {
 	protected TSObjectMapper<T> mapper;
 
 	protected TSRepository(Class<T> clazz) {
-		this.mapper = new TSObjectMapper<T>(clazz);
+		this.mapper = TSObjectMapper.getInstance(clazz);
 	}
 
 	public String getTableName() {
