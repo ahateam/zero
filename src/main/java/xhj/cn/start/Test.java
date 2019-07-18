@@ -26,7 +26,7 @@ public class Test {
 
 //			RDSUtils.createTableByEntity(dds, TableQuery.class);
 
-			TSUtils.createTableByEntity(client, ProcessActivity.class);
+//			TSUtils.createTableByEntity(client, Test.class);
 			
 			
 			client.shutdown();

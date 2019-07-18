@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.test.repository.TestRepository;
 import zyxhj.utils.IDUtils;
+import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
 
 public class Test1 {
@@ -55,8 +56,26 @@ public class Test1 {
 
 		// 原生SQL方法，获取某个表的某些字段值
 		// sqlGetObjects(); //通过
+		
+		testUpdata();
 
 	}
+	
+	
+	
+
+	private static void testUpdata() {
+		TestDomain t = new TestDomain();
+		t.status = 2;
+		try {
+			testRepository.updateByKey(conn, "id", 123L, t, true);
+		} catch (ServerException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
 
 	private static void sqlGetObjects() throws Exception {
 		Object[] s = testRepository.sqlGetObjects(conn);
@@ -91,13 +110,13 @@ public class Test1 {
 	}
 
 	private static void get() throws Exception {
-		Test test = testRepository.getTest(conn);
+		TestDomain test = testRepository.getTest(conn);
 		System.out.println(test.toString());
 	}
 
 	private static void getList() throws Exception {
-		List<Test> listAll = testRepository.getListAll(conn);
-		for (Test test : listAll) {
+		List<TestDomain> listAll = testRepository.getListAll(conn);
+		for (TestDomain test : listAll) {
 			// System.out.println(test.name);
 		}
 	}
@@ -126,7 +145,7 @@ public class Test1 {
 	}
 
 	public static void insert() throws Exception {
-		Test te = new Test();
+		TestDomain te = new TestDomain();
 		te.id = IDUtils.getSimpleId();
 		te.name = "123";
 		te.year = "234";

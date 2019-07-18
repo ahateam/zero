@@ -252,10 +252,14 @@ public class RDSObjectMapper {
 			// }
 			else {
 				// 其它的特有对象
-				JSONObject jo = new JSONObject();
-				jo.put(JAVA_KEY, value.getClass().getName());
-				jo.put(JAVA_DATA, value);
-				ret.put(mapper.alias, jo.toJSONString());
+				if (value == null) {
+					ret.put(mapper.alias, null);
+				} else {
+					JSONObject jo = new JSONObject();
+					jo.put(JAVA_KEY, value.getClass().getName());
+					jo.put(JAVA_DATA, value);
+					ret.put(mapper.alias, jo.toJSONString());
+				}
 			}
 
 		}

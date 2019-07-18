@@ -6,13 +6,13 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import zyxhj.test.domain.Test;
+import zyxhj.test.domain.TestDomain;
 import zyxhj.utils.data.rds.RDSRepository;
 
-public class TestRepository extends RDSRepository<Test> {
+public class TestRepository extends RDSRepository<TestDomain> {
 
 	public TestRepository() {
-		super(Test.class);
+		super(TestDomain.class);
 	}
 
 	public List<Object[]> getListAllToObject(DruidPooledConnection conn) throws Exception {
@@ -23,11 +23,11 @@ public class TestRepository extends RDSRepository<Test> {
 		return getObjects(conn, "WHERE name = ? ", new Object[] { "123" }, "name");
 	}
 
-	public List<Test> getListAll(DruidPooledConnection conn) throws Exception {
+	public List<TestDomain> getListAll(DruidPooledConnection conn) throws Exception {
 		return getList(conn, " WHERE status = ? ", new Object[] { "0" }, 10, 0, "name", "year", "id");
 	}
 
-	public Test getTest(DruidPooledConnection conn) throws Exception {
+	public TestDomain getTest(DruidPooledConnection conn) throws Exception {
 		return get(conn, "WHERE id = ?", new Object[] { "398005800667477" }, "id");
 	}
 

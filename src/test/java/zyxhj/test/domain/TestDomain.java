@@ -9,7 +9,7 @@ import zyxhj.utils.data.rds.RDSAnnID;
  *
  */
 @RDSAnnEntity(alias = "tb_rds_test")
-public class Test {
+public class TestDomain {
 	public static final Byte STATUS_OPEN = 0;
 	public static final Byte STATUS_CLOSE = 1;
 	
