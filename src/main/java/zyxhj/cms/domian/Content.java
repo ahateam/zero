@@ -146,7 +146,7 @@ public class Content extends TSEntity {
 	/**
 	 * 标签
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = false)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = false, isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String tags;
 
