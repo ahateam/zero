@@ -54,40 +54,6 @@ public class TSFieldMapper<T extends TSEntity> {
 		this.autoIncrement = autoIncrement;
 	}
 
-	// public Object getFieldValueFromParam(Object param) throws Exception {
-	// if (null != primaryKeyType) {
-	// if (javaType.equals(Long.class)) {
-	// return PrimaryKeyValue.fromLong((Long) param);
-	// } else if (javaType.equals(String.class)) {
-	// return PrimaryKeyValue.fromString((String) param);
-	// } else if (javaType.equals(Integer.class)) {
-	// // ots实际上用的是Integer
-	// return PrimaryKeyValue.fromLong((Integer) param);
-	// } else if (javaType.equals(byte[].class)) {
-	// return ColumnValue.fromBinary((byte[]) param);
-	// } else {
-	// throw new Exception(StringUtils.join("unknown ots primary key type:",
-	// javaType));
-	// }
-	// } else {
-	// if (javaType.equals(Boolean.class)) {
-	// return ColumnValue.fromBoolean((Boolean) param);
-	// } else if (javaType.equals(Long.class)) {
-	// return ColumnValue.fromLong((Long) param);
-	// } else if (javaType.equals(Double.class)) {
-	// return ColumnValue.fromDouble((Double) param);
-	// } else if (javaType.equals(String.class)) {
-	// return ColumnValue.fromString((String) param);
-	// } else if (javaType.equals(Integer.class)) {
-	// return ColumnValue.fromLong((Integer) param);
-	// } else if (javaType.equals(byte[].class)) {
-	// return ColumnValue.fromBinary((byte[]) param);
-	// } else {
-	// throw new Exception(StringUtils.join("unknown ots column type:", javaType));
-	// }
-	// }
-	// }
-
 	public Object getFieldValueFromObject(Object obj) throws ServerException {
 		Object t;
 		try {

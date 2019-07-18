@@ -60,7 +60,7 @@ public class TSUtils {
 				if (!Modifier.isStatic(cf.getModifiers())) {
 					TSAnnIndex annIndex = cf.getAnnotation(TSAnnIndex.class);
 					if (annIndex != null) {
-						String name = annIndex.name();
+						String name = annEntity.indexName();
 
 						ArrayList<Field> indexFields = indexColumnsMap.get(name);
 						if (indexFields != null) {
@@ -138,7 +138,7 @@ public class TSUtils {
 							// 有索引的字段列
 							// 一个表可能有多组多元索引，需要按索引名区分
 
-							String name = annIndex.name();
+							String name = annEntity.indexName();
 
 							ArrayList<Field> indexFields = indexColumnsMap.get(name);
 							if (indexFields != null) {

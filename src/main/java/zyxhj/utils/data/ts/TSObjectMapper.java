@@ -257,23 +257,6 @@ public class TSObjectMapper<T extends TSEntity> {
 		return ret;
 	}
 
-	/**
-	 * 从参数数组构造PrimaryKey，4个主键，第一个是分片键，严格按顺序排列</br>
-	 * 需要按顺序添加PrimaryKey
-	 */
-	// public PrimaryKey getPrimaryKeyFromParams(Object... params) throws Exception
-	// {
-	// PrimaryKeyBuilder primaryKeyBuilder =
-	// PrimaryKeyBuilder.createPrimaryKeyBuilder();
-	// // 因为在构造时，已经将PrimaryKey按顺序排好了，所以这里可以直接按数组里的顺序去取。
-	// for (int i = 0; i < primaryKeyList.size(); i++) {
-	// OTSFieldMapper<T> pk = primaryKeyList.get(i);
-	// primaryKeyBuilder.addPrimaryKeyColumn(pk.alias, (PrimaryKeyValue)
-	// pk.getFieldValueFromParam(params[i]));
-	// }
-	// return primaryKeyBuilder.build();
-	// }
-
 	private static Object getValueFromPKC(PrimaryKeyColumn pkc) {
 		PrimaryKeyValue pkv = pkc.getValue();
 		if (pkv.getType().equals(PrimaryKeyType.INTEGER)) {

@@ -244,13 +244,7 @@ public class RDSObjectMapper {
 				ret.put(mapper.alias, value);
 			} else if (value instanceof Date) {
 				ret.put(mapper.alias, value);
-			}
-			// else if (value instanceof JSONObject) {
-			// ret.put(mapper.alias, ((JSONObject) value).toJSONString());
-			// } else if (value instanceof JSONArray) {
-			// ret.put(mapper.alias, ((JSONArray) value).toJSONString());
-			// }
-			else {
+			} else {
 				// 其它的特有对象
 				if (value == null) {
 					ret.put(mapper.alias, null);
