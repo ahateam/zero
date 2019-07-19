@@ -3,6 +3,7 @@ package zyxhj.utils.data;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +14,11 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alicloud.openservices.tablestore.SyncClient;
+import com.alicloud.openservices.tablestore.model.Row;
+import com.alicloud.openservices.tablestore.model.search.SearchQuery;
+import com.alicloud.openservices.tablestore.model.search.SearchRequest;
+import com.alicloud.openservices.tablestore.model.search.SearchResponse;
+import com.alicloud.openservices.tablestore.model.search.query.Query;
 
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
@@ -32,34 +38,40 @@ public class SimpleQuery {
 
 	public static void main(String[] args) {
 		try {
-			List list = query(zyxhj.core.domain.User.class.getName(), null, "{{idNumber}} = ? AND {{mobile}} = ?",
-					new Object[] { "898989898989898989", "55855855855" }, 10, 0);
-			System.out.println(JSON.toJSONString(list));
+			// EXP exp = new EXP("{{idNumber}}", "=",
+			// "898989898989898989").and("{{mobile}}", "=", "55855855855");
+			// System.out.println(JSON.toJSONString(exp, true));
+			//
+			// List list = query(zyxhj.core.domain.User.class.getName(), null, exp, 10, 0);
+			// System.out.println(JSON.toJSONString(list));
+			//
+			// Object obj = get(zyxhj.core.domain.User.class.getName(), null, exp);
+			// System.out.println(JSON.toJSONString(obj));
 
-			Object obj = get(zyxhj.core.domain.User.class.getName(), null, "{{idNumber}} = ? AND {{mobile}} = ?",
-					new Object[] { "898989898989898989", "55855855855" });
-			System.out.println(JSON.toJSONString(obj));
+			EXP tsexp = new EXP("{{region}}", "=", "区2").and("{{status}}", "<>", 1);
+
+			List tslist = query(zyxhj.core.domain.CateInfo.class.getName(), null, tsexp, 10, 0);
+			System.out.println(JSON.toJSONString(tslist, true));
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	public static <X> List<X> query(String domain, JSONArray selections, String where, Object[] params, Integer count,
-			Integer offset) throws Exception {
+	public static <X> List<X> query(String domain, JSONArray selections, EXP exp, Integer count, Integer offset)
+			throws Exception {
 		// 根据domain获取实体类，同时获得注解
 		Class clazz = Class.forName(domain);
 		Object entity;
 		entity = clazz.getAnnotation(RDSAnnEntity.class);
 		if (entity != null) {
 			// RDS数据库
-			return RDSQuery(clazz, selections, where, params, count, offset);
+			return RDSEXPQuery(clazz, selections, exp, count, offset);
 		} else {
 			entity = clazz.getAnnotation(TSAnnEntity.class);
 			if (entity != null) {
 				// TableStore数据库
-				return TSQuery(clazz, selections, where, params, count, offset);
+				return TSEXPQuery(clazz, selections, exp, count, offset);
 			} else {
 				// 不支持的数据类型
 				throw new ServerException(BaseRC.REPOSITORY_SIMPLE_QUERY_DOMAIN_ERROR, domain);
@@ -67,18 +79,18 @@ public class SimpleQuery {
 		}
 	}
 
-	public static Object get(String domain, JSONArray selections, String where, Object[] params) throws Exception {
+	public static Object get(String domain, JSONArray selections, EXP exp) throws Exception {
 		Class clazz = Class.forName(domain);
 		Object entity;
 		entity = clazz.getAnnotation(RDSAnnEntity.class);
 		if (entity != null) {
 			// RDS数据库
-			return RDSGet(clazz, selections, where, params);
+			return RDSEXPGet(clazz, selections, exp);
 		} else {
 			entity = clazz.getAnnotation(TSAnnEntity.class);
 			if (entity != null) {
 				// TableStore数据库
-				return TSGet(clazz, selections, where, params);
+				return TSEXPGet(clazz, selections, exp);
 			} else {
 				// 不支持的数据类型
 				throw new ServerException(BaseRC.REPOSITORY_SIMPLE_QUERY_DOMAIN_ERROR, domain);
@@ -86,21 +98,8 @@ public class SimpleQuery {
 		}
 	}
 
-	public static <X extends TSEntity> List<X> TSQuery(Class<X> clazz, JSONArray selections, String where,
-			Object[] params, Integer count, Integer offset) throws Exception {
-		log.info("queryTableStore>{}", clazz.getName());
-
-		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
-		SyncClient client = DataSource
-				.getTableStoreSyncClient(((TSAnnEntity) clazz.getAnnotation(TSAnnEntity.class)).ds());
-
-		
-		
-		return null;
-	}
-
-	public static <X> List<X> RDSQuery(Class<X> clazz, JSONArray selections, String where, Object[] params,
-			Integer count, Integer offset) throws Exception {
+	public static <X> List<X> RDSQuery(Class<X> clazz, JSONArray selections, String where, Integer count,
+			Integer offset) throws Exception {
 		log.info("queryRDS>{}", clazz.getName());
 
 		RDSObjectMapper mapper = RDSObjectMapper.getInstance(clazz);
@@ -120,7 +119,7 @@ public class SimpleQuery {
 
 		String sql = sb.toString();
 		log.info("queryRDS>>>>>>>{}", sql);
-		PreparedStatement ps = RDSRepository.prepareStatement(dts.getConnection(), sql, params);
+		PreparedStatement ps = RDSRepository.prepareStatement(dts.getConnection(), sql, null);
 
 		try {
 			ResultSet rs = ps.executeQuery();
@@ -135,12 +134,29 @@ public class SimpleQuery {
 		}
 	}
 
-	public static Object TSGet(Class clazz, JSONArray selections, String where, Object[] params) throws Exception {
-		return DataSource.list2Obj(TSQuery(clazz, selections, where, params, 1, 0));
+	public static <X> List<X> RDSEXPQuery(Class<X> clazz, JSONArray selections, EXP exp, Integer count, Integer offset)
+			throws Exception {
+
+		StringBuffer sb = new StringBuffer();
+		exp.toSQL(sb);
+
+		String where = sb.toString();
+		// System.out.println(where);
+
+		return RDSQuery(clazz, selections, where, count, offset);
 	}
 
-	public static Object RDSGet(Class clazz, JSONArray selections, String where, Object[] params) throws Exception {
-		return DataSource.list2Obj(RDSQuery(clazz, selections, where, params, 1, 0));
+	public static Object RDSGet(Class clazz, JSONArray selections, String where) throws Exception {
+		return DataSource.list2Obj(RDSQuery(clazz, selections, where, 1, 0));
+	}
+
+	public static Object RDSEXPGet(Class clazz, JSONArray selections, EXP exp) throws Exception {
+		StringBuffer sb = new StringBuffer();
+		exp.toSQL(sb);
+
+		String where = sb.toString();
+		// System.out.println(where);
+		return DataSource.list2Obj(RDSQuery(clazz, selections, where, 1, 0));
 	}
 
 	private static void buildJavaSelections(StringBuffer sb, JSONArray selections, RDSObjectMapper mapper)
@@ -199,6 +215,79 @@ public class SimpleQuery {
 				}
 			}
 		}
+	}
+
+	private static String[] buildJavaSelections(JSONArray selections, TSObjectMapper mapper) throws Exception {
+		if (selections != null && selections.size() > 0) {
+			int len = selections.size();
+			String[] ret = new String[len];
+			for (int i = 0; i < len; i++) {
+				String javaField = selections.getString(i);
+				String alias = mapper.getAliasByJavaFieldName(javaField);
+				if (StringUtils.isBlank(alias)) {
+					throw new ServerException(BaseRC.REPOSITORY_SIMPLE_QUERY_FIELD_ERROR, javaField);
+				} else {
+					ret[i] = alias;
+				}
+			}
+			return ret;
+		} else {
+			return new String[] {};
+		}
+	}
+
+	public static <X extends TSEntity> List<X> TSQuery(Class<X> clazz, JSONArray selections, Query query, Integer count,
+			Integer offset) throws Exception {
+		log.info("queryTableStore>{}", clazz.getName());
+
+		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
+		SyncClient client = DataSource
+				.getTableStoreSyncClient(((TSAnnEntity) clazz.getAnnotation(TSAnnEntity.class)).ds());
+
+		String[] selectionList = buildJavaSelections(selections, mapper);
+
+		SearchQuery sq = new SearchQuery();
+		sq.setLimit(count);
+		sq.setOffset(offset);
+		sq.setQuery(query);
+
+		SearchRequest searchRequest = new SearchRequest(mapper.getTableName(), mapper.getIndexName(), sq);
+
+		SearchRequest.ColumnsToGet columnsToGet = new SearchRequest.ColumnsToGet();
+		if (selectionList != null && selectionList.length > 0) {
+			columnsToGet.setColumns(Arrays.asList(selectionList));
+		} else {
+			columnsToGet.setReturnAll(true);
+		}
+		searchRequest.setColumnsToGet(columnsToGet);
+		SearchResponse resp = client.search(searchRequest);
+
+		if (resp.isAllSuccess()) {
+			List<Row> rows = resp.getRows();
+			List rets = new ArrayList<>();
+			for (Row row : rows) {
+				rets.add(mapper.deserialize(row));
+			}
+			return rets;
+		} else {
+			return new ArrayList<>();
+		}
+	}
+
+	public static Object TSEXPGet(Class clazz, JSONArray selections, EXP exp) throws Exception {
+		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
+		return DataSource.list2Obj(TSQuery(clazz, selections, exp.toTSQuery(mapper), 1, 0));
+	}
+
+	public static Object TSGet(Class clazz, JSONArray selections, Query query) throws Exception {
+
+		return DataSource.list2Obj(TSQuery(clazz, selections, query, 1, 0));
+	}
+
+	public static <X extends TSEntity> List<X> TSEXPQuery(Class<X> clazz, JSONArray selections, EXP exp, Integer count,
+			Integer offset) throws Exception {
+		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
+		return TSQuery(clazz, selections, exp.toTSQuery(mapper), count, offset);
 	}
 
 }

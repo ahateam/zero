@@ -79,7 +79,7 @@ public class TaskService {
 		query.setLimit(count);
 		query.setGetTotalCount(getTotalCount);
 
-		return makeTaskRepository.search(client, "MakeTaskIndex", query);
+		return makeTaskRepository.search(client, query);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class TaskService {
 	 * 接受任务
 	 */
 	public void acceptTask(SyncClient client, Long id, Long acceptUserId) {
-		
+
 	}
 
 	/**

@@ -348,8 +348,6 @@ public abstract class TSRepository<T extends TSEntity> {
 	 * 
 	 * tableName 表名
 	 * 
-	 * @param indexName
-	 *            索引名
 	 * @param query
 	 *            TableStore查询对象
 	 * @param selections
@@ -451,9 +449,8 @@ public abstract class TSRepository<T extends TSEntity> {
 		return ret;
 	}
 
-	public JSONObject search(SyncClient client, String indexName, SearchQuery query, String... selections)
-			throws Exception {
-		SearchResponse resp = _search(client, mapper.getTableName(), indexName, query, selections);
+	public JSONObject search(SyncClient client, SearchQuery query, String... selections) throws Exception {
+		SearchResponse resp = _search(client, mapper.getTableName(), mapper.getIndexName(), query, selections);
 
 		JSONObject ret = new JSONObject();
 		ret.put("isAllSuccess", resp.isAllSuccess());

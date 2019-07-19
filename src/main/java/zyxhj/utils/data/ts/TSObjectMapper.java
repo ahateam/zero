@@ -31,6 +31,7 @@ public class TSObjectMapper<T extends TSEntity> {
 	private Class<T> clazz;
 
 	private String tableName;
+	private String indexName;
 
 	/**
 	 * 主键列表，OTS有4个主键，第一个也是分片键</br>
@@ -72,6 +73,7 @@ public class TSObjectMapper<T extends TSEntity> {
 
 		TSAnnEntity annEntity = clazz.getAnnotation(TSAnnEntity.class);
 		this.tableName = annEntity.alias();
+		this.indexName = annEntity.indexName();
 
 		Object[] pks = new Object[4];
 		int pkCount = 0;
@@ -149,6 +151,14 @@ public class TSObjectMapper<T extends TSEntity> {
 
 	public String getTableName() {
 		return tableName;
+	}
+
+	public String getIndexName() {
+		return indexName;
+	}
+
+	public String getAliasByJavaFieldName(String fieldName) {
+		return javaFieldMapper.get(fieldName).alias;
 	}
 
 	public List<T> deserialize(List<Row> rows) throws Exception {

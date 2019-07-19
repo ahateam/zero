@@ -176,7 +176,7 @@ public class FlowService {
 		query.setLimit(count);
 		query.setGetTotalCount(false);
 
-		return processDefinitionRepository.search(client, "ProcessDefinitionIndex", query);
+		return processDefinitionRepository.search(client, query);
 	}
 
 	/**
