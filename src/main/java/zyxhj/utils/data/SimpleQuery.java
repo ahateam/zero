@@ -38,16 +38,17 @@ public class SimpleQuery {
 
 	public static void main(String[] args) {
 		try {
-			// EXP exp = new EXP("{{idNumber}}", "=",
-			// "898989898989898989").and("{{mobile}}", "=", "55855855855");
-			// System.out.println(JSON.toJSONString(exp, true));
-			//
-			// List list = query(zyxhj.core.domain.User.class.getName(), null, exp, 10, 0);
-			// System.out.println(JSON.toJSONString(list));
-			//
-			// Object obj = get(zyxhj.core.domain.User.class.getName(), null, exp);
-			// System.out.println(JSON.toJSONString(obj));
+			EXP exp = new EXP("{{idNumber}}", "=", "898989898989898989").and("{{mobile}}", "=", "55855855855");
+			System.out.println(JSON.toJSONString(exp, true));
 
+			List list = query(zyxhj.core.domain.User.class.getName(), null, exp, 10, 0);
+			System.out.println(JSON.toJSONString(list));
+
+			Object obj = get(zyxhj.core.domain.User.class.getName(), null, exp);
+			System.out.println(JSON.toJSONString(obj));
+
+			
+			
 			EXP tsexp = new EXP("{{region}}", "=", "区2").and("{{status}}", "<>", 1);
 
 			List tslist = query(zyxhj.core.domain.CateInfo.class.getName(), null, tsexp, 10, 0);

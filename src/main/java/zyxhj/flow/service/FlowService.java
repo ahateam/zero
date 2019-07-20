@@ -263,7 +263,7 @@ public class FlowService {
 	}
 
 	// 获取所有数据表
-	public List<TableSchema> getTableSchema(DruidPooledConnection conn, Integer count, Integer offset)
+	public List<TableSchema> getTableSchemas(DruidPooledConnection conn, Integer count, Integer offset)
 			throws Exception {
 		return tableSchemaRepository.getList(conn, count, offset);
 	}
@@ -339,27 +339,8 @@ public class FlowService {
 		}
 	}
 
-	/**
-	 * 创建表查询
-	 */
-	public void createTableQuery(DruidPooledConnection conn, Long tableSchemaId, JSONObject query) throws Exception {
-		TableQuery tq = new TableQuery();
-		tq.tableSchemaId = tableSchemaId;
-		tq.id = IDUtils.getSimpleId();
-		tq.queryFormula = query;
-
-		tableQueryRepository.insert(conn, tq);
-	}
-
-	// 获取查询
-	public List<TableQuery> getTableQuerys(DruidPooledConnection conn, Long tableSchemaId, Integer count,
-			Integer offset) throws Exception {
-		return tableQueryRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);
-	}
-
-	// 删除查询
-	public int delTableQuery(DruidPooledConnection conn, Long tableSchemaId, Long dataId) throws Exception {
-		return tableQueryRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
+	public int delTableData(DruidPooledConnection conn, Long tableSchemaId, Long dataId) throws Exception {
+		return tableDataRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
 				new Object[] { tableSchemaId, dataId });
 	}
 
@@ -369,25 +350,49 @@ public class FlowService {
 		return tableDataRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);
 	}
 
-	// 删除数据
-	public int delTableData(DruidPooledConnection conn, Long tableSchemaId, Long dataId) throws Exception {
-		return tableDataRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
-				new Object[] { tableSchemaId, dataId });
+	/**
+	 * 创建表查询
+	 */
+	public void createTableQuery(DruidPooledConnection conn, Long tableSchemaId, JSONObject queryFormula)
+			throws Exception {
+		TableQuery tq = new TableQuery();
+		tq.tableSchemaId = tableSchemaId;
+		tq.id = IDUtils.getSimpleId();
+		tq.queryFormula = queryFormula;
+
+		tableQueryRepository.insert(conn, tq);
+	}
+
+	// 获取查询
+	public List<TableQuery> getTableQueries(DruidPooledConnection conn, Long tableSchemaId, Integer count,
+			Integer offset) throws Exception {
+		return tableQueryRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);
+	}
+
+	// 删除查询
+	public int delTableQuery(DruidPooledConnection conn, Long tableSchemaId, Long queryId) throws Exception {
+		return tableQueryRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
+				new Object[] { tableSchemaId, queryId });
 	}
 
 	/**
 	 * 根据条件查询</br>
 	 */
-	public List<TableData> queryTableDatas(DruidPooledConnection conn, Long tableSchemaId, Long queryId, Integer count,
-			Integer offset) throws Exception {
+	public List<TableData> getTableDatasByQuery(DruidPooledConnection conn, Long tableSchemaId, Long queryId,
+			Integer count, Integer offset) throws Exception {
 
 		TableQuery tq = tableQueryRepository.getByANDKeys(conn, new String[] { "table_schema_id", "id" },
 				new Object[] { tableSchemaId, queryId });
 		if (tq == null || tq.queryFormula == null) {
 			throw new ServerException(BaseRC.FLOW_FORM_TABLE_QUERY_NOT_FOUND);
 		} else {
-			return tableDataRepository.getTableDatasByQuery(conn, tableSchemaId, tq.queryFormula, count, offset);
+			return getTableDatasByFormula(conn, tableSchemaId, tq.queryFormula, count, offset);
 		}
+	}
+
+	public List<TableData> getTableDatasByFormula(DruidPooledConnection conn, Long tableSchemaId,
+			JSONObject queryFormula, Integer count, Integer offset) throws Exception {
+		return tableDataRepository.getTableDatasByQuery(conn, tableSchemaId, queryFormula, count, offset);
 	}
 
 }

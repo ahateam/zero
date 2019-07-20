@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.model.search.query.BoolQuery;
 import com.alicloud.openservices.tablestore.model.search.query.Query;
 import com.alicloud.openservices.tablestore.model.search.query.RangeQuery;
@@ -14,7 +15,6 @@ import com.alicloud.openservices.tablestore.model.search.query.TermQuery;
 
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
-import zyxhj.utils.data.rds.RDSObjectMapper;
 import zyxhj.utils.data.ts.ColumnBuilder;
 import zyxhj.utils.data.ts.TSObjectMapper;
 
@@ -29,21 +29,21 @@ import zyxhj.utils.data.ts.TSObjectMapper;
  */
 public class EXP implements Cloneable {
 
-	public static final int TYPE_EXP = 0;// 二元表达式
-	public static final int TYPE_METHOD = 1;// 函数
+	public static final String TYPE_EXP = "e";// 二元表达式
+	public static final String TYPE_METHOD = "m";// 函数
 
-	public int type;
+	public String t;
 	public String op;
 	public List<Object> ps;
 
 	public EXP(String op, List<Object> ps) {
-		this.type = TYPE_METHOD;
+		this.t = TYPE_METHOD;
 		this.op = op;
 		this.ps = ps;
 	}
 
 	public EXP(Object left, String op, Object right) {
-		this.type = TYPE_EXP;
+		this.t = TYPE_EXP;
 		this.op = op;
 		this.ps = Arrays.asList(left, right);
 	}
@@ -62,7 +62,7 @@ public class EXP implements Cloneable {
 		EXP left = this.clone();
 		EXP right = exp;
 
-		this.type = TYPE_EXP;
+		this.t = TYPE_EXP;
 		this.op = "&&";
 		this.ps = Arrays.asList(left, right);
 
@@ -81,7 +81,7 @@ public class EXP implements Cloneable {
 		EXP left = this.clone();
 		EXP right = exp;
 
-		this.type = TYPE_EXP;
+		this.t = TYPE_EXP;
 		this.op = "||";
 		this.ps = Arrays.asList(left, right);
 
@@ -102,7 +102,7 @@ public class EXP implements Cloneable {
 		return sb.toString();
 	}
 
-	private String sqlFixOP(String op) {
+	private static String sqlFixOP(String op) {
 		op = StringUtils.trim(op);
 		if (op.equals("&&") || op.equals("AND") || op.equals("and")) {
 			return " AND ";
@@ -117,7 +117,7 @@ public class EXP implements Cloneable {
 		}
 	}
 
-	private String tsFixOP(String op) {
+	private static String tsFixOP(String op) {
 		op = StringUtils.trim(op);
 		if (op.equals("&&") || op.equals("AND") || op.equals("and")) {
 			return "AND";
@@ -205,6 +205,15 @@ public class EXP implements Cloneable {
 		}
 	}
 
+	/**
+	 * 修复表达式参数中的java变量{{}}
+	 */
+	private static String fixJavaFieldInPS(String ps) {
+		String ret = ps.replace("{{", "");
+		ret = ret.replace("}}", "");
+		return ret;
+	}
+
 	private static String replaceJavaField2RDSField(String where, TSObjectMapper mapper) throws Exception {
 		StringBuffer sb = new StringBuffer();
 		int ind = 0;
@@ -246,7 +255,7 @@ public class EXP implements Cloneable {
 	 * 
 	 */
 	public Query toTSQuery(TSObjectMapper mapper) throws Exception {
-		if (this.type == TYPE_EXP) {
+		if (t.equals(TYPE_EXP)) {
 			// 二元表达式
 			Object left = ps.get(0);
 			Object right = ps.get(1);
@@ -276,8 +285,71 @@ public class EXP implements Cloneable {
 		return null;
 	}
 
+	/**
+	 * JSONObject格式的EXP表达式的解析，用于接口调用
+	 */
+	public static void jsonEXP2VirtualTableSQL(JSONObject exp, String jsonColumn, StringBuffer sb) throws Exception {
+		String op = exp.getString("op");
+		String t = exp.getString("t");
+		List<Object> ps = exp.getJSONArray("ps");
+
+		if (t.equals(TYPE_EXP)) {
+			// 表达式
+			Object left = ps.get(0);
+			Object right = ps.get(1);
+
+			if (left instanceof JSONObject) {
+				// 递归
+				sb.append('(');
+				jsonEXP2VirtualTableSQL((JSONObject) left, jsonColumn, sb);
+				sb.append(')');
+			} else {
+				// JSON虚拟表中的字段名，无需进行java转换，直接取出{{}}即可
+				String temp = StringUtils.trim(left.toString());
+				String ll = fixJavaFieldInPS(temp);
+				if (temp.equals(ll)) {
+					// 没有java变量
+					sb.append(ll);
+				} else {
+					// 有java变量
+					// data->'$.c_data.COL5' = 2
+					sb.append(jsonColumn).append("->'$.c_data.").append(ll).append("'");
+				}
+			}
+			sb.append(sqlFixOP(op));
+			if (right instanceof JSONObject) {
+				sb.append('(');
+				jsonEXP2VirtualTableSQL((JSONObject) right, jsonColumn, sb);
+				sb.append(')');
+			} else {
+				// JSON虚拟表中的字段名，无需进行java转换，直接取出{{}}即可
+				String temp = StringUtils.trim(right.toString());
+				String rr = fixJavaFieldInPS(temp);
+				if (temp.equals(rr)) {
+					// 没有java变量
+					sb.append(rr);
+				} else {
+					// 有java变量
+					// data->'$.c_data.COL5' = 2
+					sb.append(jsonColumn).append("->'$.c_data.").append(rr).append("'");
+				}
+			}
+		} else {
+			// 方法
+			sb.append(op).append('(');
+			for (int i = 0; i < ps.size(); i++) {
+				sb.append(ps.get(i));
+				if (i < ps.size() - 1) {
+					sb.append(',');
+				}
+			}
+			sb.append(')');
+		}
+
+	}
+
 	public void toSQL(StringBuffer sb) {
-		if (this.type == TYPE_EXP) {
+		if (t.equals(TYPE_EXP)) {
 			// 二元表达式
 			Object left = ps.get(0);
 			Object right = ps.get(1);
@@ -318,7 +390,7 @@ public class EXP implements Cloneable {
 
 		exp.and(subExp);
 
-		System.out.println(JSON.toJSONString(exp, true));
+		System.out.println("<<<" + JSON.toJSONString(exp));
 
 		StringBuffer sb = new StringBuffer();
 		exp.toSQL(sb);

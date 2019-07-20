@@ -29,15 +29,4 @@ public class TableQuery {
 	@RDSAnnField(column = RDSAnnField.TEXT)
 	public JSONObject queryFormula;
 
-	public static class Exp {
-		public Object left;
-		public String op;
-		public Object right;
-
-		public Exp(Object left, String op, Object right) {
-			this.left = left;
-			this.op = op;
-			this.right = right;
-		}
-	}
 }

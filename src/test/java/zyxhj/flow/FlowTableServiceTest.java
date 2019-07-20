@@ -24,6 +24,7 @@ import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.service.FlowService;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.EXP;
 
 public class FlowTableServiceTest {
 
@@ -117,7 +118,7 @@ public class FlowTableServiceTest {
 
 	private static final Long dataId = 400159711950692L;
 
-	private static final Long queryId = 400159724862966L;
+	private static final Long queryId = 400281182414740L;
 
 	@Test
 	public void testCreateTableSchema() {
@@ -197,9 +198,7 @@ public class FlowTableServiceTest {
 	@Test
 	public void testCreateTableQuery() {
 
-		TableQuery.Exp exp1 = new TableQuery.Exp("'COL5'", "=", 2);
-		TableQuery.Exp exp2 = new TableQuery.Exp("'TOTAL1'", ">", 100);
-		TableQuery.Exp exp = new TableQuery.Exp(exp1, "AND", exp2);
+		EXP exp = new EXP("{{COL5}}", "=", 2).and("{{TOTAL1}}", ">", 100);
 
 		System.out.println(JSON.toJSONString(exp));
 		JSONObject jo = JSON.parseObject(JSON.toJSONString(exp));
@@ -216,7 +215,7 @@ public class FlowTableServiceTest {
 	@Test
 	public void testQueryTableDatas() {
 		try {
-			List<TableData> datas = flowService.queryTableDatas(conn, schemaId, queryId, 10, 0);
+			List<TableData> datas = flowService.getTableDatasByQuery(conn, schemaId, queryId, 10, 0);
 			System.out.println(JSON.toJSONString(datas));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
