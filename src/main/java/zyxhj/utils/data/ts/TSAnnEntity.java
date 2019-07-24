@@ -24,5 +24,5 @@ public @interface TSAnnEntity {
 
 	public String ds() default "tsDefault.prop";
 
-	public String indexName();
+	public String indexName() default "";
 }

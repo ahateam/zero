@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
 
+import zyxhj.flow.domain.Annex;
 import zyxhj.flow.domain.Part;
 import zyxhj.flow.repository.PartRepository;
 import zyxhj.utils.IDUtils;
@@ -17,13 +18,13 @@ import zyxhj.utils.data.ts.PrimaryKeyBuilder;
 import zyxhj.utils.data.ts.TSRepository;
 import zyxhj.utils.data.ts.TSUtils;
 
-public class PartService {
+public class AnnexService {
 
-	private static Logger log = LoggerFactory.getLogger(PartService.class);
+	private static Logger log = LoggerFactory.getLogger(AnnexService.class);
 
 	private PartRepository partRepository;
 
-	public PartService() {
+	public AnnexService() {
 		try {
 			partRepository = Singleton.ins(PartRepository.class);
 
@@ -35,8 +36,8 @@ public class PartService {
 	/**
 	 * 创建附件
 	 */
-	public Part createPart(SyncClient client, String name, String url, String ext) throws Exception {
-		Part p = new Part();
+	public Annex createPart(SyncClient client, String name, String url, String ext) throws Exception {
+		Annex p = new Annex();
 		Long id = IDUtils.getSimpleId();
 
 		p._id = TSUtils.get_id(id);
@@ -77,7 +78,13 @@ public class PartService {
 	 * 获取所有附件信息</br>
 	 * TODO 需要用索引查询
 	 */
-	public JSONArray queryParts(SyncClient client, Integer count, Integer offset) throws Exception {
+	public JSONArray getParts(SyncClient client, Integer count, Integer offset) throws Exception {
+		// 设置起始主键
+		// TODO 待实现
+		return null;
+	}
+	
+	public JSONArray getPartById(SyncClient client) throws Exception {
 		// 设置起始主键
 		// TODO 待实现
 		return null;
