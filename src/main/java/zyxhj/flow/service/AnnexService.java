@@ -79,14 +79,14 @@ public class AnnexService {
 	 * TODO 需要用索引查询
 	 */
 	public JSONArray getParts(SyncClient client, Integer count, Integer offset) throws Exception {
-		// 设置起始主键
-		// TODO 待实现
+
+
 		return null;
 	}
 	
 	public JSONArray getPartById(SyncClient client) throws Exception {
-		// 设置起始主键
-		// TODO 待实现
+
+
 		return null;
 	}
 }

@@ -2,47 +2,47 @@ package zyxhj.flow.domain;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
 
-import zyxhj.utils.data.ts.TSAnnEntity;
-import zyxhj.utils.data.ts.TSAnnField;
-import zyxhj.utils.data.ts.TSAnnID;
-import zyxhj.utils.data.ts.TSEntity;
+import zyxhj.utils.data.rds.RDSAnnEntity;
+import zyxhj.utils.data.rds.RDSAnnField;
+import zyxhj.utils.data.rds.RDSAnnID;
 
-@TSAnnEntity(alias = "ProcessActivity", indexName = "")
-public class ProcessActivity extends TSEntity {
+@RDSAnnEntity(alias = "tb_process_activity")
+public class ProcessActivity{
 
 	/**
 	 * 所属PD编号
 	 */
-	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
 	public Long pdId;
 
 	/**
 	 * 编号
 	 */
-	@TSAnnID(key = TSAnnID.Key.PK3, type = PrimaryKeyType.INTEGER)
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
 
 	/**
 	 * 标题
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT_TITLE)
 	public String title;
 
 	/**
 	 * 所属泳道
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String part;
 
 	/**
 	 * 接收者（departments部门，roles角色，users用户）
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public JSONObject receivers;
 
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public JSONArray actions;// 行为
 
 	public static class Receiver {

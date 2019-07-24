@@ -1,400 +1,275 @@
 package zyxhj.flow.service;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alicloud.openservices.tablestore.SyncClient;
-import com.alicloud.openservices.tablestore.model.PrimaryKey;
-import com.alicloud.openservices.tablestore.model.search.SearchQuery;
 
+import zyxhj.flow.domain.Module;
+import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessDefinition;
-import zyxhj.flow.domain.TableData;
-import zyxhj.flow.domain.TableQuery;
-import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.repository.ProcessActivityRepository;
 import zyxhj.flow.repository.ProcessDefinitionRepository;
 import zyxhj.flow.repository.ProcessLogRepository;
 import zyxhj.flow.repository.ProcessRepository;
-import zyxhj.flow.repository.TableDataRepository;
-import zyxhj.flow.repository.TableQueryRepository;
-import zyxhj.flow.repository.TableSchemaRepository;
-import zyxhj.flow.repository.TableVirtualRepository;
+import zyxhj.flow.repository.ModuleRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
-import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
-import zyxhj.utils.data.ts.PrimaryKeyBuilder;
-import zyxhj.utils.data.ts.TSQL;
-import zyxhj.utils.data.ts.TSQL.OP;
-import zyxhj.utils.data.ts.TSUtils;
 
 public class FlowService {
 
 	private static Logger log = LoggerFactory.getLogger(FlowService.class);
 
-	private TableSchemaRepository tableSchemaRepository;
-	private TableDataRepository tableDataRepository;
-	private TableQueryRepository tableQueryRepository;
-	private TableVirtualRepository tableVirtualRepository;
-
 	private ProcessRepository processRepository;
 	private ProcessDefinitionRepository processDefinitionRepository;
 	private ProcessActivityRepository processActivityRepository;
-	private ProcessLogRepository processRecordRepository;
+	
+	private ProcessLogRepository processLogRepository;
+	private ModuleRepository moduleRepository;
 
 	private ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
 
 	public FlowService() {
 		try {
-			tableSchemaRepository = Singleton.ins(TableSchemaRepository.class);
-			tableDataRepository = Singleton.ins(TableDataRepository.class);
-			tableQueryRepository = Singleton.ins(TableQueryRepository.class);
-			tableVirtualRepository = Singleton.ins(TableVirtualRepository.class);
-
 			processRepository = Singleton.ins(ProcessRepository.class);
 			processDefinitionRepository = Singleton.ins(ProcessDefinitionRepository.class);
 			processActivityRepository = Singleton.ins(ProcessActivityRepository.class);
-			processRecordRepository = Singleton.ins(ProcessLogRepository.class);
-
+			moduleRepository = Singleton.ins(ModuleRepository.class);
+			processLogRepository = Singleton.ins(ProcessLogRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 	}
 
-	private static List<String> getJSArgs(String src) {
-		int ind = 0;
-		int start = 0;
-		int end = 0;
-		ArrayList<String> ret = new ArrayList<>();
-		while (true) {
-			start = src.indexOf("{{", ind);
-			if (start < ind) {
-				// 没有找到新的{，结束
-				break;
-			} else {
-
-				// 找到{，开始找配对的}
-				end = src.indexOf("}}", start);
-				if (end > start + 3) {
-					// 找到结束符号
-					ind = end + 2;// 记录下次位置
-
-					ret.add(src.substring(start + 2, end));
-				} else {
-					// 没有找到匹配的结束符号，终止循环
-					break;
-				}
-			}
-		}
-		return ret;
-	}
-
-	private Object compute(String js, JSONObject tableRowData) {
-		try {
-
-			//{{c1}} + {{c2}} 
-			System.out.println("oldjs>>>" + js);
-
-			List<String> args = getJSArgs(js);
-			
-			SimpleBindings simpleBindings = new SimpleBindings();
-			for (String arg : args) {
-				System.out.println(arg);
-
-				simpleBindings.put(arg, tableRowData.get(arg));
-			}
-
-			js = StringUtils.replaceEach(js, new String[] { "{{", "}}" }, new String[] { "(", ")" });
-
-			System.out.println("newjs>>>" + js);
-
-			return nashorn.eval(js, simpleBindings);
-		} catch (ScriptException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
+	/*
+	 * ProcessDefinitionService
+	 */
 	/**
 	 * 创建流程定义
 	 */
-	public void createProcessDefinition(SyncClient client, String module, JSONArray tags, String title, JSONArray lanes,
+	public void createProcessDefinition(DruidPooledConnection conn, String module, JSONArray tags, String title, JSONArray lanes,
 			JSONArray assets, JSONObject visualization) throws Exception {
 		Long id = IDUtils.getSimpleId();
 		ProcessDefinition pd = new ProcessDefinition();
-		pd._id = TSUtils.get_id(id);
+		pd.module = module;
 		pd.id = id;
 		pd.tags = tags;
-		pd.module = module;
 		pd.status = ProcessDefinition.STATUS_OFF;
 		pd.title = title;
 
 		pd.lanes = lanes;
-		pd.assets = assets;
-		pd.visualization = visualization;
 
-		processDefinitionRepository.insert(client, pd, false);
+		processDefinitionRepository.insert(conn, pd);
 	}
 
-	public void editProcessDefinition(SyncClient client, Long id, String module, Byte status, JSONArray tags,
+	/*
+	 * 编辑表流程定义
+	 */
+	public int editProcessDefinition(DruidPooledConnection conn, Long id, String module, Byte status, JSONArray tags,
 			String title, JSONArray lanes, JSONArray assets, JSONObject visualization) throws Exception {
 
 		ProcessDefinition pd = new ProcessDefinition();
-		pd._id = TSUtils.get_id(id);
 		pd.id = id;
 		pd.tags = tags;
-		pd.module = module;
 		pd.status = status;
 		pd.title = title;
 
 		pd.lanes = lanes;
-		pd.assets = assets;
-		pd.visualization = visualization;
 
-		processDefinitionRepository.update(client, pd, true);
+		return processDefinitionRepository.updateByKey(conn, "id", id, pd, true);
 	}
 
-	public JSONObject queryProcessDefinition(SyncClient client, String module, JSONArray tags, Integer count,
+	/*
+	 * 查询所有表流程定义
+	 */
+	public List<ProcessDefinition> queryProcessDefinition(DruidPooledConnection conn, String module, JSONArray tags, Integer count,
 			Integer offset) throws Exception {
-
-		SearchQuery query = new TSQL().Term(OP.AND, "module", module)//
-				.Terms(OP.AND, "tags", tags == null ? null : tags.toArray()).build();
-
-		query.setOffset(offset);
-		query.setLimit(count);
-		query.setGetTotalCount(false);
-
-		return processDefinitionRepository.search(client, query);
+		return processDefinitionRepository.getListByANDKeys(conn, new String[] {"module","tags"}, new Object[] {module, tags.toArray()}, count, offset);
 	}
 
+	/*
+	 * ProcessActivityService
+	 */
 	/**
 	 * 设置流程节点，没有就增加，有就设置</br>
 	 * 重名会被覆盖
 	 */
-	public void addPDActivity(SyncClient client, Long pdId, String title, String part, JSONObject receivers,
-			JSONArray assets, JSONArray actions, JSONObject visualization) throws Exception {
+	public void addPDActivity(DruidPooledConnection conn, Long pdId, String title, String part, JSONObject receivers, JSONArray actions) throws Exception {
 		Long id = IDUtils.getSimpleId();
 		ProcessActivity pa = new ProcessActivity();
-		pa._id = TSUtils.get_id(id);
 		pa.pdId = pdId;
 		pa.id = id;
 
 		pa.title = title;
 		pa.part = part;
 		pa.receivers = receivers;
-		pa.assets = assets;
 		pa.actions = actions;
-		pa.visualization = visualization;
 
-		processActivityRepository.insert(client, pa, false);
+		processActivityRepository.insert(conn, pa);
 	}
 
 	/**
 	 * 删除流程节点
 	 */
-	public void delPDActivity(SyncClient client, Long pdId, Long activityId) throws Exception {
-
-		PrimaryKey pk = new PrimaryKeyBuilder().add("_id", TSUtils.get_id(activityId)).add("pdId", pdId)
-				.add("id", activityId).build();
-
-		processActivityRepository.delete(client, pk);
+	public int delPDActivity(DruidPooledConnection conn, Long pdId, Long activityId) throws Exception {
+		return processActivityRepository.deleteByANDKeys(conn, new String[]{"pd_id", "id"}, new Object[]{pdId, activityId});
 	}
 
 	/**
 	 * 编辑流程节点
 	 */
-	public void editPDActivity(SyncClient client, Long pdId, Long id, String title, String part, JSONObject receivers,
+	public int editPDActivity(DruidPooledConnection conn, Long pdId, Long id, String title, String part, JSONObject receivers,
 			JSONArray assets, JSONArray actions, JSONObject visualization) throws Exception {
 
 		ProcessActivity pa = new ProcessActivity();
-		pa._id = TSUtils.get_id(id);
 		pa.pdId = pdId;
 		pa.id = id;
 
 		pa.title = title;
 		pa.part = part;
 		pa.receivers = receivers;
-		pa.assets = assets;
 		pa.actions = actions;
-		pa.visualization = visualization;
 
-		processActivityRepository.update(client, pa, true);
+		return processActivityRepository.updateByANDKeys(null, new String[] {"pd_id", "id"}, new Object[] {pdId, id}, pa, true);
 	}
-
-	// 创建表结构
-	public void createTableSchema(DruidPooledConnection conn, String alias, Byte type, JSONArray columns)
-			throws Exception {
-
-		// TODO 暂时只支持VIRTUAL_QUERY_TABLE
-
-		TableSchema ts = new TableSchema();
-		ts.id = IDUtils.getSimpleId();
-		ts.alias = alias;
-		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v();
-
-		ts.columns = columns;
-
-		tableSchemaRepository.insert(conn, ts);
-	}
-
-	public int updateTableSchema(DruidPooledConnection conn, Long id, String alias, JSONArray columns)
-			throws Exception {
-		TableSchema ts = new TableSchema();
-		ts.alias = alias;
-
-		// TODO 变更类型涉及到数据迁移，目前不做
-		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v();
-
-		ts.columns = columns;
-
-		return tableSchemaRepository.updateByKey(conn, "id", id, ts, true);
-	}
-
-	// 获取所有数据表
-	public List<TableSchema> getTableSchemas(DruidPooledConnection conn, Integer count, Integer offset)
-			throws Exception {
-		return tableSchemaRepository.getList(conn, count, offset);
-	}
-
-	// 添加表数据
-	public void insertTableData(DruidPooledConnection conn, Long tableSchemaId, JSONObject data) throws Exception {
-
-		TableData td = new TableData();
-		td.tableSchemaId = tableSchemaId;
-		td.id = IDUtils.getSimpleId();
-		td.data = data;
-
-		// 取出计算列，进行计算
-		TableSchema ts = tableSchemaRepository.getByKey(conn, "id", tableSchemaId);
-		if (ts == null || ts.columns == null || ts.columns.size() <= 0) {
-			// 表结构不存在，抛异常
-			throw new ServerException(BaseRC.FLOW_FORM_TABLE_SCHEMA_NOT_FOUND);
-		} else {
-			for (int i = 0; i < ts.columns.size(); i++) {
-				JSONObject jo = ts.columns.getJSONObject(i);
-				String key = jo.keySet().iterator().next();
-				TableSchema.Column c = jo.getObject(key, TableSchema.Column.class);
-
-				if (c.columnType.equals(TableSchema.Column.COLUMN_TYPE_COMPUTE)) {
-					// 计算列,开始计算
-					System.out.println("开始计算");
-					Object ret = compute(c.computeFormula, data);
-					System.out.println(JSON.toJSONString(ret));
-
-					td.data.put(key, ret);
-				}
-			}
-
-			tableDataRepository.insert(conn, td);
-		}
-	}
-
-	public int updateTableData(DruidPooledConnection conn, Long tableSchemaId, Long dataId, JSONObject data)
-			throws Exception {
-
-		TableData td = tableDataRepository.getByANDKeys(conn, new String[] { "table_schema_id", "id" },
-				new Object[] { tableSchemaId, dataId });
-		if (td == null) {
-			throw new ServerException(BaseRC.FLOW_FORM_TABLE_DATA_NOT_FOUND);
-		} else {
-
-			td.data = data;
-
-			// 取出计算列，进行计算
-			TableSchema ts = tableSchemaRepository.getByKey(conn, "id", tableSchemaId);
-			if (ts == null || ts.columns == null || ts.columns.size() <= 0) {
-				// 表结构不存在，抛异常
-				throw new ServerException(BaseRC.FLOW_FORM_TABLE_SCHEMA_NOT_FOUND);
-			} else {
-				for (int i = 0; i < ts.columns.size(); i++) {
-					JSONObject jo = ts.columns.getJSONObject(i);
-					String key = jo.keySet().iterator().next();
-					TableSchema.Column c = jo.getObject(key, TableSchema.Column.class);
-
-					if (c.columnType.equals(TableSchema.Column.COLUMN_TYPE_COMPUTE)) {
-						// 计算列,开始计算
-						System.out.println("开始计算");
-						Object ret = compute(c.computeFormula, data);
-						System.out.println(JSON.toJSONString(ret));
-
-						td.data.put(key, ret);
-					}
-				}
-
-				return tableDataRepository.updateByANDKeys(conn, new String[] { "table_schema_id", "id" },
-						new Object[] { tableSchemaId, dataId }, td, true);
-			}
-		}
-	}
-
-	public int delTableData(DruidPooledConnection conn, Long tableSchemaId, Long dataId) throws Exception {
-		return tableDataRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
-				new Object[] { tableSchemaId, dataId });
-	}
-
-	// 获取数据
-	public List<TableData> getTableDatas(DruidPooledConnection conn, Long tableSchemaId, Integer count, Integer offset)
-			throws Exception {
-		return tableDataRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);
-	}
-
-	/**
-	 * 创建表查询
+	/*
+	 * 查询所有流程节点
 	 */
-	public void createTableQuery(DruidPooledConnection conn, Long tableSchemaId, JSONObject queryFormula)
-			throws Exception {
-		TableQuery tq = new TableQuery();
-		tq.tableSchemaId = tableSchemaId;
-		tq.id = IDUtils.getSimpleId();
-		tq.queryFormula = queryFormula;
-
-		tableQueryRepository.insert(conn, tq);
+	public List<ProcessActivity> queryPDActivity(DruidPooledConnection conn, Integer count, Integer offset) throws ServerException {
+		
+		return processActivityRepository.getList(conn, count, offset);
+		
 	}
-
-	// 获取查询
-	public List<TableQuery> getTableQueries(DruidPooledConnection conn, Long tableSchemaId, Integer count,
-			Integer offset) throws Exception {
-		return tableQueryRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);
-	}
-
-	// 删除查询
-	public int delTableQuery(DruidPooledConnection conn, Long tableSchemaId, Long queryId) throws Exception {
-		return tableQueryRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
-				new Object[] { tableSchemaId, queryId });
-	}
-
-	/**
-	 * 根据条件查询</br>
+	/*
+	 * ProcessService
 	 */
-	public List<TableData> getTableDatasByQuery(DruidPooledConnection conn, Long tableSchemaId, Long queryId,
-			Integer count, Integer offset) throws Exception {
+	
+	/*
+	 * 创建Process流程实例 
+	 */
+	public void createProcess(DruidPooledConnection conn,Long pdid, String title, Long currActivityId, String remark ) throws ServerException {
+		Long id = IDUtils.getSimpleId();
+		Process pro = new Process();
+		pro.pdId = pdid;
+		pro.id = id;
+		pro.title = title;
+		pro.currActivityId = currActivityId;
+		pro.timestamp = new Date();
+		pro.remark = remark;
+		processRepository.insert(conn, pro);
+	}
+	/*
+	 * 编辑process流程实例
+	 */
+	public int editProcess(DruidPooledConnection conn, Long id,Long pdid, String title, Long currActivityId, String remark ) throws ServerException {
+		Process pro = new Process();
+		pro.pdId = pdid;
+		pro.id = id;
+		pro.title = title;
+		pro.currActivityId = currActivityId;
+		pro.timestamp = new Date();
+		pro.remark = remark;
+		return processRepository.updateByKey(conn, "id", id, pro, true);
+	}
+	/*
+	 * 删除流程实例
+	 */
+	public int deleteProcess(DruidPooledConnection conn, Long id) throws ServerException {
+		return processRepository.deleteByKey(conn, "id", id);
+		
+	}
+	/*
+	 * 查询所有流程实例
+	 */
+	public List<Process> getProcessList(DruidPooledConnection conn, Integer count, Integer offset) throws ServerException{
+		return processRepository.getList(conn, count, offset);
+	}
+	/*
+	 * 通过pdid查询下属process
+	 */
+	public List<Process> getProcessListByPdid(DruidPooledConnection conn,Long pdid, Integer count, Integer offset) throws ServerException{
+		return processRepository.getListByKey(conn, "pd_id", pdid, count, offset);
+	}
+	
+	
+	
+	/*
+	 * ModuleService
+	 */
+	private static HashMap<Long, Module> SYS_MODULE_MAP = new HashMap<>();
 
-		TableQuery tq = tableQueryRepository.getByANDKeys(conn, new String[] { "table_schema_id", "id" },
-				new Object[] { tableSchemaId, queryId });
-		if (tq == null || tq.queryFormula == null) {
-			throw new ServerException(BaseRC.FLOW_FORM_TABLE_QUERY_NOT_FOUND);
-		} else {
-			return getTableDatasByFormula(conn, tableSchemaId, tq.queryFormula, count, offset);
+	public static ArrayList<Module> SYS_MODULE_LIST = new ArrayList<>();
+
+	static {
+		// 添加module到系统中
+		SYS_MODULE_MAP.put(Module.default_flow.id, Module.default_flow);
+
+		Iterator<Module> it = SYS_MODULE_MAP.values().iterator();
+		while (it.hasNext()) {
+			SYS_MODULE_LIST.add(it.next());
 		}
 	}
-
-	public List<TableData> getTableDatasByFormula(DruidPooledConnection conn, Long tableSchemaId,
-			JSONObject queryFormula, Integer count, Integer offset) throws Exception {
-		return tableDataRepository.getTableDatasByQuery(conn, tableSchemaId, queryFormula, count, offset);
+	
+	/*
+	 * 创建自定义Module
+	 */
+	public void createModule(DruidPooledConnection conn, Long id, String name ) throws ServerException {
+		Module mod = new Module();
+		mod.id = id;
+		mod.name = name;		
+		moduleRepository.insert(conn, mod);
 	}
-
+	
+	/*
+	 * 编辑自定义module
+	 */
+	public int editModule(DruidPooledConnection conn, Long id, String name) throws ServerException {
+		Module mod = new Module();
+		mod.id = id;
+		mod.name = name;		
+		return moduleRepository.updateByKey(conn, "id", id, mod, true);
+	}
+	/*
+	 * 删除自定义module
+	 */
+	public int deleteModule(DruidPooledConnection conn, Long id) throws ServerException {
+		return moduleRepository.deleteByKey(conn, "id", id);
+	}
+	/*
+	 * 查询所有module
+	 */
+	public List<Module> getModuleList(DruidPooledConnection conn, Integer count, Integer offset) throws ServerException{
+		return moduleRepository.getList(conn, count, offset);
+	}
+	/*
+	 * 通过moduleId 查询module
+	 */
+	public Module getModuleListByKey(DruidPooledConnection conn, Long id) throws ServerException{
+		return moduleRepository.getByKey(conn, "id", id);
+	}
+	/*
+	 * 通过多个moduleId 查询module
+	 */
+	public List<Module> getModuleListByANDKeys(DruidPooledConnection conn, Long[] ids, Integer count, Integer offset) throws ServerException{
+		String[] keys = new String[ids.length];
+		for(int i = 0; i < ids.length; i++) {
+			keys[i]="id";
+		}
+		return moduleRepository.getListByANDKeys(conn, keys, ids, count, offset);
+	}
+	
+	
 }

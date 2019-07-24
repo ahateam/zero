@@ -2,59 +2,52 @@ package zyxhj.flow.domain;
 
 import java.util.Date;
 
-import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
-
-import zyxhj.utils.data.ts.TSAnnEntity;
-import zyxhj.utils.data.ts.TSAnnField;
-import zyxhj.utils.data.ts.TSAnnID;
-import zyxhj.utils.data.ts.TSEntity;
-
+import zyxhj.utils.data.rds.RDSAnnEntity;
+import zyxhj.utils.data.rds.RDSAnnField;
+import zyxhj.utils.data.rds.RDSAnnID;
 /**
  * 流程实例
  */
-@TSAnnEntity(alias = "Process", indexName = "")
-public class Process extends TSEntity {
+@RDSAnnEntity(alias = "tb_process")
+public class Process {
 
-	/**
-	 * 分片编号，MD5(id)，避免数据热点
-	 */
-	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.STRING)
-	public String _id;
 
 	/**
 	 * 所属PD编号
 	 */
-	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
 	public Long pdId;
 
 	/**
 	 * 编号
 	 */
-	@TSAnnID(key = TSAnnID.Key.PK3, type = PrimaryKeyType.INTEGER)
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
 
 	/**
 	 * 标题
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT_TITLE)
 	public String title;
 
 	/**
 	 * 当前Activity节点
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.ID)
 	public Long currActivityId;
 
 	/**
 	 * 进入节点时间
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.TIME)
 	public Date timestamp;
 
 	/**
 	 * 备注
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String remark;
 
 }
