@@ -22,6 +22,8 @@ import com.alicloud.openservices.tablestore.model.search.query.TermQuery;
 import com.alicloud.openservices.tablestore.model.search.query.TermsQuery;
 
 import zyxhj.cms.domian.Content;
+import zyxhj.cms.domian.ContentTag;
+import zyxhj.cms.domian.ContentTagGroup;
 import zyxhj.core.domain.CateInfo;
 import zyxhj.core.repository.CateInfoRepository;
 import zyxhj.core.repository.ImportTempRecordRepository;
@@ -111,6 +113,7 @@ public class InboxTest {
 
 		// 查询所有
 		// getCate(syncClient);
+//		testSearch(syncClient);
 	}
 
 	private static void getCate(SyncClient client) throws Exception {
@@ -190,11 +193,11 @@ public class InboxTest {
 
 	private static void autoTest(SyncClient client) {
 		// 测试创建表
-		TSUtils.createTableByEntity(client, Content.class);
+		TSUtils.createTableByEntity(client, ContentTag.class);
 
 		// 测试删除表
-		// TSUtils.drapTableByEntity(client, Content.class);
-		//
+//		 TSUtils.drapTableByEntity(client, ContentTag.class);
+//
 		// ImportTempRecord itr = new ImportTempRecord();
 		// itr.taskId = 123L;
 		// itr.recordId = null;// 自增列，随便怎么赋值，都会被忽略
@@ -293,7 +296,8 @@ public class InboxTest {
 			TSQL ts = new TSQL();
 			// ts.setFirstTerms("tags", "tag1", "tag3").ANDTerm("status",
 			// 1L).ANDTerm("cate", "类3");
-			ts.Term(OP.OR, "cate", "类1").Term(OP.OR, "status", 1L);
+//			ts.Term(OP.OR, "cate", "类1").Term(OP.OR, "status", 1L);
+			ts.Terms(OP.OR, "tags", "tag1");
 			ts.setLimit(10);
 			ts.setOffset(0);
 			ts.setGetTotalCount(true);
@@ -301,7 +305,7 @@ public class InboxTest {
 
 			JSONObject resp = cateInfoRepository.search(client, myQuery);
 
-			System.out.println(JSON.toJSONString(resp, true));
+			System.out.println("1"+JSON.toJSONString(resp, true));
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

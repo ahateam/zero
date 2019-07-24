@@ -18,6 +18,7 @@ public class Order {
 	 * 订单类型，会员
 	 */
 	public static final Byte TYPE_MEMBER = 0;
+
 	/**
 	 * 订单类型，商品
 	 */

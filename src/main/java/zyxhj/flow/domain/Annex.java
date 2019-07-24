@@ -13,9 +13,8 @@ import zyxhj.utils.data.ts.TSEntity;
 @TSAnnEntity(alias = "Annex", indexName = "AnnexIndex")
 public class Annex extends TSEntity {
 
-	public static final Byte TYPE_FORM = 0;
-	public static final Byte TYPE_FILE = 1;
-
+	public static final Byte TYPE_FILE  = 1;//文件
+	public static final Byte TYPE_FORM  = 0;//表单
 	/**
 	 * 所有者编号(同时充当分片键)
 	 */
