@@ -47,7 +47,7 @@ public class APIResponse {
 		resp.c = content;
 		return resp;
 	}
-	
+
 	public static APIResponse getNewSuccessResp() {
 		APIResponse resp = new APIResponse();
 		resp.rc = BaseRC.SUCCESS.code;

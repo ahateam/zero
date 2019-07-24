@@ -1,5 +1,7 @@
 package zyxhj.cms.domian;
 
+import java.util.Date;
+
 import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
 import com.alicloud.openservices.tablestore.model.search.FieldType;
 
@@ -11,21 +13,22 @@ import zyxhj.utils.data.ts.TSAnnIndex;
 import zyxhj.utils.data.ts.TSEntity;
 
 /**
- * 
- * 通用标签
+ * 内容频道（专栏）实体
+ *
  */
-@TSAnnEntity(alias = "ContentTagGroup", indexName = "ContentTagGroupIndex")
-public class ContentTagGroup extends TSEntity {
+@TSAnnEntity(alias = "channel", indexName = "ChannelIndex")
+public class Channel extends  TSEntity{
 
-	public static enum TAGGROUPTYPE implements ENUMVALUE {
-		CONTENT((byte) 1, "内容"), //
-		TASK((byte) 2, "任务"), //
+	public static enum STATUS implements ENUMVALUE {
+		NORMAL((byte) 0, "正常"), //
+		CLOSED((byte) 1, "已关闭"), //
+		DELETED((byte) 2, "已删除"), //
 		;
 
 		private byte v;
 		private String txt;
 
-		private TAGGROUPTYPE(byte v, String txt) {
+		private STATUS(byte v, String txt) {
 			this.v = v;
 			this.txt = txt;
 		}
@@ -61,29 +64,37 @@ public class ContentTagGroup extends TSEntity {
 	public String module;
 
 	/**
-	 * 大类
-	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String type;
-
-	/**
-	 * 分组关键字（分类前缀 + 关键字）
-	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String keyword;
-
-	/**
-	 * 标签分组类型
+	 * 状态
 	 */
 	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long tagGroupType;
+	public Long status;
 
 	/**
-	 * 备注
+	 * 创建时间
+	 */
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Date createTime;
+
+	/**
+	 * 标题
+	 */
+	@TSAnnIndex(type = FieldType.TEXT, enableSortAndAgg = false, store = false)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String title;
+	
+	/**
+	 * 标签
+	 */
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true,isArray = true)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String tags;
+
+	/**
+	 * 数据
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String remark;
+	public String data;
+
 }

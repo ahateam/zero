@@ -1,16 +1,21 @@
 package zyxhj.cms.domian;
 
+import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
+import com.alicloud.openservices.tablestore.model.search.FieldType;
+
 import zyxhj.utils.api.Controller.ENUMVALUE;
-import zyxhj.utils.data.rds.RDSAnnEntity;
-import zyxhj.utils.data.rds.RDSAnnField;
-import zyxhj.utils.data.rds.RDSAnnID;
+import zyxhj.utils.data.ts.TSAnnEntity;
+import zyxhj.utils.data.ts.TSAnnField;
+import zyxhj.utils.data.ts.TSAnnID;
+import zyxhj.utils.data.ts.TSAnnIndex;
+import zyxhj.utils.data.ts.TSEntity;
 
 /**
  * 
  * 通用标签
  */
-@RDSAnnEntity(alias = "tb_cms_content_tag")
-public class ContentTag  {
+@TSAnnEntity(alias = "ContentTag", indexName = "ContentTagIndex")
+public class ContentTag extends TSEntity {
 
 
 	public static enum STATUS implements ENUMVALUE {
@@ -38,36 +43,36 @@ public class ContentTag  {
 	}
 
 	/**
-	 * 标签编号
+	 * 分片编号，MD5(id)，避免数据热点
 	 */
-	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.ID)
+	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.STRING)
+	public String _id;
+
+	/**
+	 * 编号
+	 */
+	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
 	public Long id;
 	
-	/**
-	 * 分组id
-	 */
-	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.ID)
-	public Long groupId;
 
 	/**
 	 * 分组关键字
 	 */
-	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String groupKeyword;
 
 	/**
 	 * 状态
 	 */
-	@RDSAnnField(column = RDSAnnField.BYTE)
-	public Byte status;
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long status;
 
 	/**
 	 * 标签名称，用于展示阅读</br>
 	 */
-	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String name;
 }

@@ -54,6 +54,7 @@ public class Content extends TSEntity {
 		NORMAL((byte) 1, "正常"), //
 		CLOSED((byte) 2, "已关闭"), //
 		DELETED((byte) 3, "已删除"), //
+		PUBLISHED((byte) 4, "已发布"), //
 		;
 
 		private byte v;
@@ -118,7 +119,7 @@ public class Content extends TSEntity {
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long status;
 
@@ -132,41 +133,43 @@ public class Content extends TSEntity {
 	/**
 	 * 上传用户编号
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long upUserId;
 
 	/**
 	 * 上传专栏编号
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long upChannelId;
 
 	/**
 	 * 标签
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = false, isArray = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true,isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String tags;
-
-	/**
-	 * 文本（可存html信息）
-	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String text;
 
 	/**
 	 * 数据
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String data;
-
+	
 	/**
-	 * 付费
+	 * 私密信息
 	 */
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String proviteData;
+
+	
+	/**
+	 * 是否付费
+	 */
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long paymentOrNot;
+	public Long paid;
 
 	/**
 	 * 扩展信息，可用JSON格式自行扩展

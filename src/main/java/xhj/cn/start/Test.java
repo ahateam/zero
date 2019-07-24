@@ -3,13 +3,7 @@ package xhj.cn.start;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alicloud.openservices.tablestore.SyncClient;
 
-import zyxhj.flow.domain.Annex;
-import zyxhj.flow.domain.ProcessActivity;
-import zyxhj.flow.domain.ProcessAsset;
-import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.utils.data.DataSource;
-import zyxhj.utils.data.rds.RDSUtils;
-import zyxhj.utils.data.ts.TSUtils;
 
 public class Test {
 
@@ -30,14 +24,11 @@ public class Test {
 
 //			RDSUtils.createTableByEntity(dds, TableQuery.class);
 
-//			RDSUtils.createTableByEntity(dds, ProcessDefinition.class);
-//			RDSUtils.createTableByEntity(dds, ProcessActivity.class);
-//			RDSUtils.createTableByEntity(dds, zyxhj.flow.domain.Process.class);
-//			RDSUtils.createTableByEntity(dds, ProcessAsset.class);
 
 //			TSUtils.createTableByEntity(client, Annex.class);
+//			TSUtils.createTableByEntity(client, TaskList.class);
 			
-			
+//			TSUtils.drapTableByEntity(client, TaskList.class);
 			client.shutdown();
 
 		} catch (Exception e) {

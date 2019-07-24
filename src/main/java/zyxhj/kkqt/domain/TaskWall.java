@@ -12,8 +12,36 @@ import zyxhj.utils.data.ts.TSAnnID;
 import zyxhj.utils.data.ts.TSAnnIndex;
 import zyxhj.utils.data.ts.TSEntity;
 
-@TSAnnEntity(alias = "MakeTask", indexName = "MakeTaskIndex")
-public class MakeTask extends TSEntity {
+/**
+ * 任务墙
+ */
+@TSAnnEntity(alias = "TaskWall", indexName = "TaskWallIndex")
+public class TaskWall extends TSEntity {
+
+	public static enum TYPE implements ENUMVALUE {
+		MAKETASK((byte) 0, "制作任务"), //
+		SHARETASK((byte) 1, "分享任务"), //
+		NEARBYTASK((byte) 2, "附近任务"), //
+		;
+
+		public String txt;
+		public byte v;
+
+		private TYPE(byte v, String txt) {
+			this.v = v;
+			this.txt = txt;
+		}
+
+		@Override
+		public byte v() {
+			return v;
+		}
+
+		@Override
+		public String txt() {
+			return txt;
+		}
+	}
 
 	public static enum NEED implements ENUMVALUE {
 		OFF_GIFT((byte) 0, "线下送礼物"), //
@@ -91,6 +119,30 @@ public class MakeTask extends TSEntity {
 		}
 	}
 
+	public static enum ACCESSSTATUS implements ENUMVALUE {
+		ONE((byte) 0, "单人任务"), //
+		MORE((byte) 1, "多人任务"), //
+		;
+
+		public String txt;
+		public byte v;
+
+		private ACCESSSTATUS(byte v, String txt) {
+			this.v = v;
+			this.txt = txt;
+		}
+
+		@Override
+		public byte v() {
+			return v;
+		}
+
+		@Override
+		public String txt() {
+			return txt;
+		}
+	}
+
 	/**
 	 * 分片编号，MD5(id)，避免数据热点
 	 */
@@ -103,9 +155,26 @@ public class MakeTask extends TSEntity {
 	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
 	public Long id;
 
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
+	/**
+	 * 所属模块
+	 */
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String module;
+
+	/**
+	 * 类型
+	 */
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Byte level;
+	public Long type;
+
+	/**
+	 * 任务等级
+	 */
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long level;
 
 	/**
 	 * 需求
@@ -119,17 +188,17 @@ public class MakeTask extends TSEntity {
 	 */
 	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Byte status;
+	public Long status;
 
 	/**
 	 * 创建者
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long upUserId;
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String upUserId;
 
 	/**
-	 * 时间
+	 * 任务时间
 	 */
 	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
@@ -145,13 +214,35 @@ public class MakeTask extends TSEntity {
 	/**
 	 * 需求标题
 	 */
+	@TSAnnIndex(type = FieldType.TEXT, enableSortAndAgg = false, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String title;
+
+	/**
+	 * 标签
+	 */
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true, isArray = true)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String tags;
+
+	/**
+	 * 需求金额
+	 */
+	@TSAnnIndex(type = FieldType.DOUBLE, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.DOUBLE)
+	public Double money;
 
 	/**
 	 * 需求详细
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String detail;
+
+	/**
+	 * 任务接取状态
+	 */
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long accessStatus;
 
 }
