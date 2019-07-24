@@ -14,9 +14,9 @@ import zyxhj.utils.data.rds.RDSAnnID;
 @RDSAnnEntity(alias = "tb_process_log")
 public class ProcessLog {
 
-	public static final Integer TYPE_ERROR = 0;
-	public static final Integer TYPE_WARNING = 1;
-	public static final Integer TYPE_INFO = 2;
+	public static final Byte TYPE_ERROR = 0;
+	public static final Byte TYPE_WARNING = 1;
+	public static final Byte TYPE_INFO = 2;
 
 	/**
 	 * 所有者编号(同时充当分片键)

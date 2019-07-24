@@ -20,6 +20,7 @@ import zyxhj.flow.domain.Module;
 import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessDefinition;
+import zyxhj.flow.domain.ProcessLog;
 import zyxhj.flow.repository.ProcessActivityRepository;
 import zyxhj.flow.repository.ProcessDefinitionRepository;
 import zyxhj.flow.repository.ProcessLogRepository;
@@ -145,6 +146,7 @@ public class FlowService {
 
 		return processActivityRepository.updateByANDKeys(null, new String[] {"pd_id", "id"}, new Object[] {pdId, id}, pa, true);
 	}
+	
 	/*
 	 * 查询所有流程节点
 	 */
@@ -171,6 +173,7 @@ public class FlowService {
 		pro.remark = remark;
 		processRepository.insert(conn, pro);
 	}
+	
 	/*
 	 * 编辑process流程实例
 	 */
@@ -184,6 +187,7 @@ public class FlowService {
 		pro.remark = remark;
 		return processRepository.updateByKey(conn, "id", id, pro, true);
 	}
+	
 	/*
 	 * 删除流程实例
 	 */
@@ -191,12 +195,14 @@ public class FlowService {
 		return processRepository.deleteByKey(conn, "id", id);
 		
 	}
+	
 	/*
 	 * 查询所有流程实例
 	 */
 	public List<Process> getProcessList(DruidPooledConnection conn, Integer count, Integer offset) throws ServerException{
 		return processRepository.getList(conn, count, offset);
 	}
+	
 	/*
 	 * 通过pdid查询下属process
 	 */
@@ -204,7 +210,80 @@ public class FlowService {
 		return processRepository.getListByKey(conn, "pd_id", pdid, count, offset);
 	}
 	
+	/*
+	 * 通过processid查询process
+	 */
+	public Process getProcessById(DruidPooledConnection conn,Long id) throws ServerException {
+		return processRepository.getByKey(conn, "id", id);
+	}
 	
+	
+	/*
+	 * processLogService
+	 */
+	/*
+	 * 创建processLog
+	 */
+	public void createProcessLog(DruidPooledConnection conn,Long processId, String title
+			,Long userid, String userName, String action, String actionDesc, JSONObject ext) throws ServerException {
+		ProcessLog pl = new ProcessLog();
+		Long id = IDUtils.getSimpleId();
+		pl.processId = processId;
+		pl.id = id;
+		pl.title = title;
+		pl.type = ProcessLog.TYPE_INFO;
+		pl.userId = userid;
+		pl.userName = userName;
+		pl.action = action;
+		pl.actionDesc = actionDesc;
+		pl.ext = ext;
+		processLogRepository.insert(conn, pl);
+	}
+	
+	/*
+	 * 编辑processLog
+	 */
+	public int editProcessLog(DruidPooledConnection conn,Long id,Long processId, String title
+			,Long userid, String userName, String action, String actionDesc, JSONObject ext) throws ServerException {
+		ProcessLog pl = new ProcessLog();
+		pl.processId = processId;
+		pl.id = id;
+		pl.title = title;
+		pl.type = ProcessLog.TYPE_INFO;
+		pl.userId = userid;
+		pl.userName = userName;
+		pl.action = action;
+		pl.actionDesc = actionDesc;
+		pl.ext = ext;
+		return processLogRepository.updateByKey(conn, "id", id, pl, true);
+	}
+	
+	
+	/*
+	 * 查询所有processLog数据
+	 */
+	public List<ProcessLog> getProcessLogList(DruidPooledConnection conn, Integer count, Integer offset) 
+			throws ServerException{
+		return processLogRepository.getList(conn, count, offset);
+	}
+	
+	
+	/*
+	 * 查询一个processid的所有processlog数据
+	 */
+	public List<ProcessLog> getProcessLogListByProcessId(DruidPooledConnection conn, Long processId, Integer count, Integer offset) 
+			throws ServerException{
+		return processLogRepository.getListByKey(conn, "process_id", processId, count, offset);
+	}
+	
+	
+	/*
+	 * 通过userId查询所有processLog数据
+	 */
+	public List<ProcessLog> getProcessLogListByUserId(DruidPooledConnection conn, Long userId, Integer count, Integer offset) 
+			throws ServerException{
+		return processLogRepository.getListByKey(conn, "user_id", userId, count, offset);
+	}
 	
 	/*
 	 * ModuleService
@@ -270,6 +349,5 @@ public class FlowService {
 		}
 		return moduleRepository.getListByANDKeys(conn, keys, ids, count, offset);
 	}
-	
 	
 }

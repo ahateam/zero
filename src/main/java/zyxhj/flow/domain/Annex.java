@@ -8,10 +8,14 @@ import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
 import zyxhj.utils.data.ts.TSAnnEntity;
 import zyxhj.utils.data.ts.TSAnnField;
 import zyxhj.utils.data.ts.TSAnnID;
+import zyxhj.utils.data.ts.TSEntity;
 
-@TSAnnEntity(alias = "Annex")
-public class Annex {
+@TSAnnEntity(alias = "Annex" ,indexName = "AnnexIndex")
+public class Annex extends TSEntity {
 
+	public static final Byte TYPE_FORM  = 0;
+	public static final Byte TYPE_FILE  = 1;
+	
 	/**
 	 * 所有者编号(同时充当分片键)
 	 */
@@ -47,7 +51,7 @@ public class Annex {
 	 * form,file等
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Integer type;
+	public Byte type;
 
 	/**
 	 * 数据，JSONObject</br>
