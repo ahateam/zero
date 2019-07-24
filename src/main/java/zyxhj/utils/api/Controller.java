@@ -360,6 +360,7 @@ public abstract class Controller {
 					// 暂时不验证，直接通过
 				}
 
+				Object objResponse = null;
 				APIResponse jsonResponse = null;
 				if (count > 0) {
 
@@ -373,10 +374,20 @@ public abstract class Controller {
 
 						parms[i] = getP(req, p, required);
 					}
-					jsonResponse = (APIResponse) m.invoke(this, parms);
+					objResponse = m.invoke(this, parms);
 				} else {
 					// 没有参数
-					jsonResponse = (APIResponse) m.invoke(this);
+					objResponse = m.invoke(this);
+				}
+
+				if (objResponse == null) {
+					// void
+					jsonResponse = APIResponse.getNewSuccessResp();
+				} else if (objResponse instanceof APIResponse) {
+					jsonResponse = (APIResponse) objResponse;
+				} else {
+					// 其它对象，直接包裹返回
+					jsonResponse = APIResponse.getNewSuccessResp(objResponse);
 				}
 				doResponseSuccess(resp, jsonResponse);
 

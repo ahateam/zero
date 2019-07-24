@@ -23,12 +23,8 @@ import com.alicloud.openservices.tablestore.model.search.query.TermsQuery;
 
 import zyxhj.cms.domian.Content;
 import zyxhj.core.domain.CateInfo;
-import zyxhj.core.domain.ImportTempRecord;
-import zyxhj.core.domain.Valid;
 import zyxhj.core.repository.CateInfoRepository;
 import zyxhj.core.repository.ImportTempRecordRepository;
-import zyxhj.flow.domain.Part;
-import zyxhj.utils.CodecUtils;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.ServerException;
@@ -249,7 +245,7 @@ public class InboxTest {
 
 	private static void indexTest(SyncClient client) {
 		// 测试创建表
-		TSUtils.createTableByEntity(client, Part.class);
+		// TSUtils.createTableByEntity(client, Part.class);
 
 		// 测试删除表
 		// TSUtils.drapTableByEntity(client, ImportTempRecord.class);

@@ -11,6 +11,7 @@ import com.alicloud.openservices.tablestore.model.PrimaryKey;
 
 import zyxhj.flow.domain.Annex;
 import zyxhj.flow.domain.Part;
+import zyxhj.flow.repository.AnnexRepository;
 import zyxhj.flow.repository.PartRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
@@ -22,11 +23,11 @@ public class AnnexService {
 
 	private static Logger log = LoggerFactory.getLogger(AnnexService.class);
 
-	private PartRepository partRepository;
+	private AnnexRepository annexRepository;
 
 	public AnnexService() {
 		try {
-			partRepository = Singleton.ins(PartRepository.class);
+			annexRepository = Singleton.ins(AnnexRepository.class);
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -46,7 +47,7 @@ public class AnnexService {
 		p.url = url;
 		p.ext = ext;
 		p.createTime = new Date();
-		partRepository.insert(client, p, false);
+		annexRepository.insert(client, p, false);
 		return p;
 	}
 
@@ -55,7 +56,7 @@ public class AnnexService {
 	 */
 	public void delPart(SyncClient client, Long partId) throws Exception {
 		PrimaryKey pk = new PrimaryKeyBuilder().add("_id", TSUtils.get_id(partId)).add("id", partId).build();
-		TSRepository.nativeDel(client, partRepository.getTableName(), pk);
+		TSRepository.nativeDel(client, annexRepository.getTableName(), pk);
 	}
 
 	/**
@@ -71,7 +72,7 @@ public class AnnexService {
 		p.url = url;
 		p.ext = ext;
 
-		partRepository.update(client, p, true);
+		annexRepository.update(client, p, true);
 	}
 
 	/**
