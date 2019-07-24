@@ -108,7 +108,7 @@ public class RDSObjectMapper {
 			for (int i = 0; i < selections.length; i++) {
 				String alias = selections[i];
 				RDSFieldMapper mapper = getFieldMapperByAlias(alias);
-				mapper.putFieldValue(objs, i, rs);
+				mapper.putFieldValue2Object(objs, i, rs);
 			}
 			ret.add(objs);
 		}
@@ -126,27 +126,34 @@ public class RDSObjectMapper {
 
 		// ResultSet不是标准set，所以不能用stream接口
 		while (rs.next()) {
+
 			Object[] objs = new Object[columnCount];
 			for (int i = 0; i < columnCount; i++) {
 				Object o = rs.getObject(i + 1);
+				if (o instanceof String) {
 
-				if (objs[i] instanceof String) {
-					// 普通字符串或者对象
-					// 转换为JSONObject，并且包含_java_和_data_字段
 					try {
+						// 转换为JSONObject，并且包含_java_和_data_字段
 						JSONObject tjo = JSON.parseObject((String) o);
+
+						// 如果转换成功，则可能是包含_java_和_data_字段的高级对象
 						String javaType = tjo.getString(JAVA_KEY);
 						String data = tjo.getString(JAVA_DATA);
-
 						if (StringUtils.isNotBlank(javaType) && StringUtils.isNoneBlank(data)) {
 							// 两个都不为空，则是特殊对象
-							// 去除javaType后，直接拼接
+							// 去除javaType后，直接拼接原始对象
 							objs[i] = JSON.parseObject((String) o);
 						} else {
-							objs[i] = o;
+							objs[i] = tjo;
 						}
 					} catch (Exception eee) {
-						objs[i] = o;
+						try {
+							// 尝试转换为JSONArray
+							JSONObject tja = JSON.parseObject((String) o);
+							objs[i] = tja;
+						} catch (Exception eeee) {
+							objs[i] = o;
+						}
 					}
 				} else {
 					objs[i] = o;
@@ -244,8 +251,12 @@ public class RDSObjectMapper {
 				ret.put(mapper.alias, value);
 			} else if (value instanceof Date) {
 				ret.put(mapper.alias, value);
+			} else if (value instanceof JSONObject) {
+				ret.put(mapper.alias, JSON.toJSONString(value));
+			} else if (value instanceof JSONArray) {
+				ret.put(mapper.alias, JSON.toJSONString(value));
 			} else {
-				// 其它的特有对象
+				// 其它对象
 				if (value == null) {
 					ret.put(mapper.alias, null);
 				} else {

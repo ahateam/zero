@@ -44,11 +44,11 @@ public class TestRepository extends RDSRepository<TestDomain> {
 	}
 
 	public List<Object[]> sqlGetListObject(DruidPooledConnection conn) throws Exception {
-		return sqlGetObjectsList(conn, "SELECT * FROM tb_rds_test WHERE status = ?", new Object[] { "0" }, 2, 0);
+		return sqlGetObjectsList(conn, "SELECT * FROM tb_rds_test WHERE status = ?", new Object[] { "2" }, 2, 0);
 	}
 
 	public Object[] sqlGetObjects(DruidPooledConnection conn) throws Exception {
-		return sqlGetObjects(conn, "SELECT COUNT(*) FROM tb_rds_test WHERE status = ?", new Object[] { "0" });
+		return sqlGetObjects(conn, "SELECT COUNT(*) FROM tb_rds_test WHERE status = ?", new Object[] { "2" });
 	}
 
 }

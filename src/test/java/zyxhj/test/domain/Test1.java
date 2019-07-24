@@ -3,6 +3,7 @@ package zyxhj.test.domain;
 import java.util.List;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -52,12 +53,12 @@ public class Test1 {
 		// JSONObject(); //通过
 
 		// 原生SQL方法，根据查询获取某个表的某些字段值列表
-		// sqlGetListObject(); //通过
+		 sqlGetListObject(); //通过
 
 		// 原生SQL方法，获取某个表的某些字段值
-		// sqlGetObjects(); //通过
+		 sqlGetObjects(); //通过
 		
-		testUpdata();
+//		testUpdata();
 
 	}
 	
@@ -88,7 +89,7 @@ public class Test1 {
 
 	private static void sqlGetListObject() throws Exception {
 		List<Object[]> obj = testRepository.sqlGetListObject(conn);
-		System.out.println(obj.size());
+		System.out.println(JSON.toJSONString(obj));
 	}
 
 	private static void JSONObject() throws Exception {

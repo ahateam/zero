@@ -8,6 +8,7 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 /**
@@ -52,7 +53,7 @@ public class RDSFieldMapper {
 		return field.get(obj);
 	}
 
-	protected void putFieldValue(Object[] objs, int ind, ResultSet rs) throws Exception {
+	protected void putFieldValue2Object(Object[] objs, int ind, ResultSet rs) throws Exception {
 		boolean hasColumn = true;
 		try {
 			if (rs.findColumn(alias) < 0) {
@@ -82,25 +83,24 @@ public class RDSFieldMapper {
 			} else if (javaType.equals(Date.class)) {
 				// RecordSet中，getDate只获取日期部分，getTime只获取时间部分
 				objs[ind] = rs.getTimestamp(alias);
-			}
-			// else if (javaType.equals(JSONObject.class)) {
-			// // 支持JSONObject
-			// String temp = rs.getString(alias);
-			// if (StringUtils.isNoneBlank(temp)) {
-			// objs[ind] = JSON.parseObject(temp);
-			// } else {
-			// objs[ind] = new JSONObject();
-			// }
-			// } else if (javaType.equals(JSONArray.class)) {
-			// // 支持JSONArray
-			// String temp = rs.getString(alias);
-			// if (StringUtils.isNoneBlank(temp)) {
-			// objs[ind] = JSON.parseArray(temp);
-			// } else {
-			// objs[ind] = new JSONArray();
-			// }
-			// }
-			else {
+			} else if (javaType.equals(JSONObject.class)) {
+				// 支持JSONObject
+				String temp = rs.getString(alias);
+				if (StringUtils.isNoneBlank(temp)) {
+					objs[ind] = JSON.parseObject(temp);
+				} else {
+					objs[ind] = new JSONObject();
+				}
+			} else if (javaType.equals(JSONArray.class)) {
+				// 支持JSONArray
+				String temp = rs.getString(alias);
+				if (StringUtils.isNoneBlank(temp)) {
+					objs[ind] = JSON.parseArray(temp);
+				} else {
+					objs[ind] = new JSONArray();
+				}
+			} else {
+				// 其它对象
 				String temp = rs.getString(alias);
 				if (StringUtils.isNoneBlank(temp)) {
 					try {
@@ -152,29 +152,28 @@ public class RDSFieldMapper {
 			} else if (javaType.equals(Date.class)) {
 				// RecordSet中，getDate只获取日期部分，getTime只获取时间部分
 				field.set(obj, rs.getTimestamp(alias));
-			}
-			// else if (javaType.equals(JSONObject.class)) {
-			// // 支持JSONObject
-			// String temp = rs.getString(alias);
-			// JSONObject tobj;
-			// if (StringUtils.isNoneBlank(temp)) {
-			// tobj = JSON.parseObject(temp);
-			// } else {
-			// tobj = new JSONObject();
-			// }
-			// field.set(obj, tobj);
-			// } else if (javaType.equals(JSONArray.class)) {
-			// // 支持JSONArray
-			// String temp = rs.getString(alias);
-			// JSONArray arr;
-			// if (StringUtils.isNoneBlank(temp)) {
-			// arr = JSON.parseArray(temp);
-			// } else {
-			// arr = new JSONArray();
-			// }
-			// field.set(obj, arr);
-			// }
-			else {
+			} else if (javaType.equals(JSONObject.class)) {
+				// 支持JSONObject
+				String temp = rs.getString(alias);
+				JSONObject tobj;
+				if (StringUtils.isNoneBlank(temp)) {
+					tobj = JSON.parseObject(temp);
+				} else {
+					tobj = new JSONObject();
+				}
+				field.set(obj, tobj);
+			} else if (javaType.equals(JSONArray.class)) {
+				// 支持JSONArray
+				String temp = rs.getString(alias);
+				JSONArray arr;
+				if (StringUtils.isNoneBlank(temp)) {
+					arr = JSON.parseArray(temp);
+				} else {
+					arr = new JSONArray();
+				}
+				field.set(obj, arr);
+			} else {
+				// 其它对象
 				String temp = rs.getString(alias);
 				if (StringUtils.isNoneBlank(temp)) {
 					try {

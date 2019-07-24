@@ -6,6 +6,7 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.model.ColumnValue;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
@@ -83,6 +84,8 @@ public class TSFieldMapper<T extends TSEntity> {
 				return ColumnValue.fromLong((Long) t);
 			} else if (javaType.equals(Double.class)) {
 				return ColumnValue.fromDouble((Double) t);
+			} else if (javaType.equals(Float.class)) {
+				return ColumnValue.fromDouble((Float) t);
 			} else if (javaType.equals(String.class)) {
 				return ColumnValue.fromString((String) t);
 			} else if (javaType.equals(Integer.class)) {
@@ -93,7 +96,12 @@ public class TSFieldMapper<T extends TSEntity> {
 				return ColumnValue.fromLong((Short) t);
 			} else if (javaType.equals(Date.class)) {
 				return ColumnValue.fromLong(((Date) t).getTime());
+			} else if (javaType.equals(JSONObject.class)) {
+				return ColumnValue.fromString(JSON.toJSONString(t));
+			} else if (javaType.equals(JSONArray.class)) {
+				return ColumnValue.fromString(JSON.toJSONString(t));
 			} else {
+				// 其它对象
 				JSONObject jo = new JSONObject();
 				jo.put(TSObjectMapper.JAVA_KEY, javaType.getName());
 				jo.put(TSObjectMapper.JAVA_DATA, t);
@@ -130,6 +138,8 @@ public class TSFieldMapper<T extends TSEntity> {
 						field.set(obj, cv.asLong());
 					} else if (javaType.equals(Double.class)) {
 						field.set(obj, cv.asDouble());
+					} else if (javaType.equals(Float.class)) {
+						field.set(obj, (float) cv.asDouble());
 					} else if (javaType.equals(String.class)) {
 						field.set(obj, cv.asString());
 					} else if (javaType.equals(Integer.class)) {
@@ -140,6 +150,26 @@ public class TSFieldMapper<T extends TSEntity> {
 						field.set(obj, (short) cv.asLong());
 					} else if (javaType.equals(Date.class)) {
 						field.set(obj, new Date(cv.asLong()));
+					} else if (javaType.equals(JSONObject.class)) {
+						String temp = cv.asString();
+						if (StringUtils.isNoneBlank(temp)) {
+							try {
+								JSONObject jo = JSON.parseObject(temp);
+								field.set(obj, jo);
+							} catch (Exception eee) {
+								field.set(obj, null);
+							}
+						}
+					} else if (javaType.equals(JSONArray.class)) {
+						String temp = cv.asString();
+						if (StringUtils.isNoneBlank(temp)) {
+							try {
+								JSONArray ja = JSON.parseArray(temp);
+								field.set(obj, ja);
+							} catch (Exception eee) {
+								field.set(obj, null);
+							}
+						}
 					} else {
 						// 其它的特有对象
 						String temp = cv.asString();
