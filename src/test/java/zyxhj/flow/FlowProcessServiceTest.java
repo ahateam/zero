@@ -47,97 +47,75 @@ public class FlowProcessServiceTest {
 
 	private static final Long recordId = 400159724862966L;
 
-//	public void testCreateProcessDefinition() {
-//
-//		JSONArray tags = new JSONArray();
-//		tags.add("tag1");
-//		tags.add("tag2");
-//
-//		JSONArray lanes = new JSONArray();
-//		lanes.add("lane1");
-//		lanes.add("lane2");
-//
-//		JSONArray assets = new JSONArray();
-//
-//		JSONObject visualization = new JSONObject();
-//
-//		try {
-//			flowService.createProcessDefinition(conn, "testModule", tags, "testTitle", lanes, assets, visualization);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-//
-//	public void testQueryProcessDefinition() {
-//		try {
-//			List<ProcessDefinition> jo = flowService.queryProcessDefinition(conn, "testModule", null, 10, 0);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-//
-//	public void testAddPDActivity() {
-//
-//		JSONObject receivers = new JSONObject();
-//
-//		JSONArray actions = new JSONArray();
-//
-//		try {
-//			flowService.addPDActivity(conn, pdId, "testActivityTitle", "part1", receivers,actions);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-//
-//	public void testEditPDActivity() {
-//		JSONObject receivers = new JSONObject();
-//
-//		JSONArray assets = new JSONArray();
-//
-//		JSONArray actions = new JSONArray();
-//
-//		JSONObject visualization = new JSONObject();
-//
-//		try {
-//			flowService.editPDActivity(conn, pdId, activityId, "testActivity", "part2", receivers, assets, actions,
-//					visualization);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-//	
-//	public void testDelPDActivity() {
-//		try {
-//			flowService.delPDActivity(conn, pdId, activityId);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-	
-	/*
-	 * 请假申请流程测试
-	 */
-	
-	/*
-	 * 创建流程
-	 */
-	public void textCreateProcessDefinition() {
-		Module module = new Module();
-		module.id = 123456789L;
-		module.name = "测试module";
-		String title = "请假申请流程测试标题";
-		
+	public void testAddProcessDefinition() {
+
 		JSONArray tags = new JSONArray();
-		tags.add("请假流程测试");
-		
+		tags.add("tag1");
+		tags.add("tag2");
+
 		JSONArray lanes = new JSONArray();
-		lanes.add("请假流程测试泳道名称");
-		
+		lanes.add("lane1");
+		lanes.add("lane2");
+
+		JSONArray assets = new JSONArray();
+
+		JSONObject visualization = new JSONObject();
+
 		try {
-			flowService.createProcessDefinition(conn, module.id, title, tags, lanes);
+			flowService.createProcessDefinition(conn, new Long("123456L"), "testTitle", tags, lanes);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+
+	public void testQueryProcessDefinition() {
+		try {
+			List<ProcessDefinition> jo = flowService.queryProcessDefinition(conn, "testModule", null, 10, 0);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void testAddPDActivity() {
+
+		JSONObject receivers = new JSONObject();
+
+		JSONArray actions = new JSONArray();
+
+		try {
+			flowService.addPDActivity(conn, pdId, "testActivityTitle", "part1", receivers,actions);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void testEditPDActivity() {
+		JSONObject receivers = new JSONObject();
+
+		JSONArray assets = new JSONArray();
+
+		JSONArray actions = new JSONArray();
+
+		JSONObject visualization = new JSONObject();
+
+		try {
+			flowService.editPDActivity(conn, pdId, activityId, "testActivity", "part2", receivers, assets, actions,
+					visualization);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void testDelPDActivity() {
+		try {
+			flowService.delPDActivity(conn, pdId, activityId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+	
 	
 }

@@ -40,7 +40,7 @@ public class ProcessDefinition  {
 	 * 标签列表
 	 */
 	@RDSAnnField(column = "VARCHAR(512)")
-	public JSONArray tags;
+	public String tags;
 
 	/**
 	 * 标题
@@ -53,6 +53,6 @@ public class ProcessDefinition  {
 	 * JSONArray格式
 	 */
 	@RDSAnnField(column = "VARCHAR(256)")
-	public JSONArray lanes;
+	public String lanes;
 
 }

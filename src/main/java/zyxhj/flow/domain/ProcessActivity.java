@@ -67,9 +67,8 @@ public class ProcessActivity{
 		 * 4，时间超时</br>
 		 */
 
-		public static final String TYPE_TIMEOUT = "timeout";// 超时
 		public static final String TYPE_SUBMIT = "submit";// 提交
-		
+		public static final String TYPE_TIMEOUT = "timeout";// 超时
 
 		/**
 		 * 类型</br>

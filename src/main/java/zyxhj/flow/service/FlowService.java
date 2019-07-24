@@ -16,9 +16,11 @@ import com.alibaba.fastjson.JSONObject;
 import zyxhj.flow.domain.Module;
 import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessActivity;
+import zyxhj.flow.domain.ProcessAsset;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
 import zyxhj.flow.repository.ProcessActivityRepository;
+import zyxhj.flow.repository.ProcessAssetReposition;
 import zyxhj.flow.repository.ProcessDefinitionRepository;
 import zyxhj.flow.repository.ProcessLogRepository;
 import zyxhj.flow.repository.ProcessRepository;
@@ -37,7 +39,7 @@ public class FlowService {
 	
 	private ProcessLogRepository processLogRepository;
 	private ModuleRepository moduleRepository;
-
+	private ProcessAssetReposition processAssetReposition;
 
 	public FlowService() {
 		try {
@@ -46,6 +48,7 @@ public class FlowService {
 			processActivityRepository = Singleton.ins(ProcessActivityRepository.class);
 			moduleRepository = Singleton.ins(ModuleRepository.class);
 			processLogRepository = Singleton.ins(ProcessLogRepository.class);
+			processAssetReposition = Singleton.ins(ProcessAssetReposition.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -300,7 +303,8 @@ public class FlowService {
 	/*
 	 * 创建自定义Module
 	 */
-	public void createModule(DruidPooledConnection conn, Long id, String name ) throws ServerException {
+	public void createModule(DruidPooledConnection conn, String name ) throws ServerException {
+		Long id = IDUtils.getSimpleId();
 		Module mod = new Module();
 		mod.id = id;
 		mod.name = name;		
@@ -343,6 +347,27 @@ public class FlowService {
 			keys[i]="id";
 		}
 		return moduleRepository.getListByANDKeys(conn, keys, ids, count, offset);
+	}
+	
+	/*
+	 * processAsset
+	 */
+
+	/*
+	 * 创建processAsset
+	 */
+	public void createProcessAsset(DruidPooledConnection conn, Byte type, Long ownerId, String name, Long annexId) throws ServerException {
+		Long id = IDUtils.getSimpleId();
+		
+		ProcessAsset proA = new ProcessAsset(); 
+		proA.type = ProcessAsset.TYPE_ACTIVITY;
+		proA.ownerId = ownerId;
+		proA.id = id;
+		proA.name = name;
+		proA.annexId = annexId;
+		
+		processAssetReposition.insert(conn, proA);
+		
 	}
 	
 }
