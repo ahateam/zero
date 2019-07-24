@@ -390,7 +390,7 @@ public class EXP implements Cloneable {
 
 		exp.and(subExp);
 
-		System.out.println("<<<" + JSON.toJSONString(exp));
+		System.out.println("<<<" + JSON.toJSONString(exp,true));
 
 		StringBuffer sb = new StringBuffer();
 		exp.toSQL(sb);

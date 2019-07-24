@@ -13,12 +13,6 @@ import zyxhj.utils.data.ts.TSEntity;
 public class ProcessActivity extends TSEntity {
 
 	/**
-	 * 分片编号，MD5(id)，避免数据热点
-	 */
-	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.STRING)
-	public String _id;
-
-	/**
 	 * 所属PD编号
 	 */
 	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
@@ -49,13 +43,7 @@ public class ProcessActivity extends TSEntity {
 	public JSONObject receivers;
 
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public JSONArray assets;// 资产(文件，合同，表单等)
-
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public JSONArray actions;// 行为
-
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public JSONObject visualization;// 展示信息
 
 	public static class Receiver {
 
@@ -67,25 +55,6 @@ public class ProcessActivity extends TSEntity {
 		public Long id;// 编号
 		public String label;// 标题
 		public String remark;// 备注
-	}
-
-	public static class Asset {
-
-		public static final String TYPE_FORM = "form"; // 表单
-		public static final String TYPE_FILE = "file"; // 文件
-		public static final String TYPE_PART = "part"; // 附件
-
-		public String sn;// 编号，在ProcessDefinition中不可重复
-		public String title;// 标题
-		public boolean necessary;// 是否必须
-
-		/**
-		 * 资产数据，JSON结构，{type:"form",content:"1234345"}</br>
-		 * type为form表单时，存放表单编号</br>
-		 * type为file文件时，存放文件地址</br>
-		 * type为part附件时，存放附件编号</br>
-		 */
-		public JSONObject data;
 	}
 
 	public static class Action {

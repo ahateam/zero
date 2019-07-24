@@ -106,9 +106,11 @@ public class FlowService {
 	private Object compute(String js, JSONObject tableRowData) {
 		try {
 
+			//{{c1}} + {{c2}} 
 			System.out.println("oldjs>>>" + js);
 
 			List<String> args = getJSArgs(js);
+			
 			SimpleBindings simpleBindings = new SimpleBindings();
 			for (String arg : args) {
 				System.out.println(arg);

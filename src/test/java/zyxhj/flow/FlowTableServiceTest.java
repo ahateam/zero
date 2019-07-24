@@ -66,7 +66,7 @@ public class FlowTableServiceTest {
 
 			SimpleBindings simpleBindings = new SimpleBindings();
 
-			// String js = "{{COL1}} + {{COL2}} + {{COL3}} + {{COL4}} + {{COL5}}";
+//			String js = "{{COL1}} + ({{COL2}} + {{COL3}}) + {{COL4}} * {{COL5}}";
 
 			String js = "if ({{COL1}} < 18) { '未成年'} else { '成年'}";
 

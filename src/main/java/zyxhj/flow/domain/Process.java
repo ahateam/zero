@@ -43,13 +43,7 @@ public class Process extends TSEntity {
 	 * 当前Activity节点
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public ProcessActivity currActivity;
-
-	/**
-	 * 当前节点的操作记录
-	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public ProcessRecord currRecord;
+	public Long currActivityId;
 
 	/**
 	 * 进入节点时间
