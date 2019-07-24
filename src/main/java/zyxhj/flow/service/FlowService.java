@@ -6,9 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +38,6 @@ public class FlowService {
 	private ProcessLogRepository processLogRepository;
 	private ModuleRepository moduleRepository;
 
-	private ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
 
 	public FlowService() {
 		try {
@@ -61,14 +57,13 @@ public class FlowService {
 	/**
 	 * 创建流程定义
 	 */
-	public void createProcessDefinition(DruidPooledConnection conn, String module, JSONArray tags, String title, JSONArray lanes,
-			JSONArray assets, JSONObject visualization) throws Exception {
+	public void createProcessDefinition(DruidPooledConnection conn, Long moduleId, String title, JSONArray tags, JSONArray lanes) throws Exception {
 		Long id = IDUtils.getSimpleId();
 		ProcessDefinition pd = new ProcessDefinition();
-		pd.module = module;
+		pd.moduleId = moduleId;
 		pd.id = id;
 		pd.tags = tags;
-		pd.status = ProcessDefinition.STATUS_OFF;
+		pd.status = ProcessDefinition.STATUS_READY;
 		pd.title = title;
 
 		pd.lanes = lanes;

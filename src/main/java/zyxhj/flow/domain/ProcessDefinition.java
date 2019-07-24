@@ -13,14 +13,16 @@ import zyxhj.utils.data.rds.RDSAnnID;
 @RDSAnnEntity(alias = "tb_process_definition")
 public class ProcessDefinition  {
 
-	public static final Byte STATUS_ON = 0;
-	public static final Byte STATUS_OFF = 1;
+
+	public static final Byte STATUS_READY = 0;
+	public static final Byte STATUS_ON = 1;
+	public static final Byte STATUS_OFF = 2;
 	/**
 	 * 所属模块
 	 */
 	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
-	public String module;
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long moduleId;
 	/**
 	 * 编号
 	 */

@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.flow.service.FlowService;
+import zyxhj.flow.service.TableService;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.data.DataSource;
 
@@ -15,13 +16,13 @@ public class TableTest {
 
 	private static DruidPooledConnection conn;
 
-	private static FlowService flowService;
+	private static TableService tableService;
 	static {
 
 		try {
 			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
 
-			flowService = Singleton.ins(FlowService.class);
+			tableService = Singleton.ins(TableService.class);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -59,7 +60,7 @@ public class TableTest {
 		jo.put("type", 0);
 		jo.put("necessary", 1);
 
-		flowService.createTableSchema(conn, alias, type, json);
+		tableService.createTableSchema(conn, alias, type, json);
 
 	}
 

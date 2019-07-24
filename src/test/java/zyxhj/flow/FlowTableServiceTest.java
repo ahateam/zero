@@ -19,9 +19,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.flow.domain.TableData;
-import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
-import zyxhj.flow.service.FlowService;
+import zyxhj.flow.service.TableService;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
@@ -30,7 +29,7 @@ public class FlowTableServiceTest {
 
 	private static DruidPooledConnection conn;
 
-	private static FlowService flowService;
+	private static TableService tableService;
 
 	public static List<String> getJSArgs(String src) {
 		int ind = 0;
@@ -102,7 +101,7 @@ public class FlowTableServiceTest {
 		try {
 			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
 
-			flowService = Singleton.ins(FlowService.class);
+			tableService = Singleton.ins(TableService.class);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -151,7 +150,7 @@ public class FlowTableServiceTest {
 		columns.add(jo);
 
 		try {
-			flowService.createTableSchema(conn, "表的别名", type, columns);
+			tableService.createTableSchema(conn, "表的别名", type, columns);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -169,7 +168,7 @@ public class FlowTableServiceTest {
 		jo.put("COL5", 123);
 
 		try {
-			flowService.insertTableData(conn, schemaId, jo);
+			tableService.insertTableData(conn, schemaId, jo);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -188,7 +187,7 @@ public class FlowTableServiceTest {
 		jo.put("COL5", 2);
 
 		try {
-			flowService.updateTableData(conn, schemaId, dataId, jo);
+			tableService.updateTableData(conn, schemaId, dataId, jo);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -205,7 +204,7 @@ public class FlowTableServiceTest {
 		System.out.println(jo.toString());
 
 		try {
-			flowService.createTableQuery(conn, schemaId, jo);
+			tableService.createTableQuery(conn, schemaId, jo);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -215,7 +214,7 @@ public class FlowTableServiceTest {
 	@Test
 	public void testQueryTableDatas() {
 		try {
-			List<TableData> datas = flowService.getTableDatasByQuery(conn, schemaId, queryId, 10, 0);
+			List<TableData> datas = tableService.getTableDatasByQuery(conn, schemaId, queryId, 10, 0);
 			System.out.println(JSON.toJSONString(datas));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
