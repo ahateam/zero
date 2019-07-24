@@ -3,7 +3,7 @@ package xhj.cn.start;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alicloud.openservices.tablestore.SyncClient;
 
-import zyxhj.flow.domain.ProcessActivity;
+import zyxhj.flow.domain.Annex;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.ts.TSUtils;
 
@@ -26,7 +26,7 @@ public class Test {
 
 //			RDSUtils.createTableByEntity(dds, TableQuery.class);
 
-//			TSUtils.createTableByEntity(client, Test.class);
+			TSUtils.createTableByEntity(client, Annex.class);
 			
 			
 			client.shutdown();

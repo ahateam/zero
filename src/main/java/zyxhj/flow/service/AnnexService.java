@@ -46,14 +46,14 @@ public class AnnexService extends Controller {
 			des = "创建附件" //
 	)
 	public void createAnnex(//
-			@P(t = "附件持有者编号") Long ownerid, //
+			@P(t = "附件持有者编号") Long ownerId, //
 			@P(t = "附件名称") String name, //
 			@P(t = "类型") Byte type, //
 			@P(t = "数据内容，JSONObject") JSONObject data //
 	) throws Exception {
 		Annex a = new Annex();
 		Long id = IDUtils.getSimpleId();
-		a.ownerId = ownerid;
+		a.ownerId = ownerId;
 		a.id = id;
 		a.name = name;
 		a.createTime = new Date();

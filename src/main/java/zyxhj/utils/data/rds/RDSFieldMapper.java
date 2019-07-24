@@ -8,7 +8,6 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 /**
@@ -104,10 +103,14 @@ public class RDSFieldMapper {
 			else {
 				String temp = rs.getString(alias);
 				if (StringUtils.isNoneBlank(temp)) {
-					JSONObject jo = JSON.parseObject(temp);
-					String javaType = jo.getString(RDSObjectMapper.JAVA_KEY);
-					Object o = jo.getObject(RDSObjectMapper.JAVA_DATA, Class.forName(javaType));
-					objs[ind] = o;
+					try {
+						JSONObject jo = JSON.parseObject(temp);
+						String javaType = jo.getString(RDSObjectMapper.JAVA_KEY);
+						Object o = jo.getObject(RDSObjectMapper.JAVA_DATA, Class.forName(javaType));
+						objs[ind] = o;
+					} catch (Exception eee) {
+						objs[ind] = null;
+					}
 				} else {
 					objs[ind] = null;
 				}
@@ -174,10 +177,14 @@ public class RDSFieldMapper {
 			else {
 				String temp = rs.getString(alias);
 				if (StringUtils.isNoneBlank(temp)) {
-					JSONObject jo = JSON.parseObject(temp);
-					String javaType = jo.getString(RDSObjectMapper.JAVA_KEY);
-					Object o = jo.getObject(RDSObjectMapper.JAVA_DATA, Class.forName(javaType));
-					field.set(obj, o);
+					try {
+						JSONObject jo = JSON.parseObject(temp);
+						String javaType = jo.getString(RDSObjectMapper.JAVA_KEY);
+						Object o = jo.getObject(RDSObjectMapper.JAVA_DATA, Class.forName(javaType));
+						field.set(obj, o);
+					} catch (Exception eee) {
+						field.set(obj, null);
+					}
 				} else {
 					field.set(obj, null);
 				}

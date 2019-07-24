@@ -87,6 +87,10 @@ public class TSFieldMapper<T extends TSEntity> {
 				return ColumnValue.fromString((String) t);
 			} else if (javaType.equals(Integer.class)) {
 				return ColumnValue.fromLong((Integer) t);
+			} else if (javaType.equals(Byte.class)) {
+				return ColumnValue.fromLong((Byte) t);
+			} else if (javaType.equals(Short.class)) {
+				return ColumnValue.fromLong((Short) t);
 			} else if (javaType.equals(Date.class)) {
 				return ColumnValue.fromLong(((Date) t).getTime());
 			} else {
@@ -130,16 +134,24 @@ public class TSFieldMapper<T extends TSEntity> {
 						field.set(obj, cv.asString());
 					} else if (javaType.equals(Integer.class)) {
 						field.set(obj, (int) cv.asLong());
+					} else if (javaType.equals(Byte.class)) {
+						field.set(obj, (byte) cv.asLong());
+					} else if (javaType.equals(Short.class)) {
+						field.set(obj, (short) cv.asLong());
 					} else if (javaType.equals(Date.class)) {
 						field.set(obj, new Date(cv.asLong()));
 					} else {
 						// 其它的特有对象
 						String temp = cv.asString();
 						if (StringUtils.isNoneBlank(temp)) {
-							JSONObject jo = JSON.parseObject(temp);
-							String javaType = jo.getString(TSObjectMapper.JAVA_KEY);
-							Object o = jo.getObject(TSObjectMapper.JAVA_DATA, Class.forName(javaType));
-							field.set(obj, o);
+							try {
+								JSONObject jo = JSON.parseObject(temp);
+								String javaType = jo.getString(TSObjectMapper.JAVA_KEY);
+								Object o = jo.getObject(TSObjectMapper.JAVA_DATA, Class.forName(javaType));
+								field.set(obj, o);
+							} catch (Exception eee) {
+								field.set(obj, null);
+							}
 						} else {
 							field.set(obj, null);
 						}

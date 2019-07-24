@@ -839,8 +839,7 @@ public abstract class Controller {
 		try {
 			Long value = jo.getLong(key);
 			if (null == value) {
-				throw new ServerException(BaseRC.REQUEST_PARAMS_ERROR,
-						StringUtils.join("getLongNotNull>", key, ">", "is null"));
+				throw new ServerException(BaseRC.REQUEST_PARAMS_ERROR);
 			} else {
 				return value;
 			}
