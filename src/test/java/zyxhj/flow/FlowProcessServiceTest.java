@@ -4,13 +4,11 @@ import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import zyxhj.flow.domain.Module;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.service.FlowService;
 import zyxhj.utils.Singleton;
@@ -78,19 +76,19 @@ public class FlowProcessServiceTest {
 
 	public void testAddPDActivity() {
 
-		JSONObject receivers = new JSONObject();
+		JSONArray receivers = new JSONArray();
 
 		JSONArray actions = new JSONArray();
 
 		try {
-			flowService.addPDActivity(conn, pdId, "testActivityTitle", "part1", receivers,actions);
+			flowService.addPDActivity(conn, pdId, "testActivityTitle", "part1", receivers, actions);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	public void testEditPDActivity() {
-		JSONObject receivers = new JSONObject();
+		JSONArray receivers = new JSONArray();
 
 		JSONArray assets = new JSONArray();
 
@@ -105,7 +103,7 @@ public class FlowProcessServiceTest {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void testDelPDActivity() {
 		try {
 			flowService.delPDActivity(conn, pdId, activityId);
@@ -113,9 +111,5 @@ public class FlowProcessServiceTest {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
-	
-	
+
 }

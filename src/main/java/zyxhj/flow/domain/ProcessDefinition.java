@@ -11,8 +11,7 @@ import zyxhj.utils.data.rds.RDSAnnID;
  *
  */
 @RDSAnnEntity(alias = "tb_process_definition")
-public class ProcessDefinition  {
-
+public class ProcessDefinition {
 
 	public static final Byte STATUS_READY = 0;
 	public static final Byte STATUS_ON = 1;
@@ -29,7 +28,7 @@ public class ProcessDefinition  {
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
-	
+
 	/**
 	 * 状态
 	 */
@@ -40,7 +39,7 @@ public class ProcessDefinition  {
 	 * 标签列表
 	 */
 	@RDSAnnField(column = "VARCHAR(512)")
-	public String tags;
+	public JSONArray tags;
 
 	/**
 	 * 标题
@@ -53,6 +52,6 @@ public class ProcessDefinition  {
 	 * JSONArray格式
 	 */
 	@RDSAnnField(column = "VARCHAR(256)")
-	public String lanes;
+	public JSONArray lanes;
 
 }

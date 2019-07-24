@@ -1,14 +1,13 @@
 package zyxhj.flow.domain;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
 
 @RDSAnnEntity(alias = "tb_process_activity")
-public class ProcessActivity{
+public class ProcessActivity {
 
 	/**
 	 * 所属PD编号
@@ -40,7 +39,7 @@ public class ProcessActivity{
 	 * 接收者（departments部门，roles角色，users用户）
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public JSONObject receivers;
+	public JSONArray receivers;
 
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public JSONArray actions;// 行为
