@@ -27,7 +27,7 @@ import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.repository.ProcessActivityRepository;
 import zyxhj.flow.repository.ProcessDefinitionRepository;
-import zyxhj.flow.repository.ProcessRecordRepository;
+import zyxhj.flow.repository.ProcessLogRepository;
 import zyxhj.flow.repository.ProcessRepository;
 import zyxhj.flow.repository.TableDataRepository;
 import zyxhj.flow.repository.TableQueryRepository;
@@ -54,7 +54,7 @@ public class FlowService {
 	private ProcessRepository processRepository;
 	private ProcessDefinitionRepository processDefinitionRepository;
 	private ProcessActivityRepository processActivityRepository;
-	private ProcessRecordRepository processRecordRepository;
+	private ProcessLogRepository processRecordRepository;
 
 	private ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
 
@@ -68,7 +68,7 @@ public class FlowService {
 			processRepository = Singleton.ins(ProcessRepository.class);
 			processDefinitionRepository = Singleton.ins(ProcessDefinitionRepository.class);
 			processActivityRepository = Singleton.ins(ProcessActivityRepository.class);
-			processRecordRepository = Singleton.ins(ProcessRecordRepository.class);
+			processRecordRepository = Singleton.ins(ProcessLogRepository.class);
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
