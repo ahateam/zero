@@ -16,18 +16,24 @@ import zyxhj.flow.domain.Annex;
 import zyxhj.flow.repository.AnnexRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.api.Controller;
+import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
-import zyxhj.utils.data.ts.TSRepository;
-import zyxhj.utils.data.ts.TSUtils;
 
-public class AnnexService {
+public class AnnexService extends Controller {
 
 	private static Logger log = LoggerFactory.getLogger(AnnexService.class);
 
+	private SyncClient client;
+
 	private AnnexRepository annexRepository;
 
-	public AnnexService() {
+	public AnnexService(String node) {
+		super(node);
 		try {
+
+			client = DataSource.getTableStoreSyncClient("tsDefault.prop");
+
 			annexRepository = Singleton.ins(AnnexRepository.class);
 
 		} catch (Exception e) {
@@ -35,63 +41,90 @@ public class AnnexService {
 		}
 	}
 
-	/**
-	 * 创建附件
-	 */
-	public void createAnnex(SyncClient client,Long ownerid, String name, JSONObject data, Boolean necessary) throws Exception {
+	@POSTAPI(//
+			path = "createAnnex", //
+			des = "创建附件" //
+	)
+	public void createAnnex(//
+			@P(t = "附件持有者编号") Long ownerid, //
+			@P(t = "附件名称") String name, //
+			@P(t = "类型") Byte type, //
+			@P(t = "数据内容，JSONObject") JSONObject data //
+	) throws Exception {
 		Annex a = new Annex();
 		Long id = IDUtils.getSimpleId();
 		a.ownerId = ownerid;
 		a.id = id;
 		a.name = name;
 		a.createTime = new Date();
-		a.necessary = necessary;
-		a.type = Annex.TYPE_FORM;
+		a.type = type;
 		a.data = data;
+
 		annexRepository.insert(client, a, false);
 	}
 
-	/**
-	 * 删除附件
-	 */
-	public void delAnnex(SyncClient client, Long id, Long ownerId) throws Exception {
+	@POSTAPI(//
+			path = "delAnnex", //
+			des = "删除附件" //
+	)
+	public void delAnnex(//
+			@P(t = "附件持有者编号") Long ownerId, //
+			@P(t = "附件编号") Long id//
+	) throws Exception {
 		PrimaryKey pk = new PrimaryKeyBuilder().add("ownerId", ownerId).add("id", id).build();
-		TSRepository.nativeDel(client, annexRepository.getTableName(), pk);
+		annexRepository.delete(client, pk);
 	}
 
-	/**
-	 * 修改附件信息
-	 */
-	public void editPart(SyncClient client, Long id, Long ownerId, String name, JSONObject data, Boolean necessary ) throws Exception {
+	@POSTAPI(//
+			path = "editAnnex", //
+			des = "删除附件" //
+	)
+	public void editAnnex(//
+			@P(t = "附件持有者编号") Long ownerId, //
+			@P(t = "附件编号") Long id, //
+			@P(t = "附件名称") String name, //
+			@P(t = "类型") Byte type, //
+			@P(t = "数据内容，JSONObject") JSONObject data //
+	) throws Exception {
 
 		Annex a = new Annex();
 		a.ownerId = ownerId;
 		a.id = id;
 		a.name = name;
-		a.necessary = necessary;
-		a.type = Annex.TYPE_FORM;
+		a.type = type;
 		a.data = data;
 
 		annexRepository.update(client, a, true);
 	}
 
-	/**
-	 * 获取所有附件信息</br>
-	 * TODO 需要用索引查询
-	 */
-	public List<Annex> getAnnexs(SyncClient client,Long ownerId, Integer count, Integer offset) throws Exception {
-		PrimaryKey pkStart = new PrimaryKeyBuilder().add("ownerId", ownerId)
-				.add("id", PrimaryKeyValue.INF_MIN).build();
-		PrimaryKey pkEnd = new PrimaryKeyBuilder().add("ownerId", ownerId)
-				.add("id", PrimaryKeyValue.INF_MAX).build();
+	@POSTAPI(//
+			path = "getAnnexList", //
+			des = "根据ownerId获取Annex列表", //
+			ret = "Annex列表"//
+	)
+	public List<Annex> getAnnexList(//
+			@P(t = "附件持有者编号") Long ownerId, //
+			Integer count, //
+			Integer offset//
+	) throws Exception {
+		PrimaryKey pkStart = new PrimaryKeyBuilder().add("ownerId", ownerId).add("id", PrimaryKeyValue.INF_MIN).build();
+		PrimaryKey pkEnd = new PrimaryKeyBuilder().add("ownerId", ownerId).add("id", PrimaryKeyValue.INF_MAX).build();
 		JSONArray aJson = annexRepository.getRange(client, pkStart, pkEnd, count, offset);
+
 		List<Annex> alist = aJson.toJavaList(Annex.class);
 		return alist;
 	}
-	
-	public Annex getAnnexById(SyncClient client, Long ownerId, Long id) throws Exception {
-		PrimaryKey pk = new PrimaryKeyBuilder().add("ownerId", ownerId)
-				.add("id", id).build();
+
+	@POSTAPI(//
+			path = "getAnnexById", //
+			des = "根据主键获取Annex", //
+			ret = "Annex对象"//
+	)
+	public Annex getAnnexById(//
+			@P(t = "附件持有者编号") Long ownerId, //
+			@P(t = "附件编号") Long id//
+	) throws Exception {
+		PrimaryKey pk = new PrimaryKeyBuilder().add("ownerId", ownerId).add("id", id).build();
 		return annexRepository.get(client, pk);
 	}
 }
