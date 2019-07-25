@@ -3,7 +3,10 @@ package xhj.cn.start;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alicloud.openservices.tablestore.SyncClient;
 
+import zyxhj.flow.domain.Module;
+import zyxhj.flow.domain.ProcessLog;
 import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.rds.RDSUtils;
 
 public class Test {
 
@@ -23,10 +26,10 @@ public class Test {
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 
 //			RDSUtils.createTableByEntity(dds, TableQuery.class);
+			RDSUtils.createTableByEntity(dds, Module.class);
 
 
 //			TSUtils.createTableByEntity(client, Annex.class);
-//			TSUtils.createTableByEntity(client, TaskList.class);
 			
 //			TSUtils.drapTableByEntity(client, TaskList.class);
 			client.shutdown();

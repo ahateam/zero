@@ -1,5 +1,6 @@
 package zyxhj.flow.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -77,7 +78,7 @@ public class AnnexService extends Controller {
 
 	@POSTAPI(//
 			path = "editAnnex", //
-			des = "删除附件" //
+			des = "修改附件" //
 	)
 	public void editAnnex(//
 			@P(t = "附件持有者编号") Long ownerId, //
@@ -102,7 +103,7 @@ public class AnnexService extends Controller {
 			des = "根据ownerId获取Annex列表", //
 			ret = "Annex列表"//
 	)
-	public List<Annex> getAnnexList(//
+	public JSONArray getAnnexList(//
 			@P(t = "附件持有者编号") Long ownerId, //
 			Integer count, //
 			Integer offset//
@@ -110,9 +111,7 @@ public class AnnexService extends Controller {
 		PrimaryKey pkStart = new PrimaryKeyBuilder().add("ownerId", ownerId).add("id", PrimaryKeyValue.INF_MIN).build();
 		PrimaryKey pkEnd = new PrimaryKeyBuilder().add("ownerId", ownerId).add("id", PrimaryKeyValue.INF_MAX).build();
 		JSONArray aJson = annexRepository.getRange(client, pkStart, pkEnd, count, offset);
-
-		List<Annex> alist = aJson.toJavaList(Annex.class);
-		return alist;
+		return aJson;
 	}
 
 	@POSTAPI(//
@@ -127,4 +126,5 @@ public class AnnexService extends Controller {
 		PrimaryKey pk = new PrimaryKeyBuilder().add("ownerId", ownerId).add("id", id).build();
 		return annexRepository.get(client, pk);
 	}
+	
 }

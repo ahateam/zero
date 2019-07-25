@@ -21,15 +21,17 @@ import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
 import zyxhj.flow.repository.ModuleRepository;
 import zyxhj.flow.repository.ProcessActivityRepository;
-import zyxhj.flow.repository.ProcessAssetReposition;
+import zyxhj.flow.repository.ProcessAssetRepository;
 import zyxhj.flow.repository.ProcessDefinitionRepository;
 import zyxhj.flow.repository.ProcessLogRepository;
 import zyxhj.flow.repository.ProcessRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.ServerException;
+import zyxhj.utils.data.DataSource;
+import zyxhj.utils.api.Controller;
 
-public class FlowService {
+public class FlowService extends Controller {
 
 	private static Logger log = LoggerFactory.getLogger(FlowService.class);
 
@@ -39,16 +41,22 @@ public class FlowService {
 
 	private ProcessLogRepository processLogRepository;
 	private ModuleRepository moduleRepository;
-	private ProcessAssetReposition processAssetReposition;
+	private ProcessAssetRepository processAssetRepository;
+	
+	private DruidPooledConnection conn;
 
-	public FlowService() {
+	public FlowService(String node) {
+		super(node);
 		try {
+			conn =DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
+			
 			processRepository = Singleton.ins(ProcessRepository.class);
 			processDefinitionRepository = Singleton.ins(ProcessDefinitionRepository.class);
 			processActivityRepository = Singleton.ins(ProcessActivityRepository.class);
 			moduleRepository = Singleton.ins(ModuleRepository.class);
 			processLogRepository = Singleton.ins(ProcessLogRepository.class);
-			processAssetReposition = Singleton.ins(ProcessAssetReposition.class);
+			processAssetRepository = Singleton.ins(ProcessAssetRepository.class);
+			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -60,9 +68,20 @@ public class FlowService {
 	/**
 	 * 创建流程定义
 	 */
-	public void createProcessDefinition(DruidPooledConnection conn, Long moduleId, String title, JSONArray tags,
-			JSONArray lanes) throws Exception {
+	@POSTAPI(//
+			path = "createProcessDefinition", //
+			des = "创建ProcessDefinition流程定义", //
+			ret = "Definition编号" //
+	)
+	public Long createProcessDefinition(
+			@P(t = "moduleId应用或平台编号，现未使用") Long moduleId,
+			@P(t = "流程定义标题") String title,
+			@P(t = "标签列表") JSONArray tags,
+			@P(t = "流程图泳道名称列表，泳道名称不可重复") JSONArray lanes
+		) throws Exception {
+		
 		Long id = IDUtils.getSimpleId();
+		
 		ProcessDefinition pd = new ProcessDefinition();
 		pd.moduleId = moduleId;
 		pd.id = id;
@@ -73,13 +92,24 @@ public class FlowService {
 		pd.lanes = lanes;
 
 		processDefinitionRepository.insert(conn, pd);
+		return pd.id;
 	}
 
 	/*
 	 * 编辑表流程定义
 	 */
-	public int editProcessDefinition(DruidPooledConnection conn, Long id, String module, Byte status, JSONArray tags,
-			String title, JSONArray lanes, JSONArray assets, JSONObject visualization) throws Exception {
+	@POSTAPI(//
+			path = "editProcessDefinition",//
+			des = "编辑ProcessDefinition流程定义",//
+			ret = "status-----int"//
+			)
+	public int editProcessDefinition(
+			@P(t = "流程定义表编号") Long id,//
+			@P(t = "流程定义状态") Byte status,//
+			@P(t = "标签列表") JSONArray tags,//
+			@P(t = "流程定义标题" )String title,//
+			@P(t = "流程图泳道名称列表，泳道名称不可重复") JSONArray lanes
+		) throws Exception {
 
 		ProcessDefinition pd = new ProcessDefinition();
 		pd.id = id;
@@ -95,11 +125,19 @@ public class FlowService {
 	/*
 	 * 查询所有表流程定义
 	 */
-	public List<ProcessDefinition> queryProcessDefinition(DruidPooledConnection conn, String module, JSONArray tags,
-			Integer count, Integer offset) throws Exception {
-		return processDefinitionRepository.getListByANDKeys(conn, new String[] { "module", "tags" },
-				new Object[] { module, tags.toArray() }, count, offset);
+	@POSTAPI(//
+			path = "getProcessDefinition",//
+			des = "查询所有流程定义",//
+			ret = "List<ProcessDefinition>"//
+			)
+	public List<ProcessDefinition> getProcessDefinition(//
+			@P(t = "应用或平台编号")Long moduleId,//
+			Integer count,//
+			Integer offset//
+			) throws Exception {
+		return processDefinitionRepository.getListByKey(conn, "module_id", moduleId, count, offset);
 	}
+	
 
 	/*
 	 * ProcessActivityService
@@ -108,8 +146,18 @@ public class FlowService {
 	 * 设置流程节点，没有就增加，有就设置</br>
 	 * 重名会被覆盖
 	 */
-	public void addPDActivity(DruidPooledConnection conn, Long pdId, String title, String part, JSONArray receivers,
-			JSONArray actions) throws Exception {
+	
+	@POSTAPI(//
+			path = "createProcessActivity",//
+			des = "创建ProcessActivity流程节点"//
+			)
+	public Long createProcessActivity(
+			@P(t = "流程定义编号") Long pdId,//
+			@P(t = "活动标题") String title,//
+			@P(t = "所属泳道") String part,//
+			@P(t = "接收者（departments部门，roles角色，users用户）") JSONArray receivers,//
+			@P(t = "行为动作") JSONArray actions//
+			) throws Exception {
 		Long id = IDUtils.getSimpleId();
 		ProcessActivity pa = new ProcessActivity();
 		pa.pdId = pdId;
@@ -121,12 +169,22 @@ public class FlowService {
 		pa.actions = actions;
 
 		processActivityRepository.insert(conn, pa);
+		
+		return pa.id;
 	}
 
 	/**
 	 * 删除流程节点
 	 */
-	public int delPDActivity(DruidPooledConnection conn, Long pdId, Long activityId) throws Exception {
+	
+	@POSTAPI(//
+			path = "delPDActivity",//
+			des = "删除ProcessActivity节点"//
+			)
+	public int delPDActivity(
+			@P(t = "流程定义编号") Long pdId,
+			@P(t = "流程节点编号") Long activityId
+			) throws Exception {
 		return processActivityRepository.deleteByANDKeys(conn, new String[] { "pd_id", "id" },
 				new Object[] { pdId, activityId });
 	}
@@ -134,8 +192,19 @@ public class FlowService {
 	/**
 	 * 编辑流程节点
 	 */
-	public int editPDActivity(DruidPooledConnection conn, Long pdId, Long id, String title, String part,
-			JSONArray receivers, JSONArray assets, JSONArray actions, JSONObject visualization) throws Exception {
+	@POSTAPI(//
+			path = "editPDActivity",//
+			des = "编辑ProcessActivity节点",//
+			ret = "state ---- int"
+			)
+	public int editPDActivity(//
+			@P(t = "流程定义编号") Long pdId,//
+			@P(t = "流程节点编号") Long id,
+			@P(t = "活动标题") String title,//
+			@P(t = "所属泳道") String part,//
+			@P(t = "接收者（departments部门，roles角色，users用户）") JSONArray receivers,//
+			@P(t = "行为动作") JSONArray actions//
+			) throws Exception {
 
 		ProcessActivity pa = new ProcessActivity();
 		pa.pdId = pdId;
@@ -153,10 +222,19 @@ public class FlowService {
 	/*
 	 * 查询所有流程节点
 	 */
-	public List<ProcessActivity> queryPDActivity(DruidPooledConnection conn, Integer count, Integer offset)
-			throws ServerException {
+	
+	@POSTAPI(//
+			path = "getPDActivityList",//
+			des = "获取所有ProcessActivity节点",//
+			ret = "List<ProcessActivity>"
+			)
+	public List<ProcessActivity> getPDActivityList(
+			@P(t = "DefinitionId 流程定义编号")Long pdId,//
+			Integer count,//
+			Integer offset//
+			)throws ServerException {
 
-		return processActivityRepository.getList(conn, count, offset);
+		return processActivityRepository.getListByKey(conn, "pd_id", pdId, count, offset);
 
 	}
 	/*
@@ -166,8 +244,17 @@ public class FlowService {
 	/*
 	 * 创建Process流程实例
 	 */
-	public void createProcess(DruidPooledConnection conn, Long pdid, String title, Long currActivityId, String remark)
-			throws ServerException {
+	@POSTAPI(//
+			path = "createProcess",//
+			des = "创建Process",//
+			ret = "ProcessId流程实例编号"
+			)
+	public Long createProcess(
+			@P(t = "流程定义编号") Long pdid,//
+			@P(t = "流程标题") String title,//
+			@P(t = "流程节点编号") Long currActivityId,//
+			String remark//
+			)throws ServerException {
 		Long id = IDUtils.getSimpleId();
 		Process pro = new Process();
 		pro.pdId = pdid;
@@ -177,13 +264,25 @@ public class FlowService {
 		pro.timestamp = new Date();
 		pro.remark = remark;
 		processRepository.insert(conn, pro);
+		
+		return pro.id;
 	}
 
 	/*
 	 * 编辑process流程实例
 	 */
-	public int editProcess(DruidPooledConnection conn, Long id, Long pdid, String title, Long currActivityId,
-			String remark) throws ServerException {
+	@POSTAPI(//
+			path = "editProcess",//
+			des = "创建Process",//
+			ret = "state ---- int"
+			)
+	public int editProcess(
+			@P(t = "processId") Long id,//
+			@P(t = "流程定义编号") Long pdid,//
+			@P(t = "流程标题") String title,//
+			@P(t = "流程节点编号") Long currActivityId,//
+			String remark//
+			) throws ServerException {
 		Process pro = new Process();
 		pro.pdId = pdid;
 		pro.id = id;
@@ -197,15 +296,29 @@ public class FlowService {
 	/*
 	 * 删除流程实例
 	 */
-	public int deleteProcess(DruidPooledConnection conn, Long id) throws ServerException {
+	@POSTAPI(//
+			path = "deleteProcess",//
+			des = "删除Process",//
+			ret = "state ---- int"
+			)
+	public int deleteProcess(
+			@P(t = "processId ")Long id
+			) throws ServerException {
 		return processRepository.deleteByKey(conn, "id", id);
-
 	}
 
 	/*
 	 * 查询所有流程实例
 	 */
-	public List<Process> getProcessList(DruidPooledConnection conn, Integer count, Integer offset)
+	@POSTAPI(//
+			path = "getProcessList",//
+			des = "查询process",//
+			ret = "List<Process>"
+			)
+	public List<Process> getProcessList(
+			Integer count,//
+			Integer offset//
+			)
 			throws ServerException {
 		return processRepository.getList(conn, count, offset);
 	}
@@ -213,15 +326,30 @@ public class FlowService {
 	/*
 	 * 通过pdid查询下属process
 	 */
-	public List<Process> getProcessListByPdid(DruidPooledConnection conn, Long pdid, Integer count, Integer offset)
-			throws ServerException {
+	@POSTAPI(//
+			path = "getProcessListByPdid",//
+			des = "通过pdid查询下属process",//
+			ret = "List<Process>"
+			)
+	public List<Process> getProcessListByPdid(
+			@P(t = "流程定义编号Definition")Long pdid,//
+			Integer count,//
+			Integer offset//
+			)throws ServerException {
 		return processRepository.getListByKey(conn, "pd_id", pdid, count, offset);
 	}
 
 	/*
 	 * 通过processid查询process
 	 */
-	public Process getProcessById(DruidPooledConnection conn, Long id) throws ServerException {
+	@POSTAPI(//
+			path = "getProcessById",//
+			des = "通过processid精确查询process",//
+			ret = "Process"
+			)
+	public Process getProcessById(
+			@P(t = "processId")Long id//
+			) throws ServerException {
 		return processRepository.getByKey(conn, "id", id);
 	}
 
@@ -231,8 +359,19 @@ public class FlowService {
 	/*
 	 * 创建processLog
 	 */
-	public void createProcessLog(DruidPooledConnection conn, Long processId, String title, Long userid, String userName,
-			String action, String actionDesc, JSONObject ext) throws ServerException {
+	@POSTAPI(//
+			path = "createProcessLog",//
+			des = "创建processLog"//
+			)
+	public void createProcessLog(
+			@P(t = "process流程编号") Long processId,//
+			@P(t = "LogTitle标题") String title,//
+			@P(t = "使用者编号") Long userid,//
+			@P(t = "使用者名称") String userName,//
+			@P(t = "行为或活动") String action,//
+			@P(t = "行为或活动说明") String actionDesc,//
+			@P(t = "记录扩展数据") JSONObject ext//
+			) throws ServerException {
 		ProcessLog pl = new ProcessLog();
 		Long id = IDUtils.getSimpleId();
 		pl.processId = processId;
@@ -250,8 +389,21 @@ public class FlowService {
 	/*
 	 * 编辑processLog
 	 */
-	public int editProcessLog(DruidPooledConnection conn, Long id, Long processId, String title, Long userid,
-			String userName, String action, String actionDesc, JSONObject ext) throws ServerException {
+	@POSTAPI(//
+			path = "editProcessLog",//
+			des = "编辑processLog",//
+			ret = "state --- int"
+			)
+	public int editProcessLog(
+			@P(t = "process流程编号") Long processId,//
+			@P(t = "processLog编号") Long id,//
+			@P(t = "LogTitle标题") String title,//
+			@P(t = "使用者编号") Long userid,//
+			@P(t = "使用者名称") String userName,//
+			@P(t = "行为或活动") String action,//
+			@P(t = "行为或活动说明") String actionDesc,//
+			@P(t = "记录扩展数据") JSONObject ext//
+			) throws ServerException {
 		ProcessLog pl = new ProcessLog();
 		pl.processId = processId;
 		pl.id = id;
@@ -268,24 +420,47 @@ public class FlowService {
 	/*
 	 * 查询所有processLog数据
 	 */
-	public List<ProcessLog> getProcessLogList(DruidPooledConnection conn, Integer count, Integer offset)
-			throws ServerException {
+	@POSTAPI(//
+			path = "getProcessLogList",//
+			des = " 查询所有processLog数据",//
+			ret = "List<ProcessLog>"
+			)
+	public List<ProcessLog> getProcessLogList(
+			Integer count,//
+			Integer offset//
+			)throws ServerException {
 		return processLogRepository.getList(conn, count, offset);
 	}
 
 	/*
 	 * 查询一个processid的所有processlog数据
 	 */
-	public List<ProcessLog> getProcessLogListByProcessId(DruidPooledConnection conn, Long processId, Integer count,
-			Integer offset) throws ServerException {
+	@POSTAPI(//
+			path = "getProcessLogListByProcessId",//
+			des = "查询一个processid的所有processlog数据",//
+			ret = "List<ProcessLog>"
+			)
+	public List<ProcessLog> getProcessLogListByProcessId(
+			@P(t = "processId流程编号")Long processId,//
+			Integer count,//
+			Integer offset//
+			) throws ServerException {
 		return processLogRepository.getListByKey(conn, "process_id", processId, count, offset);
 	}
 
 	/*
 	 * 通过userId查询所有processLog数据
 	 */
-	public List<ProcessLog> getProcessLogListByUserId(DruidPooledConnection conn, Long userId, Integer count,
-			Integer offset) throws ServerException {
+	@POSTAPI(//
+			path = "getProcessLogListByUserId",//
+			des =  "通过userId查询所有processLog数据",//
+			ret = "List<ProcessLog>"
+			)
+	public List<ProcessLog> getProcessLogListByUserId(
+			@P(t = "使用者编号") Long userId,//
+			Integer count,//
+			Integer offset//
+			) throws ServerException {
 		return processLogRepository.getListByKey(conn, "user_id", userId, count, offset);
 	}
 
@@ -309,7 +484,13 @@ public class FlowService {
 	/*
 	 * 创建自定义Module
 	 */
-	public void createModule(DruidPooledConnection conn, String name) throws ServerException {
+	@POSTAPI(//
+			path = "createModule",//
+			des =  "创建自定义Module"//
+			)
+	public void createModule(
+			@P(t = "自定义module名称") String name//
+			) throws ServerException {
 		Long id = IDUtils.getSimpleId();
 		Module mod = new Module();
 		mod.id = id;
@@ -320,7 +501,15 @@ public class FlowService {
 	/*
 	 * 编辑自定义module
 	 */
-	public int editModule(DruidPooledConnection conn, Long id, String name) throws ServerException {
+	@POSTAPI(//
+			path = "editModule",//
+			des =  "编辑自定义module",//
+			ret = "state ---- int"
+			)
+	public int editModule(
+			@P(t = "module编号")Long id,//
+			@P(t = "自定义module名称") String name//
+			) throws ServerException {
 		Module mod = new Module();
 		mod.id = id;
 		mod.name = name;
@@ -330,22 +519,43 @@ public class FlowService {
 	/*
 	 * 删除自定义module
 	 */
-	public int deleteModule(DruidPooledConnection conn, Long id) throws ServerException {
+	@POSTAPI(//
+			path = "deleteModule",//
+			des = "删除Module",//
+			ret = "state ---- int"
+			)
+	public int deleteModule(
+			@P(t = "应用或平台编号") Long id//
+			) throws ServerException {
 		return moduleRepository.deleteByKey(conn, "id", id);
 	}
 
 	/*
 	 * 查询所有module
 	 */
-	public List<Module> getModuleList(DruidPooledConnection conn, Integer count, Integer offset)
-			throws ServerException {
+	@POSTAPI(//
+			path = "getModuleList",//
+			des = "查询所有Module",//
+			ret = "List<Module>"//
+			)
+	public List<Module> getModuleList(
+			Integer count,//
+			Integer offset//
+			)throws ServerException {
 		return moduleRepository.getList(conn, count, offset);
 	}
 
 	/*
 	 * 通过moduleId 查询module
 	 */
-	public Module getModuleListByKey(DruidPooledConnection conn, Long id) throws ServerException {
+	@POSTAPI(//
+			path = "getModuleListById",//
+			des = "通过moduleId 查询module",//
+			ret = "List<Module>"//
+			)
+	public Module getModuleListById(
+			@P(t = "module编号")Long id//
+			) throws ServerException {
 		return moduleRepository.getByKey(conn, "id", id);
 	}
 
@@ -368,8 +578,16 @@ public class FlowService {
 	/*
 	 * 创建processAsset
 	 */
-	public void createProcessAsset(DruidPooledConnection conn, Byte type, Long ownerId, String name, Long annexId)
-			throws ServerException {
+	@POSTAPI(//
+			path = "createProcessAsset",//
+			des = "创建processAsset附件关系"//
+			)
+	public void createProcessAsset(
+			@P(t = "文件归属对象类型（属于Activity或者是属于Definition）") Byte type,//
+			@P(t = "ActivityId 或 DefinitionId") Long ownerId,//
+			@P(t = "附件关系名称") String name,//
+			@P(t = "附件编号") Long annexId//
+			)throws ServerException {
 		Long id = IDUtils.getSimpleId();
 
 		ProcessAsset proA = new ProcessAsset();
@@ -379,8 +597,67 @@ public class FlowService {
 		proA.name = name;
 		proA.annexId = annexId;
 
-		processAssetReposition.insert(conn, proA);
-
+		processAssetRepository.insert(conn, proA);
+		
 	}
+	
+	@POSTAPI(//
+			path = "editProcessAsset",//
+			des = "编辑processAsset附件关系",//
+			ret = "state --- int"//
+			)
+	public int  editProcessAsset(
+			@P(t = "asset编号") Long assetId,//
+			@P(t = "文件归属对象类型（属于Activity或者是属于Definition）") Byte type,//
+			@P(t = "ActivityId 或 DefinitionId") Long ownerId,//
+			@P(t = "附件关系名称") String name,//
+			@P(t = "附件编号") Long annexId//
+			)throws ServerException {
+		ProcessAsset proA = new ProcessAsset();
+		proA.type = ProcessAsset.TYPE_ACTIVITY;
+		proA.ownerId = ownerId;
+		proA.id = assetId;
+		proA.name = name;
+		proA.annexId = annexId;
 
+		return processAssetRepository.updateByKey(conn, "id", assetId, proA, true);
+	}
+	
+	@POSTAPI(//
+			path = "getProcessAsset",//
+			des = "得到processAsset附件关系列表",//
+			ret = "List<ProcessAsset>"//
+			)
+	public List<ProcessAsset> getProcessAsset(
+			Integer count,//
+			Integer offset//
+			) throws ServerException{
+		
+		return processAssetRepository.getList(conn, count, offset);
+	}
+	
+	@POSTAPI(//
+			path = "getProcessAssetByOwnerId",//
+			des = "通过OwnerId得到processAsset附件关系列表",//
+			ret = "List<ProcessAsset>"//
+			)
+	public List<ProcessAsset> getProcessAssetByOwnerId(
+			@P(t = "ActivityId 或 DefinitionId") Long ownerId,//
+			Integer count,//
+			Integer offset//
+			) throws ServerException{
+		
+		return processAssetRepository.getListByKey(conn, "owner_id", ownerId, count, offset);
+	}
+	
+	@POSTAPI(//
+			path = "delProcessAsset",//
+			des = "删除processAsset附件关系数据",//
+			ret = "state --- int"//
+			)
+	public int delProcessAsset(
+			@P(t = "assetId")Long assetId//
+			) throws ServerException {
+		return processAssetRepository.deleteByKey(conn, "id", assetId);
+	}
 }

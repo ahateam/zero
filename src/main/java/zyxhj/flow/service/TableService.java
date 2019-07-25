@@ -27,20 +27,27 @@ import zyxhj.flow.repository.TableVirtualRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.BaseRC;
+import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
+import zyxhj.utils.data.DataSource;
 
-public class TableService {
+public class TableService extends Controller {
 
 	private static Logger log = LoggerFactory.getLogger(FlowService.class);
 
+	DruidPooledConnection conn;
+	
 	private TableSchemaRepository tableSchemaRepository;
 	private TableDataRepository tableDataRepository;
 	private TableQueryRepository tableQueryRepository;
 	private TableVirtualRepository tableVirtualRepository;
 	private ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
 
-	public TableService() {
+	public TableService(String node) {
+		super(node);
 		try {
+			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
+			
 			tableSchemaRepository = Singleton.ins(TableSchemaRepository.class);
 			tableDataRepository = Singleton.ins(TableDataRepository.class);
 			tableQueryRepository = Singleton.ins(TableQueryRepository.class);
@@ -49,6 +56,7 @@ public class TableService {
 			log.error(e.getMessage(), e);
 		}
 	}
+	
 	private static List<String> getJSArgs(String src) {
 		int ind = 0;
 		int start = 0;
@@ -102,10 +110,17 @@ public class TableService {
 		}
 		return null;
 	}
+	
 	// 创建表结构
-	public void createTableSchema(DruidPooledConnection conn, String alias, Byte type, JSONArray columns)
-			throws Exception {
-
+	@POSTAPI(//
+			path = "createTableSchema", //
+			des = "创建表结构表TableSchema" //
+	)
+	public void createTableSchema(
+			@P(t = "表名")String alias,//
+			@P(t = "表类型")Byte type,//
+			@P(t = "数据列")JSONArray columns
+			)throws Exception {
 		// TODO 暂时只支持VIRTUAL_QUERY_TABLE
 
 		TableSchema ts = new TableSchema();
@@ -118,8 +133,16 @@ public class TableService {
 		tableSchemaRepository.insert(conn, ts);
 	}
 
-	public int updateTableSchema(DruidPooledConnection conn, Long id, String alias, JSONArray columns)
-			throws Exception {
+	@POSTAPI(//
+			path = "updateTableSchema", //
+			des = "修改表结构", //
+			ret = "state --- int" //
+	)
+	public int updateTableSchema(
+			@P(t = "表结构编号") Long id,//
+			@P(t = "表名") String alias,//
+			@P(t = "数据列") JSONArray columns
+			)throws Exception {
 		TableSchema ts = new TableSchema();
 		ts.alias = alias;
 
@@ -132,13 +155,28 @@ public class TableService {
 	}
 
 	// 获取所有数据表
-	public List<TableSchema> getTableSchemas(DruidPooledConnection conn, Integer count, Integer offset)
-			throws Exception {
+
+	@POSTAPI(//
+			path = "getTableSchemas", //
+			des = "获取所有表结构", //
+			ret = "List<TableSchema>" //
+	)
+	public List<TableSchema> getTableSchemas(
+			Integer count,//
+			Integer offset//
+			)throws Exception {
 		return tableSchemaRepository.getList(conn, count, offset);
 	}
 
 	// 添加表数据
-	public void insertTableData(DruidPooledConnection conn, Long tableSchemaId, JSONObject data) throws Exception {
+	@POSTAPI(//
+			path = "insertTableData", //
+			des = "添加表数据" //
+	)
+	public void insertTableData(
+			@P(t = "表结构编号") Long tableSchemaId,//
+			@P(t = "运算表数据") JSONObject data//
+			) throws Exception {
 
 		TableData td = new TableData();
 		td.tableSchemaId = tableSchemaId;
@@ -169,9 +207,16 @@ public class TableService {
 			tableDataRepository.insert(conn, td);
 		}
 	}
-
-	public int updateTableData(DruidPooledConnection conn, Long tableSchemaId, Long dataId, JSONObject data)
-			throws Exception {
+	@POSTAPI(//
+			path = "updateTableData", //
+			des = "修改表数据", //
+			ret = "state --- int"
+	)
+	public int updateTableData(
+			@P(t = "表结构编号") Long tableSchemaId,//
+			@P(t = "表数据编号") Long dataId,//
+			@P(t = "表数据") JSONObject data
+			)throws Exception {
 
 		TableData td = tableDataRepository.getByANDKeys(conn, new String[] { "table_schema_id", "id" },
 				new Object[] { tableSchemaId, dataId });
