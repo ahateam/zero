@@ -36,7 +36,7 @@ public class TableService extends Controller {
 	private static Logger log = LoggerFactory.getLogger(FlowService.class);
 
 	DruidPooledConnection conn;
-	
+
 	private TableSchemaRepository tableSchemaRepository;
 	private TableDataRepository tableDataRepository;
 	private TableQueryRepository tableQueryRepository;
@@ -47,7 +47,7 @@ public class TableService extends Controller {
 		super(node);
 		try {
 			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
-			
+
 			tableSchemaRepository = Singleton.ins(TableSchemaRepository.class);
 			tableDataRepository = Singleton.ins(TableDataRepository.class);
 			tableQueryRepository = Singleton.ins(TableQueryRepository.class);
@@ -56,7 +56,7 @@ public class TableService extends Controller {
 			log.error(e.getMessage(), e);
 		}
 	}
-	
+
 	private static List<String> getJSArgs(String src) {
 		int ind = 0;
 		int start = 0;
@@ -88,11 +88,11 @@ public class TableService extends Controller {
 	private Object compute(String js, JSONObject tableRowData) {
 		try {
 
-			//{{c1}} + {{c2}} 
+			// {{c1}} + {{c2}}
 			System.out.println("oldjs>>>" + js);
 
 			List<String> args = getJSArgs(js);
-			
+
 			SimpleBindings simpleBindings = new SimpleBindings();
 			for (String arg : args) {
 				System.out.println(arg);
@@ -110,17 +110,15 @@ public class TableService extends Controller {
 		}
 		return null;
 	}
-	
+
 	// 创建表结构
 	@POSTAPI(//
 			path = "createTableSchema", //
 			des = "创建表结构表TableSchema" //
 	)
-	public void createTableSchema(
-			@P(t = "表名")String alias,//
-			@P(t = "表类型")Byte type,//
-			@P(t = "数据列")JSONArray columns
-			)throws Exception {
+	public void createTableSchema(@P(t = "表名") String alias, //
+			@P(t = "表类型") Byte type, //
+			@P(t = "数据列") JSONArray columns) throws Exception {
 		// TODO 暂时只支持VIRTUAL_QUERY_TABLE
 
 		TableSchema ts = new TableSchema();
@@ -138,11 +136,9 @@ public class TableService extends Controller {
 			des = "修改表结构", //
 			ret = "state --- int" //
 	)
-	public int updateTableSchema(
-			@P(t = "表结构编号") Long id,//
-			@P(t = "表名") String alias,//
-			@P(t = "数据列") JSONArray columns
-			)throws Exception {
+	public int updateTableSchema(@P(t = "表结构编号") Long id, //
+			@P(t = "表名") String alias, //
+			@P(t = "数据列") JSONArray columns) throws Exception {
 		TableSchema ts = new TableSchema();
 		ts.alias = alias;
 
@@ -154,17 +150,15 @@ public class TableService extends Controller {
 		return tableSchemaRepository.updateByKey(conn, "id", id, ts, true);
 	}
 
-	// 获取所有数据表
-
 	@POSTAPI(//
 			path = "getTableSchemas", //
 			des = "获取所有表结构", //
 			ret = "List<TableSchema>" //
 	)
-	public List<TableSchema> getTableSchemas(
-			Integer count,//
+	public List<TableSchema> getTableSchemas(//
+			Integer count, //
 			Integer offset//
-			)throws Exception {
+	) throws Exception {
 		return tableSchemaRepository.getList(conn, count, offset);
 	}
 
@@ -173,10 +167,9 @@ public class TableService extends Controller {
 			path = "insertTableData", //
 			des = "添加表数据" //
 	)
-	public void insertTableData(
-			@P(t = "表结构编号") Long tableSchemaId,//
+	public void insertTableData(@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "运算表数据") JSONObject data//
-			) throws Exception {
+	) throws Exception {
 
 		TableData td = new TableData();
 		td.tableSchemaId = tableSchemaId;
@@ -207,16 +200,14 @@ public class TableService extends Controller {
 			tableDataRepository.insert(conn, td);
 		}
 	}
+
 	@POSTAPI(//
 			path = "updateTableData", //
 			des = "修改表数据", //
-			ret = "state --- int"
-	)
-	public int updateTableData(
-			@P(t = "表结构编号") Long tableSchemaId,//
-			@P(t = "表数据编号") Long dataId,//
-			@P(t = "表数据") JSONObject data
-			)throws Exception {
+			ret = "state --- int")
+	public int updateTableData(@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "表数据编号") Long dataId, //
+			@P(t = "表数据") JSONObject data) throws Exception {
 
 		TableData td = tableDataRepository.getByANDKeys(conn, new String[] { "table_schema_id", "id" },
 				new Object[] { tableSchemaId, dataId });
