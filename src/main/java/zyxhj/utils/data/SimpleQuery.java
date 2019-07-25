@@ -139,7 +139,7 @@ public class SimpleQuery {
 			throws Exception {
 
 		StringBuffer sb = new StringBuffer();
-		exp.toSQL(sb);
+		exp.toSQLString(sb);
 
 		String where = sb.toString();
 		// System.out.println(where);
@@ -153,7 +153,7 @@ public class SimpleQuery {
 
 	public static Object RDSEXPGet(Class clazz, JSONArray selections, EXP exp) throws Exception {
 		StringBuffer sb = new StringBuffer();
-		exp.toSQL(sb);
+		exp.toSQLString(sb);
 
 		String where = sb.toString();
 		// System.out.println(where);

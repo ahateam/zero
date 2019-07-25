@@ -20,7 +20,6 @@ public class TableDataRepository extends RDSRepository<TableData> {
 
 		StringBuffer sb = new StringBuffer("WHERE table_schema_id = ? AND ");
 		EXP.jsonEXP2VirtualTableSQL(query, "data", sb);
-		;
 		System.out.println(sb.toString());
 
 		return this.getList(conn, sb.toString(), new Object[] { tableSchemaId }, count, offset);

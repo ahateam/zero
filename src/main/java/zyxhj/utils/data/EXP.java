@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.model.search.query.BoolQuery;
 import com.alicloud.openservices.tablestore.model.search.query.Query;
@@ -15,6 +14,7 @@ import com.alicloud.openservices.tablestore.model.search.query.TermQuery;
 
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
+import zyxhj.utils.data.rds.SQL;
 import zyxhj.utils.data.ts.ColumnBuilder;
 import zyxhj.utils.data.ts.TSObjectMapper;
 
@@ -35,6 +35,12 @@ public class EXP implements Cloneable {
 	public String t;
 	public String op;
 	public List<Object> ps;
+
+	public EXP(String op) {
+		this.t = TYPE_METHOD;
+		this.op = op;
+		this.ps = null;
+	}
 
 	public EXP(String op, List<Object> ps) {
 		this.t = TYPE_METHOD;
@@ -59,46 +65,86 @@ public class EXP implements Cloneable {
 	}
 
 	public EXP and(EXP exp) {
-		EXP left = this.clone();
-		EXP right = exp;
+		if (exp == null) {
+			return this;
+		} else {
+			EXP left = this.clone();
+			EXP right = exp;
 
-		this.t = TYPE_EXP;
-		this.op = "&&";
-		this.ps = Arrays.asList(left, right);
+			this.t = TYPE_EXP;
+			this.op = "&&";
+			this.ps = Arrays.asList(left, right);
 
-		return this;
+			return this;
+		}
+	}
+
+	public EXP and(String exp) {
+		if (StringUtils.isBlank(op)) {
+			return this;
+		} else {
+			return and(new EXP(exp));
+		}
 	}
 
 	public EXP and(Object l, String op, Object r) {
-		return and(new EXP(l, op, r));
+		if (l == null || r == null || StringUtils.isBlank(op)) {
+			return this;
+		} else {
+			return and(new EXP(l, op, r));
+		}
 	}
 
 	public EXP and(String op, List<Object> ps) {
-		return and(new EXP(op, ps));
+		if (StringUtils.isBlank(op) || ps == null) {
+			return this;
+		} else {
+			return and(new EXP(op, ps));
+		}
 	}
 
 	public EXP or(EXP exp) {
-		EXP left = this.clone();
-		EXP right = exp;
+		if (exp == null) {
+			return this;
+		} else {
+			EXP left = this.clone();
+			EXP right = exp;
 
-		this.t = TYPE_EXP;
-		this.op = "||";
-		this.ps = Arrays.asList(left, right);
+			this.t = TYPE_EXP;
+			this.op = "||";
+			this.ps = Arrays.asList(left, right);
 
-		return this;
+			return this;
+		}
+	}
+
+	public EXP or(String exp) {
+		if (StringUtils.isBlank(op)) {
+			return this;
+		} else {
+			return or(new EXP(exp));
+		}
 	}
 
 	public EXP or(Object l, String op, Object r) {
-		return or(new EXP(l, op, r));
+		if (l == null || r == null || StringUtils.isBlank(op)) {
+			return this;
+		} else {
+			return or(new EXP(l, op, r));
+		}
 	}
 
 	public EXP or(String op, List<Object> ps) {
-		return or(new EXP(op, ps));
+		if (StringUtils.isBlank(op) || ps == null) {
+			return this;
+		} else {
+			return or(new EXP(op, ps));
+		}
 	}
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		toSQL(sb);
+		toSQLString(sb);
 		return sb.toString();
 	}
 
@@ -285,6 +331,56 @@ public class EXP implements Cloneable {
 		return null;
 	}
 
+	public void toSQLString(StringBuffer sb) {
+		if (t.equals(TYPE_EXP)) {
+			// 二元表达式
+			Object left = ps.get(0);
+			Object right = ps.get(1);
+			boolean isLink = false;
+			if (op.equals("&&") || op.equals("||")) {
+				// 是连接符，代表最终节点，不加括号
+				isLink = true;
+			}
+
+			if (isLink) {
+				sb.append('(');
+			}
+			if (left instanceof EXP) {
+				((EXP) left).toSQLString(sb);
+			} else {
+				sb.append(left);
+			}
+
+			sb.append(sqlFixOP(op));
+			if (right instanceof EXP) {
+				((EXP) right).toSQLString(sb);
+			} else {
+				if (right instanceof String) {
+					sb.append("'").append(right).append("'");
+				} else {
+					sb.append(right);
+				}
+			}
+			if (isLink) {
+				sb.append(')');
+			}
+		} else {
+			// 函数或其它
+			sb.append(op);
+			if (ps != null && ps.size() > 0) {
+				sb.append('(');
+				for (int i = 0; i < ps.size(); i++) {
+					Object p = ps.get(i);
+					sb.append(p);
+					if (i < ps.size() - 1) {
+						sb.append(',');
+					}
+				}
+				sb.append(')');
+			}
+		}
+	}
+
 	/**
 	 * JSONObject格式的EXP表达式的解析，用于接口调用
 	 */
@@ -297,12 +393,18 @@ public class EXP implements Cloneable {
 			// 表达式
 			Object left = ps.get(0);
 			Object right = ps.get(1);
+			boolean isLink = false;
+			if (op.equals("&&") || op.equals("||")) {
+				// 是连接符，代表最终节点，不加括号
+				isLink = true;
+			}
 
+			if (isLink) {
+				sb.append('(');
+			}
 			if (left instanceof JSONObject) {
 				// 递归
-				sb.append('(');
 				jsonEXP2VirtualTableSQL((JSONObject) left, jsonColumn, sb);
-				sb.append(')');
 			} else {
 				// JSON虚拟表中的字段名，无需进行java转换，直接取出{{}}即可
 				String temp = StringUtils.trim(left.toString());
@@ -318,9 +420,7 @@ public class EXP implements Cloneable {
 			}
 			sb.append(sqlFixOP(op));
 			if (right instanceof JSONObject) {
-				sb.append('(');
 				jsonEXP2VirtualTableSQL((JSONObject) right, jsonColumn, sb);
-				sb.append(')');
 			} else {
 				// JSON虚拟表中的字段名，无需进行java转换，直接取出{{}}即可
 				String temp = StringUtils.trim(right.toString());
@@ -333,6 +433,9 @@ public class EXP implements Cloneable {
 					// data->'$.c_data.COL5' = 2
 					sb.append(jsonColumn).append("->'$.c_data.").append(rr).append("'");
 				}
+			}
+			if (isLink) {
+				sb.append(')');
 			}
 		} else {
 			// 方法
@@ -348,53 +451,37 @@ public class EXP implements Cloneable {
 
 	}
 
-	public void toSQL(StringBuffer sb) {
-		if (t.equals(TYPE_EXP)) {
-			// 二元表达式
-			Object left = ps.get(0);
-			Object right = ps.get(1);
-			if (left instanceof EXP) {
-				sb.append('(');
-				((EXP) left).toSQL(sb);
-				sb.append(')');
-			} else {
-				sb.append(left);
-			}
-			sb.append(sqlFixOP(op));
-			if (right instanceof EXP) {
-				sb.append('(');
-				((EXP) right).toSQL(sb);
-				sb.append(')');
-			} else {
-				sb.append(right);
-			}
-		} else {
-			// 函数或其它
-			sb.append(op).append('(');
-			for (int i = 0; i < ps.size(); i++) {
-				Object p = ps.get(i);
-				sb.append(p);
-				if (i < ps.size() - 1) {
-					sb.append(',');
-				}
-			}
-			sb.append(')');
-		}
-	}
-
 	public static void main(String[] args) {
 
 		EXP exp = new EXP("a", "=", "1").and("b", "<", 123);
 
-		EXP subExp = new EXP("q", "==", "").or("max", Arrays.asList(123, 234));
+		EXP subExp = new EXP("q", "==", "123").or("max", Arrays.asList(123, 234, 333, 444));
 
 		exp.and(subExp);
+		exp.and("ttt", "=", 1);
 
-		System.out.println("<<<" + JSON.toJSONString(exp,true));
+		// System.out.println("<<<" + JSON.toJSONString(exp, true));
 
 		StringBuffer sb = new StringBuffer();
-		exp.toSQL(sb);
+		exp.toSQLString(sb);
 		System.out.println(sb.toString());
+
+		sb = new StringBuffer("WHERE ");
+		SQL sql = new SQL();
+		sql.addExValid("type=?", 123);
+		sql.ANDValid("status=?", 123);
+		sql.ANDValid("up_user_id=?", 123);
+		sql.ANDValid("up_channel_id=?", 123);
+		sql.fillSQL(sb);
+
+		System.out.println(sb.toString());
+
+		EXP ee = new EXP("type", "=", "2xx").and("status", "=", 123).and("up_user_id", "=", 123)
+				.and("up_channel_id", "=", 123).and("title", "LIKE", "%sdfsdfsdf%");
+		sb = new StringBuffer("WHERE ");
+		ee.toSQLString(sb);
+		System.out.println(sb.toString());
+
 	}
 
 }

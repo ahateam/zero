@@ -9,7 +9,6 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 import zyxhj.core.domain.ImportTask;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.rds.RDSRepository;
-import zyxhj.utils.data.rds.SQL;
 
 public class ImportTaskRepository extends RDSRepository<ImportTask> {
 
@@ -43,20 +42,12 @@ public class ImportTaskRepository extends RDSRepository<ImportTask> {
 	}
 
 	public void countORGUserImportCompletionTask(DruidPooledConnection conn, Long importTaskId) throws Exception {
-		StringBuffer sb = new StringBuffer("WHERE ");
-		SQL sql = new SQL();
-		sql.addEx("id = ? ", importTaskId);
-		sql.fillSQL(sb);
 		this.update(conn, StringUtils.join("SET success_count = success_count+1,completed_count = completed_count + 1"),
-				null, sb.toString(), sql.getParams());
+				null, "WHERE id = ?", new Object[] { importTaskId });
 	}
 
 	public void countORGUserImportNotCompletionTask(DruidPooledConnection conn, Long importTaskId) throws Exception {
-		StringBuffer sb = new StringBuffer("WHERE ");
-		SQL sql = new SQL();
-		sql.addEx("id = ? ", importTaskId);
-		sql.fillSQL(sb);
 		this.update(conn, StringUtils.join("SET failure_count = failure_count+1,completed_count = completed_count + 1"),
-				null, sb.toString(), sql.getParams());
+				null, "WHERE id = ?", new Object[] { importTaskId });
 	}
 }
