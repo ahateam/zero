@@ -97,7 +97,8 @@ public class TaskWall extends TSEntity {
 	public static enum STATUS implements ENUMVALUE {
 		CREATED((byte) 0, "已创建"), //
 		PUBLISHED((byte) 1, "已发布"), //
-		CLOSED((byte) 2, "已关闭"), //
+		RECEIVE((byte) 2, "已领取"), //
+		CLOSED((byte) 3, "已关闭"), //
 		;
 
 		public String txt;
@@ -194,8 +195,8 @@ public class TaskWall extends TSEntity {
 	 * 创建者
 	 */
 	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String upUserId;
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long upUserId;
 
 	/**
 	 * 任务时间

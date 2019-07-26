@@ -94,8 +94,8 @@ public class TaskList extends TSEntity {
 	 * 接单用户编号
 	 */
 	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String wxOpenId;
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long accUserId;
 
 	/**
 	 * 任务类型
@@ -112,7 +112,7 @@ public class TaskList extends TSEntity {
 	public String taskTitle;
 
 	/**
-	 * 上传者用户编号
+	 * 任务分片编号
 	 */
 	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
@@ -129,8 +129,14 @@ public class TaskList extends TSEntity {
 	 * 上传者用户编号
 	 */
 	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long upUserId;
+	
+	/**
+	 * 私密信息
+	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String upUserId;
+	public String proviteData;
 
 	/**
 	 * 完成状态

@@ -54,6 +54,12 @@ public class ContentTag extends TSEntity {
 	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
 	public Long id;
 	
+	/**
+	 * 所属模块
+	 */
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String module;
 
 	/**
 	 * 分组关键字

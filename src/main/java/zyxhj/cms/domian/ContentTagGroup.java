@@ -18,8 +18,9 @@ import zyxhj.utils.data.ts.TSEntity;
 public class ContentTagGroup extends TSEntity {
 
 	public static enum TAGGROUPTYPE implements ENUMVALUE {
-		CONTENT((byte) 1, "内容"), //
-		TASK((byte) 2, "任务"), //
+		HOME((byte) 0, "首页"), //
+		VIP((byte) 1, "VIP"), //
+		TASK((byte) 2, "任务强"), //
 		;
 
 		private byte v;
