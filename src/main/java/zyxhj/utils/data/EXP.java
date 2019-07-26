@@ -32,23 +32,50 @@ public class EXP implements Cloneable {
 	public static final String TYPE_EXP = "e";// 二元表达式
 	public static final String TYPE_METHOD = "m";// 函数
 
-	public String t;
-	public String op;
-	public List<Object> ps;
+	private String t;
+	private String op;
+	private List<Object> ps;
+
+	public EXP() {
+		// empty
+	}
+
+	public EXP(EXP exp) {
+		build(exp);
+	}
+
+	public void build(EXP exp) {
+		EXP c = exp.clone();
+		this.op = c.op;
+		this.ps = c.ps;
+		this.t = c.t;
+	}
 
 	public EXP(String op) {
+		build(op);
+	}
+
+	private void build(String op) {
 		this.t = TYPE_METHOD;
 		this.op = op;
 		this.ps = null;
 	}
 
 	public EXP(String op, List<Object> ps) {
+		build(op, ps);
+	}
+
+	private void build(String op, List<Object> ps) {
 		this.t = TYPE_METHOD;
 		this.op = op;
 		this.ps = ps;
 	}
 
 	public EXP(Object left, String op, Object right) {
+		build(left, op, right);
+	}
+
+	private void build(Object left, String op, Object right) {
 		this.t = TYPE_EXP;
 		this.op = op;
 		this.ps = Arrays.asList(left, right);
@@ -65,80 +92,128 @@ public class EXP implements Cloneable {
 	}
 
 	public EXP and(EXP exp) {
-		if (exp == null) {
+		if (StringUtils.isBlank(this.op)) {
+			// empty 相当于创建
+			build(exp);
 			return this;
 		} else {
-			EXP left = this.clone();
-			EXP right = exp;
+			if (exp == null) {
+				return this;
+			} else {
+				EXP left = this.clone();
+				EXP right = exp;
 
-			this.t = TYPE_EXP;
-			this.op = "&&";
-			this.ps = Arrays.asList(left, right);
+				this.t = TYPE_EXP;
+				this.op = "&&";
+				this.ps = Arrays.asList(left, right);
 
-			return this;
+				return this;
+			}
 		}
 	}
 
 	public EXP and(String exp) {
-		if (StringUtils.isBlank(op)) {
+		if (StringUtils.isBlank(this.op)) {
+			// empty 相当于创建
+			build(exp);
 			return this;
 		} else {
-			return and(new EXP(exp));
+			if (StringUtils.isBlank(exp)) {
+				return this;
+			} else {
+				return and(new EXP(exp));
+			}
 		}
 	}
 
 	public EXP and(Object l, String op, Object r) {
-		if (l == null || r == null || StringUtils.isBlank(op)) {
+		if (StringUtils.isBlank(this.op)) {
+			// empty 相当于创建
+			build(l, op, r);
 			return this;
 		} else {
-			return and(new EXP(l, op, r));
+			if (l == null || r == null || StringUtils.isBlank(op)) {
+				return this;
+			} else {
+				return and(new EXP(l, op, r));
+			}
 		}
 	}
 
 	public EXP and(String op, List<Object> ps) {
-		if (StringUtils.isBlank(op) || ps == null) {
+		if (StringUtils.isBlank(this.op)) {
+			// empty 相当于创建
+			build(op, ps);
 			return this;
 		} else {
-			return and(new EXP(op, ps));
+			if (StringUtils.isBlank(op) || ps == null) {
+				return this;
+			} else {
+				return and(new EXP(op, ps));
+			}
 		}
 	}
 
 	public EXP or(EXP exp) {
-		if (exp == null) {
+		if (StringUtils.isBlank(this.op)) {
+			// empty 相当于创建
+			build(exp);
 			return this;
 		} else {
-			EXP left = this.clone();
-			EXP right = exp;
+			if (exp == null) {
+				return this;
+			} else {
+				EXP left = this.clone();
+				EXP right = exp;
 
-			this.t = TYPE_EXP;
-			this.op = "||";
-			this.ps = Arrays.asList(left, right);
+				this.t = TYPE_EXP;
+				this.op = "||";
+				this.ps = Arrays.asList(left, right);
 
-			return this;
+				return this;
+			}
 		}
 	}
 
 	public EXP or(String exp) {
-		if (StringUtils.isBlank(op)) {
+		if (StringUtils.isBlank(this.op)) {
+			// empty 相当于创建
+			build(exp);
 			return this;
 		} else {
-			return or(new EXP(exp));
+			if (StringUtils.isBlank(exp)) {
+				return this;
+			} else {
+				return or(new EXP(exp));
+			}
 		}
 	}
 
 	public EXP or(Object l, String op, Object r) {
-		if (l == null || r == null || StringUtils.isBlank(op)) {
+		if (StringUtils.isBlank(this.op)) {
+			// empty 相当于创建
+			build(l, op, r);
 			return this;
 		} else {
-			return or(new EXP(l, op, r));
+			if (l == null || r == null || StringUtils.isBlank(op)) {
+				return this;
+			} else {
+				return or(new EXP(l, op, r));
+			}
 		}
 	}
 
 	public EXP or(String op, List<Object> ps) {
-		if (StringUtils.isBlank(op) || ps == null) {
+		if (StringUtils.isBlank(this.op)) {
+			// empty 相当于创建
+			build(op, ps);
 			return this;
 		} else {
-			return or(new EXP(op, ps));
+			if (StringUtils.isBlank(op) || ps == null) {
+				return this;
+			} else {
+				return or(new EXP(op, ps));
+			}
 		}
 	}
 
