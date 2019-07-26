@@ -9,6 +9,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -43,12 +44,12 @@ public class FlowService extends Controller {
 	private ModuleRepository moduleRepository;
 	private ProcessAssetRepository processAssetRepository;
 
-	private DruidPooledConnection conn;
+	private DruidDataSource ds;
 
 	public FlowService(String node) {
 		super(node);
 		try {
-			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
+			ds = DataSource.getDruidDataSource("rdsDefault.prop");
 
 			processRepository = Singleton.ins(ProcessRepository.class);
 			processDefinitionRepository = Singleton.ins(ProcessDefinitionRepository.class);
@@ -87,7 +88,9 @@ public class FlowService extends Controller {
 
 		pd.lanes = lanes;
 
-		processDefinitionRepository.insert(conn, pd);
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			processDefinitionRepository.insert(conn, pd);
+		}
 		return pd.id;
 	}
 
@@ -130,19 +133,15 @@ public class FlowService extends Controller {
 	) throws Exception {
 		return processDefinitionRepository.getListByKey(conn, "module_id", moduleId, count, offset);
 	}
-	
+
 	/**
 	 * 向流程定义中添加activity节点样式信息
-	 * @throws ServerException 
+	 * 
+	 * @throws ServerException
 	 */
-	@POSTAPI(
-			path = "addVisualToDefinition",
-			des = "向流程定义中添加activity节点样式信息"
-			)
-	public int addVisualToDefinition(
-			@P(t = "流程定义编号") Long pdId,//
-			@P(t = "activity节点样式信息") JSONObject visual
-			) throws ServerException {
+	@POSTAPI(path = "addVisualToDefinition", des = "向流程定义中添加activity节点样式信息")
+	public int addVisualToDefinition(@P(t = "流程定义编号") Long pdId, //
+			@P(t = "activity节点样式信息") JSONObject visual) throws ServerException {
 		ProcessDefinition pd = new ProcessDefinition();
 		pd.visual = visual;
 		return processDefinitionRepository.updateByKey(conn, "id", pdId, pd, true);
@@ -198,7 +197,7 @@ public class FlowService extends Controller {
 		ProcessActivity renew = new ProcessActivity();
 		renew.LogicalDelete = ProcessActivity.LOGICAL_DELETE_Y;
 		return processActivityRepository.updateByANDKeys(conn, new String[] { "pd_id", "id" },
-				new Object[] { pdId, activityId },renew,true);
+				new Object[] { pdId, activityId }, renew, true);
 	}
 
 	/**
@@ -251,7 +250,7 @@ public class FlowService extends Controller {
 	/*
 	 * 创建Process流程实例
 	 */
-	
+
 	@POSTAPI(//
 			path = "createProcess", //
 			des = "创建Process流程实例", //
@@ -290,7 +289,7 @@ public class FlowService extends Controller {
 			@P(t = "流程定义编号") Long pdId, //
 			@P(t = "流程标题") String title, //
 			@P(t = "流程节点编号") Long currActivityId, //
-			String remark,//
+			String remark, //
 			@P(t = "流程实例状态(0-->使用中，1-->等待中，2-->已结束)") Byte state//
 	) throws ServerException {
 		Process pro = new Process();
