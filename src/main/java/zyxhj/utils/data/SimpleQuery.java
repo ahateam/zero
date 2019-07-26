@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.Row;
@@ -21,6 +20,7 @@ import com.alicloud.openservices.tablestore.model.search.SearchResponse;
 import com.alicloud.openservices.tablestore.model.search.query.Query;
 
 import zyxhj.utils.api.BaseRC;
+import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSObjectMapper;
@@ -32,37 +32,52 @@ import zyxhj.utils.data.ts.TSObjectMapper;
 /**
  * 根据实体类名及字段名执行的跨数据库的简单查询工具
  */
-public class SimpleQuery {
+public class SimpleQuery extends Controller {
 
 	private static Logger log = LoggerFactory.getLogger(SimpleQuery.class);
 
-	public static void main(String[] args) {
-		try {
-			EXP exp = new EXP("{{idNumber}}", "=", "898989898989898989").and("{{mobile}}", "=", "55855855855");
-			System.out.println(JSON.toJSONString(exp, true));
+	public SimpleQuery(String node) {
+		super(node);
+	}
 
-			List list = query(zyxhj.core.domain.User.class.getName(), null, exp, 10, 0);
-			System.out.println(JSON.toJSONString(list));
-
-			Object obj = get(zyxhj.core.domain.User.class.getName(), null, exp);
-			System.out.println(JSON.toJSONString(obj));
-
-			
-			
-			EXP tsexp = new EXP("{{region}}", "=", "区2").and("{{status}}", "<>", 1);
-
-			List tslist = query(zyxhj.core.domain.CateInfo.class.getName(), null, tsexp, 10, 0);
-			System.out.println(JSON.toJSONString(tslist, true));
-
-		} catch (Exception e) {
-			e.printStackTrace();
+	public List<?> getListByKey(String className, JSONArray selections, String key, String value, Integer count,
+			Integer offset) throws Exception {
+		if (key == null || value == null) {
+			return new ArrayList<>();
+		} else {
+			EXP exp = new EXP(StringUtils.join("{{", key, "}}"), "=", value);
+			return getListByQuery(className, selections, exp, count, offset);
 		}
 	}
 
-	public static <X> List<X> query(String domain, JSONArray selections, EXP exp, Integer count, Integer offset)
+	public List<?> getListByKeys(String className, JSONArray selections, JSONArray keys, JSONArray values,
+			Integer count, Integer offset) throws Exception {
+		if (keys == null || values == null || keys.size() <= 0 || values.size() <= 0) {
+			return new ArrayList<>();
+		} else {
+			int size = keys.size();
+			EXP exp = new EXP();
+			for (int i = 0; i < size; i++) {
+				String key = keys.getString(i);
+				String value = values.getString(i);
+				exp.and(StringUtils.join("{{", key, "}}"), "=", value);
+			}
+			return getListByQuery(className, selections, exp, count, offset);
+		}
+	}
+
+	public Object getByKey(String className, JSONArray selections, String key, String value) throws Exception {
+		return DataSource.list2Obj(getListByKey(className, selections, key, value, 1, 0));
+	}
+
+	public Object getByKeys(String className, JSONArray selections, JSONArray keys, JSONArray values) throws Exception {
+		return DataSource.list2Obj(getListByKeys(className, selections, keys, values, 1, 0));
+	}
+
+	public List<?> getListByQuery(String clazzName, JSONArray selections, EXP exp, Integer count, Integer offset)
 			throws Exception {
 		// 根据domain获取实体类，同时获得注解
-		Class clazz = Class.forName(domain);
+		Class clazz = Class.forName(clazzName);
 		Object entity;
 		entity = clazz.getAnnotation(RDSAnnEntity.class);
 		if (entity != null) {
@@ -75,13 +90,13 @@ public class SimpleQuery {
 				return TSEXPQuery(clazz, selections, exp, count, offset);
 			} else {
 				// 不支持的数据类型
-				throw new ServerException(BaseRC.REPOSITORY_SIMPLE_QUERY_DOMAIN_ERROR, domain);
+				throw new ServerException(BaseRC.REPOSITORY_SIMPLE_QUERY_DOMAIN_ERROR, clazzName);
 			}
 		}
 	}
 
-	public static Object get(String domain, JSONArray selections, EXP exp) throws Exception {
-		Class clazz = Class.forName(domain);
+	public Object getByQuery(String clazzName, JSONArray selections, EXP exp) throws Exception {
+		Class clazz = Class.forName(clazzName);
 		Object entity;
 		entity = clazz.getAnnotation(RDSAnnEntity.class);
 		if (entity != null) {
@@ -94,12 +109,35 @@ public class SimpleQuery {
 				return TSEXPGet(clazz, selections, exp);
 			} else {
 				// 不支持的数据类型
-				throw new ServerException(BaseRC.REPOSITORY_SIMPLE_QUERY_DOMAIN_ERROR, domain);
+				throw new ServerException(BaseRC.REPOSITORY_SIMPLE_QUERY_DOMAIN_ERROR, clazzName);
 			}
 		}
 	}
 
-	public static <X> List<X> RDSQuery(Class<X> clazz, JSONArray selections, String where, Integer count,
+	// public static void main(String[] args) {
+	// try {
+	// EXP exp = new EXP("{{idNumber}}", "=",
+	// "898989898989898989").and("{{mobile}}", "=", "55855855855");
+	// System.out.println(JSON.toJSONString(exp, true));
+	//
+	// List list = query(zyxhj.core.domain.User.class.getName(), null, exp, 10, 0);
+	// System.out.println(JSON.toJSONString(list));
+	//
+	// Object obj = get(zyxhj.core.domain.User.class.getName(), null, exp);
+	// System.out.println(JSON.toJSONString(obj));
+	//
+	// EXP tsexp = new EXP("{{region}}", "=", "区2").and("{{status}}", "<>", 1);
+	//
+	// List tslist = query(zyxhj.core.domain.CateInfo.class.getName(), null, tsexp,
+	// 10, 0);
+	// System.out.println(JSON.toJSONString(tslist, true));
+	//
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// }
+
+	private static <X> List<X> RDSQuery(Class<X> clazz, JSONArray selections, String where, Integer count,
 			Integer offset) throws Exception {
 		log.info("queryRDS>{}", clazz.getName());
 
@@ -135,7 +173,7 @@ public class SimpleQuery {
 		}
 	}
 
-	public static <X> List<X> RDSEXPQuery(Class<X> clazz, JSONArray selections, EXP exp, Integer count, Integer offset)
+	private static <X> List<X> RDSEXPQuery(Class<X> clazz, JSONArray selections, EXP exp, Integer count, Integer offset)
 			throws Exception {
 
 		StringBuffer sb = new StringBuffer();
@@ -147,11 +185,11 @@ public class SimpleQuery {
 		return RDSQuery(clazz, selections, where, count, offset);
 	}
 
-	public static Object RDSGet(Class clazz, JSONArray selections, String where) throws Exception {
+	private static Object RDSGet(Class clazz, JSONArray selections, String where) throws Exception {
 		return DataSource.list2Obj(RDSQuery(clazz, selections, where, 1, 0));
 	}
 
-	public static Object RDSEXPGet(Class clazz, JSONArray selections, EXP exp) throws Exception {
+	private static Object RDSEXPGet(Class clazz, JSONArray selections, EXP exp) throws Exception {
 		StringBuffer sb = new StringBuffer();
 		exp.toSQLString(sb);
 
@@ -237,8 +275,8 @@ public class SimpleQuery {
 		}
 	}
 
-	public static <X extends TSEntity> List<X> TSQuery(Class<X> clazz, JSONArray selections, Query query, Integer count,
-			Integer offset) throws Exception {
+	private static <X extends TSEntity> List<X> TSQuery(Class<X> clazz, JSONArray selections, Query query,
+			Integer count, Integer offset) throws Exception {
 		log.info("queryTableStore>{}", clazz.getName());
 
 		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
@@ -275,17 +313,17 @@ public class SimpleQuery {
 		}
 	}
 
-	public static Object TSEXPGet(Class clazz, JSONArray selections, EXP exp) throws Exception {
+	private static Object TSEXPGet(Class clazz, JSONArray selections, EXP exp) throws Exception {
 		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
 		return DataSource.list2Obj(TSQuery(clazz, selections, exp.toTSQuery(mapper), 1, 0));
 	}
 
-	public static Object TSGet(Class clazz, JSONArray selections, Query query) throws Exception {
+	private static Object TSGet(Class clazz, JSONArray selections, Query query) throws Exception {
 
 		return DataSource.list2Obj(TSQuery(clazz, selections, query, 1, 0));
 	}
 
-	public static <X extends TSEntity> List<X> TSEXPQuery(Class<X> clazz, JSONArray selections, EXP exp, Integer count,
+	private static <X extends TSEntity> List<X> TSEXPQuery(Class<X> clazz, JSONArray selections, EXP exp, Integer count,
 			Integer offset) throws Exception {
 		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
 		return TSQuery(clazz, selections, exp.toTSQuery(mapper), count, offset);
