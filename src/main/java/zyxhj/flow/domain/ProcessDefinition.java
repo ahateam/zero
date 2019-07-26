@@ -1,6 +1,7 @@
 package zyxhj.flow.domain;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
@@ -53,5 +54,10 @@ public class ProcessDefinition {
 	 */
 	@RDSAnnField(column = "VARCHAR(256)")
 	public JSONArray lanes;
-
+	
+	/**
+	 * 存放所有节点样式信息
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT)
+	public JSONObject visual;
 }

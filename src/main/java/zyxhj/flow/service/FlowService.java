@@ -120,7 +120,7 @@ public class FlowService extends Controller {
 	 */
 	@POSTAPI(//
 			path = "getProcessDefinition", //
-			des = "查询所有流程定义", //
+			des = "查询当前moduleId所有流程定义", //
 			ret = "List<ProcessDefinition>"//
 	)
 	public List<ProcessDefinition> getProcessDefinition(//
@@ -129,6 +129,23 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		return processDefinitionRepository.getListByKey(conn, "module_id", moduleId, count, offset);
+	}
+	
+	/**
+	 * 向流程定义中添加activity节点样式信息
+	 * @throws ServerException 
+	 */
+	@POSTAPI(
+			path = "addVisualToDefinition",
+			des = "向流程定义中添加activity节点样式信息"
+			)
+	public int addVisualToDefinition(
+			@P(t = "流程定义编号") Long pdId,//
+			@P(t = "activity节点样式信息") JSONObject visual
+			) throws ServerException {
+		ProcessDefinition pd = new ProcessDefinition();
+		pd.visual = visual;
+		return processDefinitionRepository.updateByKey(conn, "id", pdId, pd, true);
 	}
 
 	/*
@@ -158,6 +175,7 @@ public class FlowService extends Controller {
 		pa.part = part;
 		pa.receivers = receivers;
 		pa.actions = actions;
+		pa.LogicalDelete = ProcessActivity.LOGICAL_DELETE_N;
 
 		processActivityRepository.insert(conn, pa);
 
@@ -172,13 +190,15 @@ public class FlowService extends Controller {
 			path = "delPDActivity", //
 			des = "删除ProcessActivity节点"//
 	)
-	// TODO 逻辑删除，增加已删除状态，将来做清理功能，先删除附件等相关资源，再删除Activity
+	// TODO 逻辑删除，增加已删除状态，将来做清理功能，先删除附件等相关资源，再删除Activity ------完成
 	public int delPDActivity(//
 			@P(t = "流程定义编号") Long pdId, //
 			@P(t = "流程节点编号") Long activityId//
 	) throws Exception {
-		return processActivityRepository.deleteByANDKeys(conn, new String[] { "pd_id", "id" },
-				new Object[] { pdId, activityId });
+		ProcessActivity renew = new ProcessActivity();
+		renew.LogicalDelete = ProcessActivity.LOGICAL_DELETE_Y;
+		return processActivityRepository.updateByANDKeys(conn, new String[] { "pd_id", "id" },
+				new Object[] { pdId, activityId },renew,true);
 	}
 
 	/**
@@ -213,7 +233,7 @@ public class FlowService extends Controller {
 
 	@POSTAPI(//
 			path = "getPDActivityList", //
-			des = "获取所有ProcessActivity节点", //
+			des = "获取当前流程定义编号pdId下的所有ProcessActivity节点", //
 			ret = "List<ProcessActivity>")
 	public List<ProcessActivity> getPDActivityList(//
 			@P(t = "DefinitionId 流程定义编号") Long pdId, //
@@ -231,10 +251,11 @@ public class FlowService extends Controller {
 	/*
 	 * 创建Process流程实例
 	 */
+	
 	@POSTAPI(//
 			path = "createProcess", //
-			des = "创建Process", //
-			ret = "ProcessId流程实例")
+			des = "创建Process流程实例", //
+			ret = "当前Process流程实例")
 	public Process createProcess(//
 			@P(t = "流程定义编号") Long pdId, //
 			@P(t = "流程标题") String title, //
@@ -249,7 +270,8 @@ public class FlowService extends Controller {
 		pro.currActivityId = currActivityId;
 		pro.timestamp = new Date();
 		pro.remark = remark;
-
+		pro.state = Process.STATE_USING;
+		pro.LogicalDelete = Process.LOGICAL_DELETE_N;
 		processRepository.insert(conn, pro);
 
 		return pro;
@@ -258,17 +280,18 @@ public class FlowService extends Controller {
 	/*
 	 * 编辑process流程实例
 	 */
-	// TODO 增加状态
+	// TODO 增加状态---完成
 	@POSTAPI(//
 			path = "editProcess", //
-			des = "创建Process", //
+			des = "编辑流程实例（Process）", //
 			ret = "state ---- int")
 	public int editProcess(//
 			@P(t = "processId") Long id, //
 			@P(t = "流程定义编号") Long pdId, //
 			@P(t = "流程标题") String title, //
 			@P(t = "流程节点编号") Long currActivityId, //
-			String remark//
+			String remark,//
+			@P(t = "流程实例状态(0-->使用中，1-->等待中，2-->已结束)") Byte state//
 	) throws ServerException {
 		Process pro = new Process();
 
@@ -276,7 +299,7 @@ public class FlowService extends Controller {
 		pro.currActivityId = currActivityId;
 		pro.timestamp = new Date();
 		pro.remark = remark;
-
+		pro.state = state;
 		return processRepository.updateByANDKeys(conn, new String[] { "pd_id", "id" }, new Object[] { pdId, id }, pro,
 				true);
 	}
@@ -286,13 +309,15 @@ public class FlowService extends Controller {
 	 */
 	@POSTAPI(//
 			path = "deleteProcess", //
-			des = "删除Process", //
+			des = "删除Process流程实例", //
 			ret = "state ---- int")
 	// 逻辑删除
 	public int deleteProcess(//
 			@P(t = "processId ") Long id//
 	) throws ServerException {
-		return processRepository.deleteByKey(conn, "id", id);
+		Process pro = new Process();
+		pro.LogicalDelete = Process.LOGICAL_DELETE_Y;
+		return processRepository.updateByKey(conn, "id", id, pro, true);
 	}
 
 	/*
@@ -300,7 +325,7 @@ public class FlowService extends Controller {
 	 */
 	@POSTAPI(//
 			path = "getProcessListByPDId", //
-			des = "通过pdid查询下属process", //
+			des = "通过流程定义编号pdid查询下属process流程实例", //
 			ret = "List<Process>")
 	public List<Process> getProcessListByPDId(//
 			@P(t = "流程定义编号Definition") Long pdid, //
@@ -315,7 +340,7 @@ public class FlowService extends Controller {
 	 */
 	@POSTAPI(//
 			path = "getProcessById", //
-			des = "通过processid精确查询process", //
+			des = "通过流程实例编号processid精确查询process流程实例", //
 			ret = "Process")
 	public Process getProcessById(//
 			@P(t = "processId") Long id//

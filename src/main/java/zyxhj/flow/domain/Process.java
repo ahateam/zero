@@ -11,7 +11,13 @@ import zyxhj.utils.data.rds.RDSAnnID;
 @RDSAnnEntity(alias = "tb_process")
 public class Process {
 
-
+	public static final Byte STATE_USING = 0; // 使用中
+	public static final Byte STATE_WAITING = 1; //等待中
+	public static final Byte STATE_END = 2; //已结束
+	
+	public static final Byte LOGICAL_DELETE_N = 0;//使用中
+	public static final Byte LOGICAL_DELETE_Y = 1;//已删除
+	
 	/**
 	 * 所属PD编号
 	 */
@@ -45,9 +51,20 @@ public class Process {
 	public Date timestamp;
 
 	/**
+	 * 状态
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte state;
+	
+	/**
 	 * 备注
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String remark;
 
+	/**
+	 * 逻辑删除
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte LogicalDelete;
 }
