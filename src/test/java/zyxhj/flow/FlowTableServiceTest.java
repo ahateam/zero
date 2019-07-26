@@ -204,7 +204,7 @@ public class FlowTableServiceTest {
 		System.out.println(jo.toString());
 
 		try {
-			tableService.createTableQuery(conn, schemaId, jo);
+			tableService.createTableQuery(schemaId, jo);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -214,7 +214,7 @@ public class FlowTableServiceTest {
 	@Test
 	public void testQueryTableDatas() {
 		try {
-			List<TableData> datas = tableService.getTableDatasByQuery(conn, schemaId, queryId, 10, 0);
+			List<TableData> datas = tableService.getTableDatasByQuery( schemaId, queryId, 10, 0);
 			System.out.println(JSON.toJSONString(datas));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

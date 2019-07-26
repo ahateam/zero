@@ -6,12 +6,14 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.flow.domain.Annex;
 import zyxhj.flow.repository.AnnexRepository;
 import zyxhj.utils.IDUtils;
+import zyxhj.utils.Singleton;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.data.DataSource;
 
@@ -20,14 +22,16 @@ public class AnnexService extends Controller {
 	private static Logger log = LoggerFactory.getLogger(AnnexService.class);
 
 	private AnnexRepository annexRepository;
-	
-	private DruidPooledConnection conn;
+
+	private DruidDataSource ds;
 
 	public AnnexService(String node) {
 		super(node);
 		try {
-			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
-
+			ds = DataSource.getDruidDataSource("rdsDefault.prop");
+			
+			annexRepository = Singleton.ins(AnnexRepository.class);
+			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -54,7 +58,10 @@ public class AnnexService extends Controller {
 		a.data = data;
 		a.tags = tags;
 
-		annexRepository.insert(conn, a);
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			annexRepository.insert(conn, a);
+		}
+		
 	}
 
 	@POSTAPI(//
@@ -66,7 +73,11 @@ public class AnnexService extends Controller {
 			@P(t = "附件持有者编号") Long ownerId, //
 			@P(t = "附件编号") Long id//
 	) throws Exception {
-		return annexRepository.deleteByANDKeys(conn, new String[] {"owner_id", "id"}, new Object[] {ownerId, id});
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return annexRepository.deleteByANDKeys(conn, new String[] {"owner_id", "id"}, new Object[] {ownerId, id});
+		}
+		
 	}
 
 	@POSTAPI(//
@@ -91,7 +102,10 @@ public class AnnexService extends Controller {
 		a.data = data;
 		a.tags = tags;
 
-		return annexRepository.updateByANDKeys(conn, new String[] {"owner_id", "id"}, new Object[] {ownerId, id}, a, true);
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return annexRepository.updateByANDKeys(conn, new String[] {"owner_id", "id"}, new Object[] {ownerId, id}, a, true);
+		}
+		
 	}
 
 	@POSTAPI(//
@@ -104,7 +118,10 @@ public class AnnexService extends Controller {
 			Integer count, //
 			Integer offset//
 	) throws Exception {
-		return annexRepository.getListByKey(conn, "owner_id", ownerId, count, offset);
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return annexRepository.getListByKey(conn, "owner_id", ownerId, count, offset);
+		}
 	}
 
 	@POSTAPI(//
@@ -116,7 +133,11 @@ public class AnnexService extends Controller {
 			@P(t = "附件持有者编号") Long ownerId, //
 			@P(t = "附件编号") Long id//
 	) throws Exception {
-		return annexRepository.getByANDKeys(conn, new String[] {"owner_id","id"}, new Object[] { ownerId,id});
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return annexRepository.getByANDKeys(conn, new String[] {"owner_id","id"}, new Object[] { ownerId,id});
+		}
+		
 	}
 	
 }

@@ -40,18 +40,18 @@ public class SimpleQuery extends Controller {
 		super(node);
 	}
 
-	public List<?> getListByKey(String className, JSONArray selections, String key, String value, Integer count,
-			Integer offset) throws Exception {
+	public List<?> getListByKey(String className, String key, String value, Integer count,
+			Integer offset, JSONArray selections) throws Exception {
 		if (key == null || value == null) {
 			return new ArrayList<>();
 		} else {
 			EXP exp = new EXP(StringUtils.join("{{", key, "}}"), "=", value);
-			return getListByQuery(className, selections, exp, count, offset);
+			return getListByQuery(className, exp, count, offset, selections);
 		}
 	}
 
-	public List<?> getListByKeys(String className, JSONArray selections, JSONArray keys, JSONArray values,
-			Integer count, Integer offset) throws Exception {
+	public List<?> getListByKeys(String className, JSONArray keys, JSONArray values,
+			Integer count, Integer offset, JSONArray selections) throws Exception {
 		if (keys == null || values == null || keys.size() <= 0 || values.size() <= 0) {
 			return new ArrayList<>();
 		} else {
@@ -62,19 +62,19 @@ public class SimpleQuery extends Controller {
 				String value = values.getString(i);
 				exp.and(StringUtils.join("{{", key, "}}"), "=", value);
 			}
-			return getListByQuery(className, selections, exp, count, offset);
+			return getListByQuery(className, exp, count, offset, selections);
 		}
 	}
 
-	public Object getByKey(String className, JSONArray selections, String key, String value) throws Exception {
-		return DataSource.list2Obj(getListByKey(className, selections, key, value, 1, 0));
+	public Object getByKey(String className, String key, String value, JSONArray selections) throws Exception {
+		return DataSource.list2Obj(getListByKey(className, key, value, 1, 0, selections));
 	}
 
-	public Object getByKeys(String className, JSONArray selections, JSONArray keys, JSONArray values) throws Exception {
-		return DataSource.list2Obj(getListByKeys(className, selections, keys, values, 1, 0));
+	public Object getByKeys(String className, JSONArray keys, JSONArray values, JSONArray selections) throws Exception {
+		return DataSource.list2Obj(getListByKeys(className, keys, values, 1, 0, selections));
 	}
 
-	public List<?> getListByQuery(String clazzName, JSONArray selections, EXP exp, Integer count, Integer offset)
+	public List<?> getListByQuery(String clazzName, EXP exp, Integer count, Integer offset, JSONArray selections)
 			throws Exception {
 		// 根据domain获取实体类，同时获得注解
 		Class clazz = Class.forName(clazzName);
@@ -82,12 +82,12 @@ public class SimpleQuery extends Controller {
 		entity = clazz.getAnnotation(RDSAnnEntity.class);
 		if (entity != null) {
 			// RDS数据库
-			return RDSEXPQuery(clazz, selections, exp, count, offset);
+			return RDSEXPQuery(clazz, exp, count, offset, selections);
 		} else {
 			entity = clazz.getAnnotation(TSAnnEntity.class);
 			if (entity != null) {
 				// TableStore数据库
-				return TSEXPQuery(clazz, selections, exp, count, offset);
+				return TSEXPQuery(clazz, exp, count, offset, selections);
 			} else {
 				// 不支持的数据类型
 				throw new ServerException(BaseRC.REPOSITORY_SIMPLE_QUERY_DOMAIN_ERROR, clazzName);
@@ -95,18 +95,18 @@ public class SimpleQuery extends Controller {
 		}
 	}
 
-	public Object getByQuery(String clazzName, JSONArray selections, EXP exp) throws Exception {
+	public Object getByQuery(String clazzName, EXP exp, JSONArray selections) throws Exception {
 		Class clazz = Class.forName(clazzName);
 		Object entity;
 		entity = clazz.getAnnotation(RDSAnnEntity.class);
 		if (entity != null) {
 			// RDS数据库
-			return RDSEXPGet(clazz, selections, exp);
+			return RDSEXPGet(clazz, exp, selections);
 		} else {
 			entity = clazz.getAnnotation(TSAnnEntity.class);
 			if (entity != null) {
 				// TableStore数据库
-				return TSEXPGet(clazz, selections, exp);
+				return TSEXPGet(clazz, exp, selections);
 			} else {
 				// 不支持的数据类型
 				throw new ServerException(BaseRC.REPOSITORY_SIMPLE_QUERY_DOMAIN_ERROR, clazzName);
@@ -137,8 +137,8 @@ public class SimpleQuery extends Controller {
 	// }
 	// }
 
-	private static <X> List<X> RDSQuery(Class<X> clazz, JSONArray selections, String where, Integer count,
-			Integer offset) throws Exception {
+	private static <X> List<X> RDSQuery(Class<X> clazz, String where, Integer count,
+			Integer offset, JSONArray selections) throws Exception {
 		log.info("queryRDS>{}", clazz.getName());
 
 		RDSObjectMapper mapper = RDSObjectMapper.getInstance(clazz);
@@ -148,7 +148,7 @@ public class SimpleQuery extends Controller {
 		StringBuffer sb = new StringBuffer();
 
 		sb.append("SELECT ");
-		buildJavaSelections(sb, selections, mapper);
+		buildJavaSelections(sb, mapper, selections);
 		sb.append(" FROM ").append(mapper.getTableName());
 		// 将表达式中的Java字段参数替换为数据库列名
 		sb.append(" WHERE ");
@@ -173,7 +173,7 @@ public class SimpleQuery extends Controller {
 		}
 	}
 
-	private static <X> List<X> RDSEXPQuery(Class<X> clazz, JSONArray selections, EXP exp, Integer count, Integer offset)
+	private static <X> List<X> RDSEXPQuery(Class<X> clazz, EXP exp, Integer count, Integer offset, JSONArray selections)
 			throws Exception {
 
 		StringBuffer sb = new StringBuffer();
@@ -182,23 +182,23 @@ public class SimpleQuery extends Controller {
 		String where = sb.toString();
 		// System.out.println(where);
 
-		return RDSQuery(clazz, selections, where, count, offset);
+		return RDSQuery(clazz, where, count, offset, selections);
 	}
 
-	private static Object RDSGet(Class clazz, JSONArray selections, String where) throws Exception {
-		return DataSource.list2Obj(RDSQuery(clazz, selections, where, 1, 0));
+	private static Object RDSGet(Class clazz, String where, JSONArray selections) throws Exception {
+		return DataSource.list2Obj(RDSQuery(clazz, where, 1, 0, selections));
 	}
 
-	private static Object RDSEXPGet(Class clazz, JSONArray selections, EXP exp) throws Exception {
+	private static Object RDSEXPGet(Class clazz, EXP exp, JSONArray selections) throws Exception {
 		StringBuffer sb = new StringBuffer();
 		exp.toSQLString(sb);
 
 		String where = sb.toString();
 		// System.out.println(where);
-		return DataSource.list2Obj(RDSQuery(clazz, selections, where, 1, 0));
+		return DataSource.list2Obj(RDSQuery(clazz, where, 1, 0, selections));
 	}
 
-	private static void buildJavaSelections(StringBuffer sb, JSONArray selections, RDSObjectMapper mapper)
+	private static void buildJavaSelections(StringBuffer sb, RDSObjectMapper mapper, JSONArray selections)
 			throws Exception {
 		if (selections != null && selections.size() > 0) {
 			int len = selections.size();
@@ -256,7 +256,7 @@ public class SimpleQuery extends Controller {
 		}
 	}
 
-	private static String[] buildJavaSelections(JSONArray selections, TSObjectMapper mapper) throws Exception {
+	private static String[] buildJavaSelections( TSObjectMapper mapper, JSONArray selections) throws Exception {
 		if (selections != null && selections.size() > 0) {
 			int len = selections.size();
 			String[] ret = new String[len];
@@ -275,15 +275,15 @@ public class SimpleQuery extends Controller {
 		}
 	}
 
-	private static <X extends TSEntity> List<X> TSQuery(Class<X> clazz, JSONArray selections, Query query,
-			Integer count, Integer offset) throws Exception {
+	private static <X extends TSEntity> List<X> TSQuery(Class<X> clazz, Query query,
+			Integer count, Integer offset, JSONArray selections) throws Exception {
 		log.info("queryTableStore>{}", clazz.getName());
 
 		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
 		SyncClient client = DataSource
 				.getTableStoreSyncClient(((TSAnnEntity) clazz.getAnnotation(TSAnnEntity.class)).ds());
 
-		String[] selectionList = buildJavaSelections(selections, mapper);
+		String[] selectionList = buildJavaSelections( mapper, selections);
 
 		SearchQuery sq = new SearchQuery();
 		sq.setLimit(count);
@@ -313,20 +313,20 @@ public class SimpleQuery extends Controller {
 		}
 	}
 
-	private static Object TSEXPGet(Class clazz, JSONArray selections, EXP exp) throws Exception {
+	private static Object TSEXPGet(Class clazz, EXP exp, JSONArray selections) throws Exception {
 		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
-		return DataSource.list2Obj(TSQuery(clazz, selections, exp.toTSQuery(mapper), 1, 0));
+		return DataSource.list2Obj(TSQuery(clazz, exp.toTSQuery(mapper), 1, 0, selections));
 	}
 
-	private static Object TSGet(Class clazz, JSONArray selections, Query query) throws Exception {
+	private static Object TSGet(Class clazz, Query query, JSONArray selections) throws Exception {
 
-		return DataSource.list2Obj(TSQuery(clazz, selections, query, 1, 0));
+		return DataSource.list2Obj(TSQuery(clazz, query, 1, 0, selections));
 	}
 
-	private static <X extends TSEntity> List<X> TSEXPQuery(Class<X> clazz, JSONArray selections, EXP exp, Integer count,
-			Integer offset) throws Exception {
+	private static <X extends TSEntity> List<X> TSEXPQuery(Class<X> clazz, EXP exp, Integer count,
+			Integer offset, JSONArray selections) throws Exception {
 		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
-		return TSQuery(clazz, selections, exp.toTSQuery(mapper), count, offset);
+		return TSQuery(clazz, exp.toTSQuery(mapper), count, offset, selections);
 	}
 
 }

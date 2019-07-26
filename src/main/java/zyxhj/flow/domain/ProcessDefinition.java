@@ -59,5 +59,5 @@ public class ProcessDefinition {
 	 * 存放所有节点样式信息
 	 */
 	@RDSAnnField(column = RDSAnnField.TEXT)
-	public JSONObject visual;
+	public JSONArray visual;
 }
