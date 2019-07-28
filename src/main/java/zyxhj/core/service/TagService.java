@@ -5,25 +5,32 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.domain.Tag;
 import zyxhj.core.domain.TagGroup;
 import zyxhj.core.repository.TagGroupRepository;
 import zyxhj.core.repository.TagRepository;
+import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.api.Controller;
+import zyxhj.utils.data.DataSource;
 
-public class TagService {
+public class TagService extends Controller {
 
 	private static Logger log = LoggerFactory.getLogger(TagService.class);
+
+	private DruidDataSource ds;
 
 	private TagRepository tagRepository;
 	private TagGroupRepository groupRepository;
 
-	public TagService() {
+	public TagService(String node) {
+		super(node);
 		try {
+			ds = DataSource.getDruidDataSource("rdsDefault.prop");
+
 			tagRepository = Singleton.ins(TagRepository.class);
 			groupRepository = Singleton.ins(TagGroupRepository.class);
 		} catch (Exception e) {
@@ -31,107 +38,126 @@ public class TagService {
 		}
 	}
 
-	private TagGroup createTagGroup(DruidPooledConnection conn, String keyword, Byte type, String remark)
-			throws Exception {
+	@POSTAPI(//
+			path = "createTagGroup", //
+			des = "创建自定义标签分组", //
+			ret = "TagGroup实例" //
+	)
+	public TagGroup createTagGroup(//
+			@P(t = "分组所属模块关键字") String module, //
+			@P(t = "分组类型自定义关键字") String type, //
+			@P(t = "分组名称") String name, //
+			@P(t = "备注") String remark//
+	) throws Exception {
 		TagGroup tg = new TagGroup();
-		tg.keyword = keyword;
+		tg.module = module;
 		tg.type = type;
+		tg.id = IDUtils.getSimpleId();
+		tg.name = name;
 		tg.remark = remark;
 
-		groupRepository.insert(conn, tg);
-
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			groupRepository.insert(conn, tg);
+		}
 		return tg;
 	}
 
-	/**
-	 * 创建系统标签分组
-	 */
-	public TagGroup createSysTagGroup(DruidPooledConnection conn, String keyword, String remark) throws Exception {
-		return createTagGroup(conn, keyword, TagGroup.TYPE_SYS, remark);
+	@POSTAPI(//
+			path = "editTagGroup", //
+			des = "编辑自定义标签分组", //
+			ret = "更新影响的记录行数" //
+	)
+	public int editTagGroup(//
+			@P(t = "分组编号）") Long id, //
+			@P(t = "分组名称") String name, //
+			@P(t = "备注") String remark//
+	) throws Exception {
+		TagGroup renew = new TagGroup();
+		renew.name = name;
+		renew.remark = remark;
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return groupRepository.updateByKey(conn, "id", id, renew, true);
+		}
 	}
 
-	/**
-	 * 创建自定义标签分组
-	 */
-	public TagGroup createCustomTagGroup(DruidPooledConnection conn, String keyword, String remark) throws Exception {
-		return createTagGroup(conn, keyword, TagGroup.TYPE_CUSTOM, remark);
+	@POSTAPI(//
+			path = "getTagGroupTypeList", //
+			des = "获取某模块所属的标签分组的类型列表", //
+			ret = "List<String>" //
+	)
+	public List<String> getTagGroupTypeList(//
+			@P(t = "分组所属模块关键字") String module //
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return groupRepository.getTagGroupTypeList(conn, module);
+		}
 	}
 
-	/**
-	 * 更新自定义标签分组
-	 */
-	public int updateCumtomTagGroup(DruidPooledConnection conn, String keyword, String remark) throws Exception {
-		return groupRepository.updateCumtomTagGroup(conn, keyword, remark);
+	@POSTAPI(//
+			path = "getTagGroupList", //
+			des = "获取某模块所属的标签分组列表", //
+			ret = "List<TagGroup>" //
+	)
+	public List<TagGroup> getTagGroupList(//
+			@P(t = "分组所属模块关键字") String module, //
+			@P(t = "分组类型自定义关键字（可选参数），不填表示全选", r = false) String type, //
+			@P(t = "数量") Integer count, //
+			@P(t = "偏移") Integer offset//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			// TODO 没有实现不填就全选的功能
+			return groupRepository.getListByANDKeys(conn, new String[] { "module", "type" },
+					new Object[] { module, type }, count, offset);
+		}
 	}
 
-	/**
-	 * 获取系统标签分组列表
-	 */
-	public List<TagGroup> getSysTagGroups(DruidPooledConnection conn) throws Exception {
-		return groupRepository.getListByKey(conn, "type", TagGroup.TYPE_SYS, 512, 0);
-	}
-
-	/**
-	 * 获取自定义标签分组列表
-	 */
-	public List<TagGroup> getCumtomTagGroups(DruidPooledConnection conn) throws Exception {
-		return groupRepository.getListByKey(conn, "type", TagGroup.TYPE_CUSTOM, 512, 0);
-	}
-
-	/**
-	 * 创建标签
-	 */
-	public Tag createTag(DruidPooledConnection conn, String groupKeyword, String name) throws Exception {
+	@POSTAPI(//
+			path = "createTag", //
+			des = "创建标签", //
+			ret = "Tag实例" //
+	)
+	public Tag createTag(//
+			@P(t = "标签分组编号") Long groupId, //
+			@P(t = "标签名称（关键字）") String name//
+	) throws Exception {
 		Tag ct = new Tag();
 
-		ct.groupKeyword = groupKeyword;
+		ct.groupId = groupId;
 		ct.name = name;
 		ct.status = Tag.STATUS.ENABLED.v();
 
-		tagRepository.insert(conn, ct);
-
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			tagRepository.insert(conn, ct);
+		}
 		return ct;
 	}
 
-	/**
-	 * 根据groupKeyword和status获取标签列表标签
-	 */
-	public JSONObject getTags(DruidPooledConnection conn, String groupKeyword, Byte status) throws Exception {
-		List<Tag> tags = tagRepository.getListByANDKeys(conn, new String[] { "group_keyword", "status" },
-				new Object[] { groupKeyword, status }, 512, 0);
-		JSONObject ret = new JSONObject();
-		for (Tag t : tags) {
-			JSONArray ja = ret.getJSONArray(t.groupKeyword);
-			if (null == ja) {
-				ja = new JSONArray();
-				ja.add(t.name);
-				ret.put(t.groupKeyword, ja);
-			} else {
-				ja.add(t.name);
-			}
+	@POSTAPI(//
+			path = "getTagList", //
+			des = "根据分组编号和状态获取标签列表", //
+			ret = "List<Tag>" //
+	)
+	public List<Tag> getTagList(Long groupId, Byte status) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tagRepository.getListByANDKeys(conn, new String[] { "group_Id", "status" },
+					new Object[] { groupId, status }, 512, 0);
 		}
-		return ret;
 	}
 
-	/**
-	 * 启用标签
-	 */
-	public int enableTag(DruidPooledConnection conn, String groupKeyword, String name) throws Exception {
+	@POSTAPI(//
+			path = "editTag", //
+			des = "编辑标签状态", //
+			ret = "更新影响的记录行数" //
+	)
+	public int editTag(Long groupId, String name, Byte status) throws Exception {
 		Tag renew = new Tag();
-		renew.status = Tag.STATUS.ENABLED.v();
+		renew.status = status;
 
-		return tagRepository.updateByANDKeys(conn, new String[] { "group_keyword", "name" },
-				new Object[] { groupKeyword, name }, renew, true);
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tagRepository.updateByANDKeys(conn, new String[] { "group_id", "name" },
+					new Object[] { groupId, name }, renew, true);
+		}
 	}
 
-	/**
-	 * 禁用标签
-	 */
-	public int disableTag(DruidPooledConnection conn, String groupKeyword, String name) throws Exception {
-		Tag renew = new Tag();
-		renew.status = Tag.STATUS.DISABLED.v();
-
-		return tagRepository.updateByANDKeys(conn, new String[] { "group_keyword", "name" },
-				new Object[] { groupKeyword, name }, renew, true);
-	}
 }

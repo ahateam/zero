@@ -40,23 +40,23 @@ public class SimpleQuery extends Controller {
 		super(node);
 	}
 
-	public List<?> getListByKey(String className, String key, String value, Integer count,
-			Integer offset, JSONArray selections) throws Exception {
+	public List<?> getListByKey(String className, String key, String value, Integer count, Integer offset,
+			JSONArray selections) throws Exception {
 		if (key == null || value == null) {
 			return new ArrayList<>();
 		} else {
-			EXP exp = new EXP(StringUtils.join("{{", key, "}}"), "=", value);
+			EXP exp = new EXP(true).exp(StringUtils.join("{{", key, "}}"), "=", value);
 			return getListByQuery(className, exp, count, offset, selections);
 		}
 	}
 
-	public List<?> getListByKeys(String className, JSONArray keys, JSONArray values,
-			Integer count, Integer offset, JSONArray selections) throws Exception {
+	public List<?> getListByKeys(String className, JSONArray keys, JSONArray values, Integer count, Integer offset,
+			JSONArray selections) throws Exception {
 		if (keys == null || values == null || keys.size() <= 0 || values.size() <= 0) {
 			return new ArrayList<>();
 		} else {
 			int size = keys.size();
-			EXP exp = new EXP();
+			EXP exp = new EXP(true);
 			for (int i = 0; i < size; i++) {
 				String key = keys.getString(i);
 				String value = values.getString(i);
@@ -137,8 +137,8 @@ public class SimpleQuery extends Controller {
 	// }
 	// }
 
-	private static <X> List<X> RDSQuery(Class<X> clazz, String where, Integer count,
-			Integer offset, JSONArray selections) throws Exception {
+	private static <X> List<X> RDSQuery(Class<X> clazz, String where, Integer count, Integer offset,
+			JSONArray selections) throws Exception {
 		log.info("queryRDS>{}", clazz.getName());
 
 		RDSObjectMapper mapper = RDSObjectMapper.getInstance(clazz);
@@ -177,7 +177,8 @@ public class SimpleQuery extends Controller {
 			throws Exception {
 
 		StringBuffer sb = new StringBuffer();
-		exp.toSQLString(sb);
+		ArrayList<Object> params = new ArrayList<>();
+		exp.toSQL(sb, params);
 
 		String where = sb.toString();
 		// System.out.println(where);
@@ -191,7 +192,8 @@ public class SimpleQuery extends Controller {
 
 	private static Object RDSEXPGet(Class clazz, EXP exp, JSONArray selections) throws Exception {
 		StringBuffer sb = new StringBuffer();
-		exp.toSQLString(sb);
+		ArrayList<Object> params = new ArrayList<>();
+		exp.toSQL(sb, params);
 
 		String where = sb.toString();
 		// System.out.println(where);
@@ -256,7 +258,7 @@ public class SimpleQuery extends Controller {
 		}
 	}
 
-	private static String[] buildJavaSelections( TSObjectMapper mapper, JSONArray selections) throws Exception {
+	private static String[] buildJavaSelections(TSObjectMapper mapper, JSONArray selections) throws Exception {
 		if (selections != null && selections.size() > 0) {
 			int len = selections.size();
 			String[] ret = new String[len];
@@ -275,15 +277,15 @@ public class SimpleQuery extends Controller {
 		}
 	}
 
-	private static <X extends TSEntity> List<X> TSQuery(Class<X> clazz, Query query,
-			Integer count, Integer offset, JSONArray selections) throws Exception {
+	private static <X extends TSEntity> List<X> TSQuery(Class<X> clazz, Query query, Integer count, Integer offset,
+			JSONArray selections) throws Exception {
 		log.info("queryTableStore>{}", clazz.getName());
 
 		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
 		SyncClient client = DataSource
 				.getTableStoreSyncClient(((TSAnnEntity) clazz.getAnnotation(TSAnnEntity.class)).ds());
 
-		String[] selectionList = buildJavaSelections( mapper, selections);
+		String[] selectionList = buildJavaSelections(mapper, selections);
 
 		SearchQuery sq = new SearchQuery();
 		sq.setLimit(count);
@@ -323,8 +325,8 @@ public class SimpleQuery extends Controller {
 		return DataSource.list2Obj(TSQuery(clazz, query, 1, 0, selections));
 	}
 
-	private static <X extends TSEntity> List<X> TSEXPQuery(Class<X> clazz, EXP exp, Integer count,
-			Integer offset, JSONArray selections) throws Exception {
+	private static <X extends TSEntity> List<X> TSEXPQuery(Class<X> clazz, EXP exp, Integer count, Integer offset,
+			JSONArray selections) throws Exception {
 		TSObjectMapper mapper = TSObjectMapper.getInstance(clazz);
 		return TSQuery(clazz, exp.toTSQuery(mapper), count, offset, selections);
 	}

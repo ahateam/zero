@@ -37,17 +37,11 @@ public class Tag {
 	}
 
 	/**
-	 * 状态
-	 */
-	@RDSAnnField(column = RDSAnnField.BYTE)
-	public Byte status;
-
-	/**
-	 * 分组关键字
+	 * 分组编号
 	 */
 	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
-	public String groupKeyword;
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long groupId;
 
 	/**
 	 * 标签名称，用于展示阅读</br>
@@ -55,5 +49,11 @@ public class Tag {
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String name;
+
+	/**
+	 * 状态
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte status;
 
 }

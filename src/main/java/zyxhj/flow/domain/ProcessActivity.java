@@ -1,6 +1,7 @@
 package zyxhj.flow.domain;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
@@ -9,8 +10,8 @@ import zyxhj.utils.data.rds.RDSAnnID;
 @RDSAnnEntity(alias = "tb_process_activity")
 public class ProcessActivity {
 
-	public static final Byte LOGICAL_DELETE_N = 0;//使用中
-	public static final Byte LOGICAL_DELETE_Y = 1;//已删除
+	public static final Byte LOGICAL_DELETE_N = 0;// 使用中
+	public static final Byte LOGICAL_DELETE_Y = 1;// 已删除
 	/**
 	 * 所属PD编号
 	 */
@@ -36,7 +37,7 @@ public class ProcessActivity {
 	 */
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String part;
-	
+
 	/**
 	 * 接收者（departments部门，roles角色，users用户）
 	 */
@@ -45,6 +46,18 @@ public class ProcessActivity {
 
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public JSONArray actions;// 行为
+
+	/**
+	 * 存放节点样式信息
+	 */
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public JSONObject visual;
+
+	/**
+	 * 逻辑删除
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte LogicalDelete;
 
 	public static class Receiver {
 
@@ -90,9 +103,5 @@ public class ProcessActivity {
 		 */
 		public String rule;
 	}
-	/**
-	 * 逻辑删除
-	 */
-	@RDSAnnField(column = RDSAnnField.BYTE)
-	public Byte LogicalDelete;
+
 }

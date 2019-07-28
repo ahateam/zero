@@ -14,7 +14,6 @@ import com.alicloud.openservices.tablestore.model.search.query.TermQuery;
 
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
-import zyxhj.utils.data.rds.SQL;
 import zyxhj.utils.data.ts.ColumnBuilder;
 import zyxhj.utils.data.ts.TSObjectMapper;
 
@@ -32,53 +31,51 @@ public class EXP implements Cloneable {
 	public static final String TYPE_EXP = "e";// 二元表达式
 	public static final String TYPE_METHOD = "m";// 函数
 
+	// 是否严谨，如果为true则表达式不允许为空，如果为false则字段为空时自动跳过
+	private boolean exact;
 	private String t;
 	private String op;
 	private List<Object> ps;
 
-	public EXP() {
-		// empty
+	private Object[] args;
+
+	public EXP(boolean exact) {
+		this.exact = exact;
 	}
 
-	public EXP(EXP exp) {
-		build(exp);
-	}
-
-	public void build(EXP exp) {
+	public EXP exp(EXP exp) {
 		EXP c = exp.clone();
 		this.op = c.op;
 		this.ps = c.ps;
 		this.t = c.t;
+		this.args = c.args;
+
+		return this;
 	}
 
-	public EXP(String op) {
-		build(op);
-	}
-
-	private void build(String op) {
+	public EXP exp(String str) {
 		this.t = TYPE_METHOD;
-		this.op = op;
-		this.ps = null;
+		this.op = str;
+
+		return this;
 	}
 
-	public EXP(String op, List<Object> ps) {
-		build(op, ps);
-	}
-
-	private void build(String op, List<Object> ps) {
+	public EXP exp(String op, List<Object> ps, Object... args) {
 		this.t = TYPE_METHOD;
 		this.op = op;
 		this.ps = ps;
+		this.args = args;
+
+		return this;
 	}
 
-	public EXP(Object left, String op, Object right) {
-		build(left, op, right);
-	}
-
-	private void build(Object left, String op, Object right) {
+	public EXP exp(Object left, String op, Object right, Object... args) {
 		this.t = TYPE_EXP;
 		this.op = op;
 		this.ps = Arrays.asList(left, right);
+		this.args = args;
+
+		return this;
 	}
 
 	protected EXP clone() {
@@ -91,10 +88,10 @@ public class EXP implements Cloneable {
 		return clone;
 	}
 
-	public EXP and(EXP exp) {
+	public EXP and(EXP exp) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
-			build(exp);
+			exp(exp);
 			return this;
 		} else {
 			if (exp == null) {
@@ -106,58 +103,64 @@ public class EXP implements Cloneable {
 				this.t = TYPE_EXP;
 				this.op = "&&";
 				this.ps = Arrays.asList(left, right);
+				this.args = null;
 
 				return this;
 			}
 		}
 	}
 
-	public EXP and(String exp) {
+	public EXP and(String str) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
-			build(exp);
+			exp(str);
 			return this;
 		} else {
-			if (StringUtils.isBlank(exp)) {
+			if (StringUtils.isBlank(str)) {
 				return this;
 			} else {
-				return and(new EXP(exp));
+				return and(new EXP(exact).exp(str));
 			}
 		}
 	}
 
-	public EXP and(Object l, String op, Object r) {
-		if (StringUtils.isBlank(this.op)) {
-			// empty 相当于创建
-			build(l, op, r);
+	public EXP and(Object l, String op, Object r, Object... args) throws ServerException {
+		if (isShit(exact, r, args)) {
+			// 宽松验证参数，且当前右参为空，放弃本次添加
 			return this;
 		} else {
-			if (l == null || r == null || StringUtils.isBlank(op)) {
+			if (StringUtils.isBlank(this.op)) {
+				// empty 相当于创建
+				exp(l, op, r, args);
 				return this;
 			} else {
-				return and(new EXP(l, op, r));
+				if (l == null || r == null || StringUtils.isBlank(op)) {
+					return this;
+				} else {
+					return and(new EXP(this.exact).exp(l, op, r, args));
+				}
 			}
 		}
 	}
 
-	public EXP and(String op, List<Object> ps) {
+	public EXP and(String op, List<Object> ps, Object... args) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
-			build(op, ps);
+			exp(op, ps, args);
 			return this;
 		} else {
 			if (StringUtils.isBlank(op) || ps == null) {
 				return this;
 			} else {
-				return and(new EXP(op, ps));
+				return and(new EXP(this.exact).exp(op, ps, args));
 			}
 		}
 	}
 
-	public EXP or(EXP exp) {
+	public EXP or(EXP exp) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
-			build(exp);
+			exp(exp);
 			return this;
 		} else {
 			if (exp == null) {
@@ -169,58 +172,58 @@ public class EXP implements Cloneable {
 				this.t = TYPE_EXP;
 				this.op = "||";
 				this.ps = Arrays.asList(left, right);
+				this.args = null;
 
 				return this;
 			}
 		}
 	}
 
-	public EXP or(String exp) {
+	public EXP or(String str) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
-			build(exp);
+			exp(str);
 			return this;
 		} else {
-			if (StringUtils.isBlank(exp)) {
+			if (StringUtils.isBlank(str)) {
 				return this;
 			} else {
-				return or(new EXP(exp));
+				return or(new EXP(exact).exp(str));
 			}
 		}
 	}
 
-	public EXP or(Object l, String op, Object r) {
-		if (StringUtils.isBlank(this.op)) {
-			// empty 相当于创建
-			build(l, op, r);
+	public EXP or(Object l, String op, Object r, Object... args) throws ServerException {
+		if (isShit(exact, r, args)) {
+			// 宽松验证参数，且当前右参为空，放弃本次添加
 			return this;
 		} else {
-			if (l == null || r == null || StringUtils.isBlank(op)) {
+			if (StringUtils.isBlank(this.op)) {
+				// empty 相当于创建
+				exp(l, op, r, args);
 				return this;
 			} else {
-				return or(new EXP(l, op, r));
+				if (l == null || r == null || StringUtils.isBlank(op)) {
+					return this;
+				} else {
+					return or(new EXP(this.exact).exp(l, op, r, args));
+				}
 			}
 		}
 	}
 
-	public EXP or(String op, List<Object> ps) {
+	public EXP or(String op, List<Object> ps, Object... args) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
-			build(op, ps);
+			exp(op, ps, args);
 			return this;
 		} else {
 			if (StringUtils.isBlank(op) || ps == null) {
 				return this;
 			} else {
-				return or(new EXP(op, ps));
+				return or(new EXP(this.exact).exp(op, ps, args));
 			}
 		}
-	}
-
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		toSQLString(sb);
-		return sb.toString();
 	}
 
 	private static String sqlFixOP(String op) {
@@ -406,39 +409,78 @@ public class EXP implements Cloneable {
 		return null;
 	}
 
-	public void toSQLString(StringBuffer sb) {
+	private static boolean isShit(boolean exact, Object right, Object[] args) throws ServerException {
+		if (exact) {
+			// 严谨表达式，参数不能为空，为空抛异常
+			if ("?".equals(right.toString().trim()) && args != null && args.length > 0 && args[0] == null) {
+				throw new ServerException(BaseRC.REPOSITORY_EXP_PARAM_NULL);
+			} else {
+				return false;
+			}
+		} else {
+			// 宽松表达式，参数为空则放弃当前语句
+			if ("?".equals(right.toString().trim()) && args != null && args.length > 0 && args[0] == null) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+	public void toSQL(StringBuffer sb, List<Object> params) throws ServerException {
 		if (t.equals(TYPE_EXP)) {
 			// 二元表达式
 			Object left = ps.get(0);
 			Object right = ps.get(1);
 			boolean isLink = false;
+
 			if (op.equals("&&") || op.equals("||")) {
 				// 是连接符，代表最终节点，不加括号
 				isLink = true;
 			}
 
-			if (isLink) {
-				sb.append('(');
-			}
-			if (left instanceof EXP) {
-				((EXP) left).toSQLString(sb);
+			if (isShit(exact, right, args)) {
+				sb.append("TURE");
 			} else {
-				sb.append(left);
-			}
 
-			sb.append(sqlFixOP(op));
-			if (right instanceof EXP) {
-				((EXP) right).toSQLString(sb);
-			} else {
-				if (right instanceof String) {
-					sb.append("'").append(right).append("'");
+				if (isLink) {// 首尾加括号
+					sb.append('(');
+				}
+				if (left instanceof EXP) {
+					((EXP) left).toSQL(sb, params);
 				} else {
-					sb.append(right);
+					sb.append(left);
+				}
+
+				sb.append(sqlFixOP(op));
+				if (right instanceof EXP) {
+					((EXP) right).toSQL(sb, params);
+				} else {
+
+					if (right instanceof String) {
+						if (StringUtils.trim((String) right).equals("?")) {
+							// 单个问号的字符不加单引号
+							sb.append(right);
+						} else {
+							sb.append("'").append(right).append("'");
+						}
+					} else {
+						sb.append(right);
+					}
+				}
+
+				// 添加到参数列表
+				if (args != null && args.length > 0) {
+					for (Object a : args) {
+						params.add(a);
+					}
+				}
+
+				if (isLink) {// 首尾加括号
+					sb.append(')');
 				}
 			}
-			if (isLink) {
-				sb.append(')');
-			}
+
 		} else {
 			// 函数或其它
 			sb.append(op);
@@ -452,6 +494,12 @@ public class EXP implements Cloneable {
 					}
 				}
 				sb.append(')');
+			}
+			// 添加到参数列表
+			if (args != null && args.length > 0) {
+				for (Object a : args) {
+					params.add(a);
+				}
 			}
 		}
 	}
@@ -523,39 +571,6 @@ public class EXP implements Cloneable {
 			}
 			sb.append(')');
 		}
-
-	}
-
-	public static void main(String[] args) {
-
-		EXP exp = new EXP("a", "=", "1").and("b", "<", 123);
-
-		EXP subExp = new EXP("q", "==", "123").or("max", Arrays.asList(123, 234, 333, 444));
-
-		exp.and(subExp);
-		exp.and("ttt", "=", 1);
-
-		// System.out.println("<<<" + JSON.toJSONString(exp, true));
-
-		StringBuffer sb = new StringBuffer();
-		exp.toSQLString(sb);
-		System.out.println(sb.toString());
-
-		sb = new StringBuffer("WHERE ");
-		SQL sql = new SQL();
-		sql.addExValid("type=?", 123);
-		sql.ANDValid("status=?", 123);
-		sql.ANDValid("up_user_id=?", 123);
-		sql.ANDValid("up_channel_id=?", 123);
-		sql.fillSQL(sb);
-
-		System.out.println(sb.toString());
-
-		EXP ee = new EXP("type", "=", "2xx").and("status", "=", 123).and("up_user_id", "=", 123)
-				.and("up_channel_id", "=", 123).and("title", "LIKE", "%sdfsdfsdf%");
-		sb = new StringBuffer("WHERE ");
-		ee.toSQLString(sb);
-		System.out.println(sb.toString());
 
 	}
 

@@ -22,6 +22,7 @@ import zyxhj.flow.domain.TableData;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.service.TableService;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
 
@@ -195,9 +196,9 @@ public class FlowTableServiceTest {
 	}
 
 	@Test
-	public void testCreateTableQuery() {
+	public void testCreateTableQuery() throws ServerException {
 
-		EXP exp = new EXP("{{COL5}}", "=", 2).and("{{TOTAL1}}", ">", 100);
+		EXP exp = new EXP(true).exp("{{COL5}}", "=", 2).and("{{TOTAL1}}", ">", 100);
 
 		System.out.println(JSON.toJSONString(exp));
 		JSONObject jo = JSON.parseObject(JSON.toJSONString(exp));
@@ -214,7 +215,7 @@ public class FlowTableServiceTest {
 	@Test
 	public void testQueryTableDatas() {
 		try {
-			List<TableData> datas = tableService.getTableDatasByQuery( schemaId, queryId, 10, 0);
+			List<TableData> datas = tableService.getTableDatasByQuery(schemaId, queryId, 10, 0);
 			System.out.println(JSON.toJSONString(datas));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

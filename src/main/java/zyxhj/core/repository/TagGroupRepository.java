@@ -1,5 +1,8 @@
 package zyxhj.core.repository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.alibaba.druid.pool.DruidPooledConnection;
 
 import zyxhj.core.domain.TagGroup;
@@ -12,11 +15,20 @@ public class TagGroupRepository extends RDSRepository<TagGroup> {
 		super(TagGroup.class);
 	}
 
-	public int updateCumtomTagGroup(DruidPooledConnection conn, String keyword, String remark) throws ServerException {
-		TagGroup renew = new TagGroup();
-		renew.remark = remark;
-
-		// 系统标签不允许修改
-		return update(conn, "WHERE keyword=? AND type<>0", new Object[] { keyword }, renew, true);
+	/**
+	 * 根据模块关键字，获取该模块下的type分类关键字列表
+	 */
+	public List<String> getTagGroupTypeList(DruidPooledConnection conn, String module) throws ServerException {
+		List<Object[]> objs = this.getObjectsList(conn, "WHERE module=? GROUP BY type", new Object[] { module }, 512, 0,
+				"type");
+		if (objs != null || objs.size() > 0) {
+			ArrayList<String> ret = new ArrayList<>();
+			for (int i = 0; i < objs.size(); i++) {
+				ret.add(objs.get(i)[0].toString());
+			}
+			return ret;
+		} else {
+			return new ArrayList<String>();
+		}
 	}
 }

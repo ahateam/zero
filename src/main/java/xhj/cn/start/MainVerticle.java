@@ -1,9 +1,9 @@
 package xhj.cn.start;
 
 import io.vertx.core.Vertx;
-import zyxhj.core.controller.TagController;
 import zyxhj.core.controller.TestController;
 import zyxhj.core.controller.UserController;
+import zyxhj.core.service.TagService;
 import zyxhj.flow.service.AnnexService;
 import zyxhj.flow.service.FlowService;
 import zyxhj.utils.Singleton;
@@ -30,10 +30,10 @@ public class MainVerticle extends ZeroVerticle {
 
 		initCtrl(ctrlMap, Singleton.ins(UserController.class, "user"));
 
-		initCtrl(ctrlMap, Singleton.ins(TagController.class, "tag"));
-		
-		initCtrl(ctrlMap, Singleton.ins(AnnexService.class, "annex"));	
-		
+		initCtrl(ctrlMap, Singleton.ins(TagService.class, "tag"));
+
+		initCtrl(ctrlMap, Singleton.ins(AnnexService.class, "annex"));
+
 		initCtrl(ctrlMap, Singleton.ins(FlowService.class, "flow"));
 
 	}

@@ -21,8 +21,8 @@ public class ProcessDefinition {
 	 * 所属模块
 	 */
 	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.ID)
-	public Long moduleId;
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String module;
 	/**
 	 * 编号
 	 */
@@ -54,10 +54,10 @@ public class ProcessDefinition {
 	 */
 	@RDSAnnField(column = "VARCHAR(256)")
 	public JSONArray lanes;
-	
+
 	/**
-	 * 存放所有节点样式信息
+	 * 存放流程全局样式信息
 	 */
-	@RDSAnnField(column = RDSAnnField.TEXT)
-	public JSONArray visual;
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public JSONObject visual;
 }

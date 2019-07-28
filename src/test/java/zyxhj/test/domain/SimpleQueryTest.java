@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 
-import zyxhj.flow.domain.Module;
+import zyxhj.core.domain.Module;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.utils.data.SimpleQuery;
 
