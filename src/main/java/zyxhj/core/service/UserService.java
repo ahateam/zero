@@ -2,6 +2,7 @@ package zyxhj.core.service;
 
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,10 +80,8 @@ public class UserService {
 	/**
 	 * 用户名密码注册
 	 * 
-	 * @param name
-	 *            用户名（必填）
-	 * @param pwd
-	 *            密码（必填）
+	 * @param name 用户名（必填）
+	 * @param pwd  密码（必填）
 	 * 
 	 * @return 刚注册的用户对象
 	 */
@@ -210,6 +209,41 @@ public class UserService {
 		u.idNumber = newIdNumber;// 身份证已添加唯一索引，无需再判断身份证号码是否重复
 		userRepository.updateByKey(conn, "id", userId, u, true);
 		return u;
+	}
+
+	// 微信登录
+	public User loginByWxOpenId(DruidPooledConnection conn, String wxOpenId) throws Exception {
+
+		User user = userRepository.getByKey(conn, "wx_open_id", wxOpenId);
+
+		if (user == null) {
+			// 创建用户
+			return createUser(conn, wxOpenId);
+		} else {
+			// 用户登录
+			return user;
+		}
+	}
+
+	// 创建用户
+	private User createUser(DruidPooledConnection conn, String wxOpenId) throws Exception {
+		User u = new User();
+		u.id = IDUtils.getSimpleId();
+		u.wxOpenId = wxOpenId;
+		u.name = StringUtils.join("用户" + u.id);
+		u.createDate = new Date();
+		userRepository.insert(conn, u);
+		return u;
+	}
+
+	// 修改用户名 TODO 以后电话号码以及邮箱可能需要进行验证
+	public int editUserInfo(DruidPooledConnection conn, Long userId, String name, String mobile, String email)
+			throws Exception {
+		User u = new User();
+		u.name = name;
+		u.mobile = mobile;
+		u.email = email;
+		return userRepository.updateByKey(conn, "id", userId, u, true);
 	}
 
 }
