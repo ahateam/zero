@@ -14,6 +14,7 @@ import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
 import zyxhj.flow.service.FlowService;
+import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.data.DataSource;
 
@@ -337,5 +338,11 @@ public class FlowProcessServiceTest {
 	}
 
 
+	@Test
+	public void getId() {
+		System.out.println(IDUtils.getSimpleId());
+	}
+	
+	
 }
 

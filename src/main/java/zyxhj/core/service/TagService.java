@@ -44,13 +44,13 @@ public class TagService extends Controller {
 			ret = "TagGroup实例" //
 	)
 	public TagGroup createTagGroup(//
-			@P(t = "分组所属模块关键字") String module, //
+			@P(t = "分组所属模块关键字") String moduleKey, //
 			@P(t = "分组类型自定义关键字") String type, //
 			@P(t = "分组名称") String name, //
 			@P(t = "备注") String remark//
 	) throws Exception {
 		TagGroup tg = new TagGroup();
-		tg.module = module;
+		tg.moduleKey = moduleKey;
 		tg.type = type;
 		tg.id = IDUtils.getSimpleId();
 		tg.name = name;

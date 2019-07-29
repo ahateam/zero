@@ -16,14 +16,15 @@ public class TagGroup {
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
-	public String module;
+	public String moduleKey;
 
 	/**
 	 * 分组类型（系统，自定义）
 	 */
 	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.BYTE)
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String type;
+	
 
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
