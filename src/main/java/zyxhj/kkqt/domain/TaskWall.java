@@ -173,7 +173,7 @@ public class TaskWall extends TSEntity {
 	/**
 	 * 任务等级
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long level;
 
@@ -194,7 +194,7 @@ public class TaskWall extends TSEntity {
 	/**
 	 * 创建者
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long upUserId;
 

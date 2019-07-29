@@ -39,8 +39,7 @@ import com.alicloud.openservices.tablestore.model.search.SearchResponse;
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
 
-public abstract class TSRepository<T extends TSEntity> {
-
+public abstract class TSRepository<T extends TSEntity>{
 	protected TSObjectMapper<T> mapper;
 
 	protected TSRepository(Class<T> clazz) {
