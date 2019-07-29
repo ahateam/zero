@@ -59,7 +59,8 @@ public class FlowService extends Controller {
 			des = "创建流程定义", //
 			ret = "ProcessDefinition实例" //
 	)
-	public ProcessDefinition createPD(@P(t = "模块关键字") String moduleKey, //
+	public ProcessDefinition createPD(//
+			@P(t = "模块关键字") String moduleKey, //
 			@P(t = "流程定义标题") String title, //
 			@P(t = "标签列表") JSONArray tags, //
 			@P(t = "流程图泳道名称列表，泳道名称不可重复") JSONArray lanes//
@@ -425,18 +426,34 @@ public class FlowService extends Controller {
 	}
 
 	@POSTAPI(//
-			path = "createAsset", //
-			des = "创建流程资产（附件，文件，表单等）", //
+			path = "createPDAsset", //
+			des = "创建流程定义全局资产（附件，文件，表单等）", //
 			ret = "ProcessAsset实例"//
 	)
-	public ProcessAsset createAsset(//
-			@P(t = "附件归属类型（Activity或Definition，可扩展）") Byte type, //
-			@P(t = "ActivityId或DefinitionId，可扩展") Long ownerId, //
+	public ProcessAsset createPDAsset(//
+			@P(t = "流程定义ProcessDefinition编号") Long pdId, //
 			@P(t = "资产名称") String name, //
 			@P(t = "附件编号，可扩展") Long annexId//
 	) throws Exception {
+		return createAsset(ProcessAsset.TYPE_DEFINITON, pdId, name, annexId);
+	}
+
+	@POSTAPI(//
+			path = "createActivityAsset", //
+			des = "创建流程定义全局资产（附件，文件，表单等）", //
+			ret = "ProcessAsset实例"//
+	)
+	public ProcessAsset createActivityAsset(//
+			@P(t = "流程节点Activity编号") Long activityId, //
+			@P(t = "资产名称") String name, //
+			@P(t = "附件编号，可扩展") Long annexId//
+	) throws Exception {
+		return createAsset(ProcessAsset.TYPE_ACTIVITY, activityId, name, annexId);
+	}
+
+	private ProcessAsset createAsset(Byte type, Long ownerId, String name, Long annexId) throws Exception {
 		ProcessAsset pa = new ProcessAsset();
-		pa.type = ProcessAsset.TYPE_ACTIVITY;
+		pa.type = type;
 		pa.ownerId = ownerId;
 		pa.id = IDUtils.getSimpleId();
 		pa.name = name;
@@ -468,17 +485,35 @@ public class FlowService extends Controller {
 	}
 
 	@POSTAPI(//
-			path = "getAssetByOwnerId", //
-			des = "通过OwnerId查询所属流程资产", //
+			path = "getPDAssetList", //
+			des = "查询流程定义所属流程资产", //
 			ret = "List<ProcessAsset>"//
 	)
-	public List<ProcessAsset> getAssetByOwnerId(//
-			@P(t = "ActivityId或DefinitionId，可扩展") Long ownerId, //
+	public List<ProcessAsset> getPDAssetList(//
+			@P(t = "所属流程定义ProcessDefinition编号") Long pdId, //
+			@P(t = "所属流程节点Activity编号，不填表示只查看流程定义中的全局资产", r = false) JSONArray activityIds, //
 			Integer count, //
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processAssetRepository.getListByKey(conn, "owner_id", ownerId, count, offset);
+			return processAssetRepository.getListByANDKeys(conn, new String[] { "type", "owner_id" },
+					new Object[] { ProcessAsset.TYPE_DEFINITON, pdId }, count, offset);
+		}
+	}
+
+	@POSTAPI(//
+			path = "getActivityAssetList", //
+			des = "查询流程节点所属流程资产", //
+			ret = "List<ProcessAsset>"//
+	)
+	public List<ProcessAsset> getActivityAssetList(//
+			@P(t = "所属流程节点Activity编号") Long activityId, //
+			Integer count, //
+			Integer offset//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return processAssetRepository.getListByANDKeys(conn, new String[] { "type", "owner_id" },
+					new Object[] { ProcessAsset.TYPE_ACTIVITY, activityId }, count, offset);
 		}
 	}
 

@@ -1,5 +1,7 @@
 package zyxhj.flow.domain;
 
+import java.util.List;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -60,4 +62,12 @@ public class ProcessDefinition {
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public JSONObject visual;
+
+	/**
+	 * 流程定义公共资产描述对象</br>
+	 * 定义需要哪些公共资产
+	 */
+	@RDSAnnField(column = "VARCHAR(4096)")
+	public List<ProcessAssetDesc> assetDesc;
+
 }
