@@ -8,12 +8,14 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessAsset;
+import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
 import zyxhj.flow.repository.ProcessActivityRepository;
@@ -105,7 +107,6 @@ public class FlowService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.updateByKey(conn, "id", id, renew, true);
 		}
-
 	}
 
 	@POSTAPI(//
@@ -133,7 +134,6 @@ public class FlowService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.getByKey(conn, "id", pdId);
 		}
-
 	}
 
 	@POSTAPI(path = "delPD", //
@@ -143,7 +143,6 @@ public class FlowService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.deleteByKey(conn, "id", pdId);
 		}
-
 	}
 
 	@POSTAPI(//
@@ -159,6 +158,26 @@ public class FlowService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.updateByKey(conn, "id", pdId, pd, true);
 		}
+	}
+
+	@POSTAPI(//
+			path = "setPDAssetDescList", //
+			des = "为流程定义设置资产需求描述", //
+			ret = "更新影响的记录行数")
+	public int setPDAssetDescList(//
+			@P(t = "流程定义编号") Long pdId, //
+			@P(t = "要设置的列表") JSONArray assetDescList//
+	) throws Exception {
+		ProcessAssetDesc pad = new ProcessAssetDesc();
+		pad.id = IDUtils.getSimpleId();
+
+		ProcessDefinition pd = new ProcessDefinition();
+		pd.assetDesc = JSON.parseArray(assetDescList.toJSONString(), ProcessAssetDesc.class);
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return definitionRepository.updateByKey(conn, "id", pdId, pd, true);
+		}
+
 	}
 
 	///////////////////////////////////////
