@@ -457,7 +457,6 @@ public abstract class RDSRepository<T> {
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR);
 		}
-
 		return update(conn, set.toString(), values.toArray(), where, whereParams);
 	}
 
