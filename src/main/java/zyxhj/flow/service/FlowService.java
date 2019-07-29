@@ -26,6 +26,7 @@ import zyxhj.flow.repository.ProcessRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.Controller;
+import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
 
 public class FlowService extends Controller {
@@ -71,11 +72,11 @@ public class FlowService extends Controller {
 		Long id = IDUtils.getSimpleId();
 
 		ProcessDefinition pd = new ProcessDefinition();
-		pd.module = moduleKey;
+		pd.moduleKey = moduleKey;
 		pd.id = id;
+		pd.title = title;
 		pd.tags = tags;
 		pd.status = ProcessDefinition.STATUS_READY;
-		pd.title = title;
 
 		pd.lanes = lanes;
 
@@ -91,9 +92,9 @@ public class FlowService extends Controller {
 			ret = "所影响记录行数"//
 	)
 	public int editPD(@P(t = "流程定义表编号") Long id, //
+			@P(t = "流程定义标题") String title, //
 			@P(t = "流程定义状态") Byte status, //
 			@P(t = "标签列表") JSONArray tags, //
-			@P(t = "流程定义标题") String title, //
 			@P(t = "流程图泳道名称列表，泳道名称不可重复") JSONArray lanes//
 	) throws Exception {
 
@@ -115,12 +116,12 @@ public class FlowService extends Controller {
 			ret = "List<ProcessDefinition>"//
 	)
 	public List<ProcessDefinition> getPDList(//
-			@P(t = "模块	关键字") Long moduleKey, //
+			@P(t = "模块	关键字") String moduleKey, //
 			Integer count, //
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return definitionRepository.getListByKey(conn, "module", moduleKey, count, offset);
+			return definitionRepository.getListByKey(conn, "module_key", moduleKey, count, offset);
 		}
 	}
 
@@ -256,10 +257,11 @@ public class FlowService extends Controller {
 		renew.actions = actions;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return activityRepository.updateByANDKeys(null, new String[] { "pd_id", "id" }, new Object[] { pdId, id },
-					renew, true);
-		}
 
+			return activityRepository.updateByANDKeys(conn, new String[] { "pd_id", "id" }, new Object[] { pdId, id },
+					renew, true);
+
+		}
 	}
 
 	@POSTAPI(//
@@ -278,8 +280,26 @@ public class FlowService extends Controller {
 	}
 
 	@POSTAPI(//
+			path = "getPDActivityById", //
+			des = "通过流程定义编号与流程节点编号得到流程节点", //
+			ret = "ProcessActivity"//
+	)
+	public ProcessActivity getPDActivityById(@P(t = "流程定义编号") Long pdid, //
+			@P(t = "流程节点编号") Long activityid//
+	) throws Exception {
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return activityRepository.getByANDKeys(conn, new String[] { "pd_id", "id" },
+					new Object[] { pdid, activityid });
+		} catch (ServerException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@POSTAPI(//
 			path = "setPDActivityVisual", //
-			des = "设置流程定义的全局样式信息", //
+			des = "设置流程节点样式信息", //
 			ret = "所影响的记录行数"//
 	)
 	public int setPDActivityVisual(//
@@ -303,15 +323,15 @@ public class FlowService extends Controller {
 			ret = "Process实例")
 	public Process createProcess(//
 			@P(t = "流程定义编号") Long pdId, //
+			@P(t = "流程节点编号") Long activityId, //
 			@P(t = "流程标题") String title, //
-			@P(t = "流程节点编号") Long currActivityId, //
 			String remark//
 	) throws Exception {
 		Process pro = new Process();
 		pro.pdId = pdId;
 		pro.id = IDUtils.getSimpleId();
 		pro.title = title;
-		pro.currActivityId = currActivityId;
+		pro.currActivityId = activityId;
 		pro.timestamp = new Date();
 		pro.remark = remark;
 		pro.state = Process.STATE_USING;
@@ -330,15 +350,15 @@ public class FlowService extends Controller {
 	public int editProcess(//
 			@P(t = "processId") Long processId, //
 			@P(t = "流程定义编号") Long pdId, //
+			@P(t = "流程节点编号") Long activityId, //
 			@P(t = "流程标题") String title, //
-			@P(t = "流程节点编号") Long currActivityId, //
 			String remark, //
 			@P(t = "流程实例状态(0-->使用中，1-->等待中，2-->已结束)") Byte state//
 	) throws Exception {
 		Process pro = new Process();
 
 		pro.title = title;
-		pro.currActivityId = currActivityId;
+		pro.currActivityId = activityId;
 		pro.timestamp = new Date();
 		pro.remark = remark;
 		pro.state = state;
@@ -398,10 +418,10 @@ public class FlowService extends Controller {
 	}
 
 	@POSTAPI(//
-			path = "addProcessLog", //
+			path = "createProcessLog", //
 			des = "添加流程操作日志"//
 	)
-	public void addProcessLog(//
+	public void createProcessLog(//
 			@P(t = "流程编号") Long processId, //
 			@P(t = "标题") String title, //
 			@P(t = "使用者编号") Long userid, //
@@ -440,7 +460,8 @@ public class FlowService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processLogRepository.getListByKey(conn, "process_id", processId, count, offset);
+
+			return processLogRepository.getProcessLogList(conn, processId, count, offset);
 		}
 	}
 
@@ -549,4 +570,5 @@ public class FlowService extends Controller {
 			return processAssetRepository.deleteByKey(conn, "id", assetId);
 		}
 	}
+
 }

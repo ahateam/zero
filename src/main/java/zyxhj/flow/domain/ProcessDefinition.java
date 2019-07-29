@@ -24,7 +24,7 @@ public class ProcessDefinition {
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
-	public String module;
+	public String moduleKey;
 	/**
 	 * 编号
 	 */
