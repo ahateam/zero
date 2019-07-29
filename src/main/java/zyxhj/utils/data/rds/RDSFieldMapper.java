@@ -57,20 +57,6 @@ public class RDSFieldMapper {
 		return field.get(obj);
 	}
 
-	public void ttttt() {
-		ParameterizedType listGenericType = (ParameterizedType) field.getGenericType();
-		Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
-		Type type = listActualTypeArguments[listActualTypeArguments.length - 1];
-		System.out.println(type.getTypeName());
-
-		if (javaType.equals(List.class)) {
-			System.out.println(true);
-		} else {
-			System.out.println(false);
-		}
-
-	}
-
 	protected void putFieldValue2Object(Object[] objs, int ind, ResultSet rs) throws Exception {
 		boolean hasColumn = true;
 		try {
@@ -124,10 +110,9 @@ public class RDSFieldMapper {
 				ParameterizedType listGenericType = (ParameterizedType) field.getGenericType();
 				Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
 				Type type = listActualTypeArguments[listActualTypeArguments.length - 1];
-				System.out.println(type.getTypeName());
 
 				if (StringUtils.isNoneBlank(temp)) {
-					objs[ind] = JSON.parseArray(temp, type.getClass());
+					objs[ind] = JSON.parseArray(temp, (Class) type);
 				} else {
 					objs[ind] = new ArrayList<>();
 				}
@@ -211,11 +196,10 @@ public class RDSFieldMapper {
 				ParameterizedType listGenericType = (ParameterizedType) field.getGenericType();
 				Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
 				Type type = listActualTypeArguments[listActualTypeArguments.length - 1];
-				System.out.println(type.getTypeName());
 
 				List<?> arr = new ArrayList<>();
 				if (StringUtils.isNoneBlank(temp)) {
-					arr = JSON.parseArray(temp, type.getClass());
+					arr = JSON.parseArray(temp, (Class) type);
 				} else {
 					arr = new ArrayList<>();
 				}

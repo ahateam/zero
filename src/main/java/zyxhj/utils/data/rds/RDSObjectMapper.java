@@ -18,36 +18,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import zyxhj.flow.domain.ProcessAssetDesc;
-
 /**
  * RDS对象映射器
  */
 public class RDSObjectMapper {
-
-	@RDSAnnEntity(alias = "test")
-	public static class TEST {
-		@RDSAnnField(column = "VARCHAR(4096)")
-		public List<ProcessAssetDesc> assetDescList;
-	}
-
-	public static void main(String[] args) {
-		RDSObjectMapper om = RDSObjectMapper.getInstance(TEST.class);
-
-		TEST t = new TEST();
-		t.assetDescList = new ArrayList<>();
-
-		try {
-			om.serialize(t);
-
-			om.javaFieldMapper.entrySet().forEach(xxx -> {
-				xxx.getValue().ttttt();
-			});
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
 	public static final String JAVA_KEY = "c_class";
 	public static final String JAVA_DATA = "c_data";

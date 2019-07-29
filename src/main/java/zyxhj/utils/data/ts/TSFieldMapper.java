@@ -1,7 +1,11 @@
 package zyxhj.utils.data.ts;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -100,6 +104,8 @@ public class TSFieldMapper<T extends TSEntity> {
 				return ColumnValue.fromString(JSON.toJSONString(t));
 			} else if (javaType.equals(JSONArray.class)) {
 				return ColumnValue.fromString(JSON.toJSONString(t));
+			} else if (javaType.equals(List.class)) {
+				return ColumnValue.fromString(JSON.toJSONString(t));
 			} else {
 				// 其它对象
 				JSONObject jo = new JSONObject();
@@ -169,6 +175,23 @@ public class TSFieldMapper<T extends TSEntity> {
 							} catch (Exception eee) {
 								field.set(obj, null);
 							}
+						}
+					} else if (javaType.equals(List.class)) {
+						// 支持List
+						String temp = cv.asString();
+
+						ParameterizedType listGenericType = (ParameterizedType) field.getGenericType();
+						Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
+						Type type = listActualTypeArguments[listActualTypeArguments.length - 1];
+
+						if (StringUtils.isNoneBlank(temp)) {
+							try {
+								field.set(obj, JSON.parseArray(temp, (Class) type));
+							} catch (Exception eee) {
+								field.set(obj, new ArrayList<>());
+							}
+						} else {
+							field.set(obj, new ArrayList<>());
 						}
 					} else {
 						// 其它的特有对象

@@ -167,18 +167,17 @@ public class FlowService extends Controller {
 			ret = "更新影响的记录行数")
 	public int setPDAssetDescList(//
 			@P(t = "流程定义编号") Long pdId, //
-			@P(t = "要设置的列表") JSONArray assetDescList//
+			@P(t = "要设置的列表") List<ProcessAssetDesc> assetDescList//
 	) throws Exception {
 		ProcessAssetDesc pad = new ProcessAssetDesc();
 		pad.id = IDUtils.getSimpleId();
 
 		ProcessDefinition pd = new ProcessDefinition();
-		pd.assetDesc = JSON.parseArray(assetDescList.toJSONString(), ProcessAssetDesc.class);
+		pd.assetDesc = assetDescList;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.updateByKey(conn, "id", pdId, pd, true);
 		}
-
 	}
 
 	///////////////////////////////////////

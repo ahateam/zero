@@ -44,7 +44,7 @@ public class FlowProcessServiceTest {
 		conn.close();
 	}
 
-	private static final Long pdId = 400195073090059L;
+	private static final Long pdId = 400484680137184L;
 
 	private static final Long activityId = 400196423643694L;
 
@@ -101,7 +101,7 @@ public class FlowProcessServiceTest {
 
 		try {
 			ProcessDefinition pd = flowService.getPDById(pdId);
-			System.out.println(pd.title);
+			System.out.println(JSON.toJSON(pd));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -351,7 +351,7 @@ public class FlowProcessServiceTest {
 			for (int i = 0; i < 2; i++) {
 				ProcessAssetDesc p = new ProcessAssetDesc();
 				p.id = IDUtils.getSimpleId();
-				p.type = "tt" + i;
+				p.type = "ttt" + i;
 				p.name = "name" + i;
 				p.remark = "";
 				p.necessary = true;
@@ -359,7 +359,7 @@ public class FlowProcessServiceTest {
 				assetDescList.add(p);
 			}
 
-			flowService.setPDAssetDescList(400484680137184L, JSON.parseArray(JSON.toJSONString(assetDescList)));
+			flowService.setPDAssetDescList(400484680137184L, assetDescList);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
