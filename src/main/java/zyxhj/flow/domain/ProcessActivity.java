@@ -11,8 +11,8 @@ import zyxhj.utils.data.rds.RDSAnnID;
 @RDSAnnEntity(alias = "tb_process_activity")
 public class ProcessActivity {
 
-	public static final Byte LOGICAL_DELETE_N = 0;// 使用中
-	public static final Byte LOGICAL_DELETE_Y = 1;// 已删除
+	public static final Byte ACTIVE_DELETE_N = 0;// 使用中
+	public static final Byte ACTIVE_DELETE_Y = 1;// 已删除
 	/**
 	 * 所属PD编号
 	 */
@@ -65,7 +65,7 @@ public class ProcessActivity {
 	 * 逻辑删除
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
-	public Byte LogicalDelete;
+	public Byte active;
 
 	/**
 	 * 时间，小时为单位

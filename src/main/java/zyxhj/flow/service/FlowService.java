@@ -1,5 +1,6 @@
 package zyxhj.flow.service;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,6 +23,7 @@ import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
 import zyxhj.flow.repository.ProcessActivityRepository;
+import zyxhj.flow.repository.ProcessAssetDescRepository;
 import zyxhj.flow.repository.ProcessAssetRepository;
 import zyxhj.flow.repository.ProcessDefinitionRepository;
 import zyxhj.flow.repository.ProcessLogRepository;
@@ -38,6 +40,7 @@ public class FlowService extends Controller {
 
 	private DruidDataSource ds;
 
+	private ProcessAssetDescRepository assetDescRepository;
 	private ProcessRepository processRepository;
 	private ProcessDefinitionRepository definitionRepository;
 	private ProcessActivityRepository activityRepository;
@@ -54,7 +57,7 @@ public class FlowService extends Controller {
 			activityRepository = Singleton.ins(ProcessActivityRepository.class);
 			processLogRepository = Singleton.ins(ProcessLogRepository.class);
 			processAssetRepository = Singleton.ins(ProcessAssetRepository.class);
-
+			assetDescRepository = Singleton.ins(ProcessAssetDescRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -80,7 +83,8 @@ public class FlowService extends Controller {
 		pd.title = title;
 		pd.tags = tags;
 		pd.status = ProcessDefinition.STATUS_READY;
-
+		pd.assetDesc = new ArrayList<ProcessAssetDesc>();
+		pd.visual = new JSONObject();
 		pd.lanes = lanes;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -119,10 +123,11 @@ public class FlowService extends Controller {
 			ret = "List<ProcessDefinition>"//
 	)
 	public List<ProcessDefinition> getPDList(//
-			@P(t = "模块	关键字") String moduleKey, //
+			@P(t = "模块关键字") String moduleKey, //
 			Integer count, //
 			Integer offset//
 	) throws Exception {
+		
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.getListByKey(conn, "module_key", moduleKey, count, offset);
 		}
@@ -183,6 +188,7 @@ public class FlowService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.updateByKey(conn, "id", pdId, pd, true);
 		}
+		
 	}
 
 	///////////////////////////////////////
@@ -210,7 +216,8 @@ public class FlowService extends Controller {
 		pa.part = part;
 		pa.receivers = receivers;
 		pa.actions = actions;
-		pa.LogicalDelete = ProcessActivity.LOGICAL_DELETE_N;
+		pa.active = ProcessActivity.ACTIVE_DELETE_N;
+		pa.assetDesc = new ArrayList<ProcessAssetDesc>();
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			activityRepository.insert(conn, pa);
@@ -232,7 +239,7 @@ public class FlowService extends Controller {
 			@P(t = "流程节点编号") Long activityId//
 	) throws Exception {
 		ProcessActivity renew = new ProcessActivity();
-		renew.LogicalDelete = ProcessActivity.LOGICAL_DELETE_Y;
+		renew.active = ProcessActivity.ACTIVE_DELETE_Y;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return activityRepository.updateByANDKeys(conn, new String[] { "pd_id", "id" },
@@ -279,7 +286,7 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return activityRepository.getListByKey(conn, "pd_id", pdId, count, offset);
+			return activityRepository.getListByANDKeys(conn, new String[] {"pd_id", "active"}, new Object[] {pdId, 0}, count, offset);
 		}
 	}
 
@@ -365,7 +372,7 @@ public class FlowService extends Controller {
 		pro.timestamp = new Date();
 		pro.remark = remark;
 		pro.state = Process.STATE_USING;
-		pro.LogicalDelete = Process.LOGICAL_DELETE_N;
+		pro.active = Process.ACTIVE_DELETE_N;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			processRepository.insert(conn, pro);
@@ -407,7 +414,7 @@ public class FlowService extends Controller {
 			@P(t = "processId ") Long id//
 	) throws Exception {
 		Process pro = new Process();
-		pro.LogicalDelete = Process.LOGICAL_DELETE_Y;
+		pro.active = Process.ACTIVE_DELETE_Y;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return processRepository.updateByKey(conn, "id", id, pro, true);
@@ -425,7 +432,7 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processRepository.getListByKey(conn, "pd_id", pdId, count, offset);
+			return processRepository.getListByANDKeys(conn, new String[] {"pd_id","active"}, new Object[] {pdId, 0} , count, offset);
 		}
 	}
 
@@ -603,6 +610,89 @@ public class FlowService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return processAssetRepository.deleteByKey(conn, "id", assetId);
 		}
+	}
+
+	@POSTAPI(//
+			path = "createAssetDesc", //
+			des = "创建资产需求描述(资产定义)"//
+	)
+	public void createAssetDesc(//
+			@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId,//
+			@P(t = "资产类型") String type,//
+			@P(t = "资产名称") String name,//
+			@P(t = "是否必须") Boolean necessary,//
+			@P(t = "资产说明") String remark//
+			) throws Exception {
+		ProcessAssetDesc pad = new ProcessAssetDesc();
+		pad.id = IDUtils.getSimpleId();
+		pad.ownerId = ownerId;
+		pad.type = type;
+		pad.name = name;
+		pad.necessary = necessary;
+		pad.remark = remark;
+		
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			assetDescRepository.insert(conn, pad);
+		}
+	}
+	
+	@POSTAPI(//
+			path = "editAssetDesc", //
+			des = "修改资产需求描述(资产定义)数据",//
+			ret = "受影响行数"
+	)
+	public int editAssetDesc(//
+			@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId,//
+			@P(t = "资产定义编号") Long id,//
+			@P(t = "资产类型") String type,//
+			@P(t = "资产名称") String name,//
+			@P(t = "是否必须") Boolean necessary,//
+			@P(t = "资产说明") String remark//
+			) throws Exception {
+		ProcessAssetDesc pad = new ProcessAssetDesc();
+		pad.type = type;
+		pad.name = name;
+		pad.necessary = necessary;
+		pad.remark = remark;
+		
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return assetDescRepository.updateByANDKeys(conn, new String[] {"owner_id", "id"}, new Object[] {ownerId, id}, pad, true);
+		} 
+	}
+	
+	@POSTAPI(//
+			path = "delAssetDesc", //
+			des = "删除资产需求描述(资产定义)",//
+			ret = "受影响行数"
+	)
+	public void delAssetDesc(
+			@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId,//
+			@P(t = "资产定义编号") Long id//
+			) {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			assetDescRepository.deleteByANDKeys(conn, new String[] { "owner_id", "id" }, new Object[] {ownerId, id});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	@POSTAPI(//
+			path = "getAssetDescList", //
+			des = "得到资产需求描述(资产定义)列表",//
+			ret = "List<ProcessAssetDesc>"
+	)
+	public List<ProcessAssetDesc> getAssetDescList(
+			@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId,
+			Integer count,
+			Integer offset
+			){
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return assetDescRepository.getListByKey(conn, "owner_id", ownerId, count, offset);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	
