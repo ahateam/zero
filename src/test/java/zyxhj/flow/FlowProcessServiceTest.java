@@ -13,6 +13,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.flow.domain.ProcessActivity;
+import zyxhj.flow.domain.ProcessActivity.Action;
+import zyxhj.flow.domain.ProcessActivity.Receiver;
 import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
@@ -47,10 +49,6 @@ public class FlowProcessServiceTest {
 	private static final Long pdId = 400484680137184L;
 
 	private static final Long activityId = 400196423643694L;
-
-	private static final Long processId = 400159724862966L;
-
-	private static final Long recordId = 400159724862966L;
 
 	private static final Integer count = 20;
 	private static final Integer offset = 0;
@@ -151,7 +149,7 @@ public class FlowProcessServiceTest {
 	 * 设置流程定义全局前端样式
 	 */
 	@Test
-	public void TestSetPDVisual() {
+	public void testSetPDVisual() {
 		JSONObject js = new JSONObject();
 		js.put("width", "100px");
 		js.put("height", "250px");
@@ -172,13 +170,32 @@ public class FlowProcessServiceTest {
 	@Test
 	public void testCreatePDActivity() {
 
-		JSONArray receivers = new JSONArray();
+		List<Receiver> receivers = new ArrayList<ProcessActivity.Receiver>();
+		
+			Receiver r = new Receiver();
+			r.type = Receiver.TYPE_DEPARTMENT;
+			r.id = IDUtils.getSimpleId();
+			r.label = "测试部门";
+			r.remark = "单元测试Receiver数据";
+			
+			receivers.add(r);
+		
+		List<Action> actions = new ArrayList<ProcessActivity.Action>();
+		
+		Action a = new Action();
+		a.label = "测试提交";
+		a.type = Action.TYPE_ACCEPT;
+		a.rule = "if(form.xxx.money > 100000 && form.xxx.money < 1000000) { goto path1 } else { goto path2 }";
 
-		JSONArray actions = new JSONArray();
+		actions.add(a);
+		
+		JSONArray jsona = JSONArray.parseArray(JSON.toJSONString(actions));
 
+		System.out.println(jsona);
 		try {
-			flowService.createPDActivity(pdId, "testActivityTitle2", "part2", receivers, actions);
-			System.out.println("添加流程节点成功");
+			Long id = flowService.createPDActivity(pdId, "testActivityTitle2", "part2", receivers, actions);
+			
+			System.out.println("添加流程节点成功+"+id);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -189,9 +206,9 @@ public class FlowProcessServiceTest {
 	 */
 	@Test
 	public void testEditPDActivity() {
-		JSONArray receivers = new JSONArray();
-
-		JSONArray actions = new JSONArray();
+		List<Receiver> receivers = new ArrayList<ProcessActivity.Receiver>(); 
+		
+		List<Action> actions = new ArrayList<ProcessActivity.Action>(); 
 
 		try {
 			int state = flowService.editPDActivity(pdId, activityId, "修改流程节点标题", "修改part", receivers, actions);

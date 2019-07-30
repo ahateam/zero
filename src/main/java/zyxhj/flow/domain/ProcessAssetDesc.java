@@ -5,7 +5,7 @@ package zyxhj.flow.domain;
  */
 public class ProcessAssetDesc {
 
-	public static final String TYPE_ANNEX = "annex";
+	public static final String TYPE_ANNEX = "annex";  
 	public static final String TYPE_FORM = "form";
 	public static final String TYPE_REPORT = "report";
 	public static final String TYPE_FILE = "file";
@@ -15,4 +15,5 @@ public class ProcessAssetDesc {
 	public String name;// 名称
 	public String remark;// 备注
 	public Boolean necessary;// 是否必须
+	
 }
