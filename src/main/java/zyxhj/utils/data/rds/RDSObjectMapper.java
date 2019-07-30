@@ -255,6 +255,8 @@ public class RDSObjectMapper {
 				ret.put(mapper.alias, JSON.toJSONString(value));
 			} else if (value instanceof JSONArray) {
 				ret.put(mapper.alias, JSON.toJSONString(value));
+			} else if (value instanceof List) {
+				ret.put(mapper.alias, JSON.toJSONString(value));
 			} else {
 				// 其它对象
 				if (value == null) {

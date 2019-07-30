@@ -93,14 +93,14 @@ public class TaskList extends TSEntity {
 	/**
 	 * 接单用户编号
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long accUserId;
 
 	/**
 	 * 任务类型
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long type;
 	

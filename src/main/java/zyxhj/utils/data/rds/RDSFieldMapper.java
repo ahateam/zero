@@ -1,9 +1,13 @@
 package zyxhj.utils.data.rds;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -99,6 +103,19 @@ public class RDSFieldMapper {
 				} else {
 					objs[ind] = new JSONArray();
 				}
+			} else if (javaType.equals(List.class)) {
+				// 支持List
+				String temp = rs.getString(alias);
+
+				ParameterizedType listGenericType = (ParameterizedType) field.getGenericType();
+				Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
+				Type type = listActualTypeArguments[listActualTypeArguments.length - 1];
+
+				if (StringUtils.isNoneBlank(temp)) {
+					objs[ind] = JSON.parseArray(temp, (Class) type);
+				} else {
+					objs[ind] = new ArrayList<>();
+				}
 			} else {
 				// 其它对象
 				String temp = rs.getString(alias);
@@ -170,6 +187,21 @@ public class RDSFieldMapper {
 					arr = JSON.parseArray(temp);
 				} else {
 					arr = new JSONArray();
+				}
+				field.set(obj, arr);
+			} else if (javaType.equals(List.class)) {
+				// 支持List
+				String temp = rs.getString(alias);
+
+				ParameterizedType listGenericType = (ParameterizedType) field.getGenericType();
+				Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
+				Type type = listActualTypeArguments[listActualTypeArguments.length - 1];
+
+				List<?> arr = new ArrayList<>();
+				if (StringUtils.isNoneBlank(temp)) {
+					arr = JSON.parseArray(temp, (Class) type);
+				} else {
+					arr = new ArrayList<>();
 				}
 				field.set(obj, arr);
 			} else {

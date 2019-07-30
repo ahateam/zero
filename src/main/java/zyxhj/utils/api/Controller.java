@@ -9,10 +9,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -56,7 +59,9 @@ public abstract class Controller {
 	@Target(ElementType.PARAMETER)
 	@Retention(RetentionPolicy.RUNTIME)
 	protected @interface P {
-		public boolean r() default true;
+		public boolean r()
+
+		default true;
 
 		public String t();
 	}
@@ -317,6 +322,14 @@ public abstract class Controller {
 				return getJSONObject(req, name);
 			} else if (c.equals(JSONArray.class)) {
 				return getJSONArray(req, name);
+			} else if (c.equals(List.class)) {
+				System.out.print("----------------");
+				ParameterizedType listGenericType = (ParameterizedType) p.getParameterizedType();
+				Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
+				Type type = listActualTypeArguments[listActualTypeArguments.length - 1];
+				System.out.println(type.getTypeName());
+
+				return getList(req, name, (Class) type);
 			} else {
 				return getObject(req, name, c);
 			}
@@ -340,6 +353,14 @@ public abstract class Controller {
 				return getJSONObjectCanNull(req, name);
 			} else if (c.equals(JSONArray.class)) {
 				return getJSONArrayCanNull(req, name);
+			} else if (c.equals(List.class)) {
+				System.out.print("----------------");
+				ParameterizedType listGenericType = (ParameterizedType) p.getParameterizedType();
+				Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
+				Type type = listActualTypeArguments[listActualTypeArguments.length - 1];
+				System.out.println(type.getTypeName());
+
+				return getListCanNull(req, name, (Class) type);
 			} else {
 				return getObjectCanNull(req, name, c);
 			}
@@ -727,6 +748,36 @@ public abstract class Controller {
 			return jo.getObject(key, clazz);
 		} catch (ClassCastException cce) {
 			return null;
+		}
+	}
+
+	/**
+	 * 获取List，不可为空
+	 */
+	private static <X> List<X> getList(JSONObject jo, String key, Class<X> clazz) throws ServerException {
+		try {
+			String temp = jo.getString(key);
+			if (StringUtils.isNoneBlank(temp)) {
+				return JSON.parseArray(temp, clazz);
+			} else {
+				return new ArrayList<>();
+			}
+		} catch (ClassCastException cce) {
+			throw new ServerException(BaseRC.REQUEST_PARSE_ERROR,
+					StringUtils.join("getListNotNull>", key, ">", cce.getMessage()));
+		}
+	}
+
+	private static <X> List<X> getListCanNull(JSONObject jo, String key, Class<X> clazz) throws ServerException {
+		try {
+			String temp = jo.getString(key);
+			if (StringUtils.isNoneBlank(temp)) {
+				return JSON.parseArray(temp, clazz);
+			} else {
+				return new ArrayList<>();
+			}
+		} catch (ClassCastException cce) {
+			return new ArrayList<>();
 		}
 	}
 

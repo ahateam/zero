@@ -1,22 +1,16 @@
 package zyxhj.cms.domian;
 
-import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
-import com.alicloud.openservices.tablestore.model.search.FieldType;
-
 import zyxhj.utils.api.Controller.ENUMVALUE;
-import zyxhj.utils.data.ts.TSAnnEntity;
-import zyxhj.utils.data.ts.TSAnnField;
-import zyxhj.utils.data.ts.TSAnnID;
-import zyxhj.utils.data.ts.TSAnnIndex;
-import zyxhj.utils.data.ts.TSEntity;
+import zyxhj.utils.data.rds.RDSAnnEntity;
+import zyxhj.utils.data.rds.RDSAnnField;
+import zyxhj.utils.data.rds.RDSAnnID;
 
 /**
  * 
  * 通用标签
  */
-@TSAnnEntity(alias = "ContentTag", indexName = "ContentTagIndex")
-public class ContentTag extends TSEntity {
-
+@RDSAnnEntity(alias = "tb_content_tag")
+public class ContentTag {
 
 	public static enum STATUS implements ENUMVALUE {
 		DISABLED((byte) 0, "禁用"), //
@@ -43,42 +37,39 @@ public class ContentTag extends TSEntity {
 	}
 
 	/**
-	 * 分片编号，MD5(id)，避免数据热点
-	 */
-	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.STRING)
-	public String _id;
-
-	/**
 	 * 编号
 	 */
-	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
-	
+
 	/**
 	 * 所属模块
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String module;
+
+	/**
+	 * 分组id
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long groupId;
 
 	/**
 	 * 分组关键字
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String groupKeyword;
 
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long status;
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte status;
 
 	/**
 	 * 标签名称，用于展示阅读</br>
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String name;
 }

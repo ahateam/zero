@@ -14,6 +14,8 @@ import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessActivity;
+import zyxhj.flow.domain.ProcessActivity.Action;
+import zyxhj.flow.domain.ProcessActivity.Receiver;
 import zyxhj.flow.domain.ProcessAsset;
 import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
@@ -193,8 +195,8 @@ public class FlowService extends Controller {
 			@P(t = "流程定义编号") Long pdId, //
 			@P(t = "活动标题") String title, //
 			@P(t = "所属泳道") String part, //
-			@P(t = "接收者（departments部门，roles角色，users用户）") JSONArray receivers, //
-			@P(t = "行为动作") JSONArray actions//
+			@P(t = "接收者（departments部门，roles角色，users用户）") List<Receiver> receivers, //
+			@P(t = "行为动作") List<Action> actions//
 	) throws Exception {
 		Long id = IDUtils.getSimpleId();
 		ProcessActivity pa = new ProcessActivity();
@@ -245,8 +247,8 @@ public class FlowService extends Controller {
 			@P(t = "流程节点编号") Long id, //
 			@P(t = "活动标题") String title, //
 			@P(t = "所属泳道") String part, //
-			@P(t = "接收者（departments部门，roles角色，users用户）") JSONArray receivers, //
-			@P(t = "行为动作") JSONArray actions//
+			@P(t = "接收者（departments部门，roles角色，users用户）") List<Receiver> receivers, //
+			@P(t = "行为动作") List<Action> actions//
 	) throws Exception {
 
 		ProcessActivity renew = new ProcessActivity();

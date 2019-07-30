@@ -206,7 +206,8 @@ public abstract class RDSRepository<T> {
 		}
 	}
 
-	private int executeUpdateSQL(DruidPooledConnection conn, String sql, Object[] whereParams) throws ServerException {
+	private int executeUpdateSQL(DruidPooledConnection conn, String sql, Object[] whereParams)
+			throws ServerException {
 		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
 		int count = 0;
 		try {

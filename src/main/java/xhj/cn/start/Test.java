@@ -35,12 +35,10 @@ public class Test {
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 
-//			RDSUtils.createTableByEntity(dds, TableQuery.class);
-//			RDSUtils.createTableByEntity(dds, Module.class);
+//			RDSUtils.createTableByEntity(dds, ContentTag.class);
 
-//			TSUtils.createTableByEntity(client, TaskList.class);
 
-//			RDSUtils.createTableByEntity(dds, ProcessDefinition.class);
+			TSUtils.createTableByEntity(client, TaskList.class);
 //			TSUtils.drapTableByEntity(client, TaskList.class);
 			client.shutdown();
 

@@ -2,7 +2,6 @@ package zyxhj.flow.domain;
 
 import java.util.List;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.utils.data.rds.RDSAnnEntity;
@@ -44,10 +43,10 @@ public class ProcessActivity {
 	 * 接收者（departments部门，roles角色，users用户）
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public JSONArray receivers;
+	public List<Receiver> receivers;
 
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public JSONArray actions;// 行为
+	public List<Action> actions;// 行为
 
 	/**
 	 * 存放节点样式信息
@@ -68,6 +67,12 @@ public class ProcessActivity {
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte LogicalDelete;
 
+	/**
+	 * 时间，小时为单位
+	 */
+	@RDSAnnField(column = RDSAnnField.INTEGER)
+	public Integer timeout;
+
 	public static class Receiver {
 
 		public static final String TYPE_DEPARTMENT = "department";
@@ -78,6 +83,7 @@ public class ProcessActivity {
 		public Long id;// 编号
 		public String label;// 标题
 		public String remark;// 备注
+
 	}
 
 	public static class Action {
@@ -90,27 +96,19 @@ public class ProcessActivity {
 		 * 4，时间超时</br>
 		 */
 
-		public static final String TYPE_SUBMIT = "submit";// 提交
-		public static final String TYPE_TIMEOUT = "timeout";// 超时
+		public static final String TYPE_ACCEPT = "accept";
+		public static final String TYPE_REJECT = "reject";
+		public static final String TYPE_TERMINATE = "terminate";
 
-		/**
-		 * 类型</br>
-		 * 审批通过，拒绝</br>
-		 * 终止。。。还待细节设计</br>
-		 * 时间到期事件
-		 */
 		public String type;
 
-		/**
-		 * 选项
-		 */
-		public JSONArray options;
+		public String label;
 
 		/**
 		 * 规则引擎脚本</br>
-		 * if
 		 */
-		public String rule;
+		public String rule;// if(form.123.money > 300)goto target1 else goto target2
+
 	}
 
 }
