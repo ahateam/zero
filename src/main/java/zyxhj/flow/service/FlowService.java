@@ -8,12 +8,14 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessAsset;
+import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
 import zyxhj.flow.repository.ProcessActivityRepository;
@@ -106,7 +108,6 @@ public class FlowService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.updateByKey(conn, "id", id, renew, true);
 		}
-
 	}
 
 	@POSTAPI(//
@@ -129,13 +130,11 @@ public class FlowService extends Controller {
 			des = "查询当前流程定义", //
 			ret = "ProcessDefinition"//
 	)
-	public ProcessDefinition getPDById(
-			@P(t = "流程定义编号") Long pdId//
+	public ProcessDefinition getPDById(@P(t = "流程定义编号") Long pdId//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.getByKey(conn, "id", pdId);
 		}
-
 	}
 
 	@POSTAPI(path = "delPD", //
@@ -145,20 +144,37 @@ public class FlowService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.deleteByKey(conn, "id", pdId);
 		}
-
 	}
 
 	@POSTAPI(//
 			path = "setPDVisual", //
 			des = "设置流程定义的全局样式信息", //
-			ret = "所影响的记录行数"
-			)
+			ret = "所影响的记录行数")
 	public int setPDVisual(//
 			@P(t = "流程定义编号") Long pdId, //
 			@P(t = "流程定义的全局样式信息") JSONObject visual//
 	) throws Exception {
 		ProcessDefinition pd = new ProcessDefinition();
 		pd.visual = visual;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return definitionRepository.updateByKey(conn, "id", pdId, pd, true);
+		}
+	}
+
+	@POSTAPI(//
+			path = "setPDAssetDescList", //
+			des = "为流程定义设置资产需求描述", //
+			ret = "更新影响的记录行数")
+	public int setPDAssetDescList(//
+			@P(t = "流程定义编号") Long pdId, //
+			@P(t = "要设置的列表") List<ProcessAssetDesc> assetDescList//
+	) throws Exception {
+		ProcessAssetDesc pad = new ProcessAssetDesc();
+		pad.id = IDUtils.getSimpleId();
+
+		ProcessDefinition pd = new ProcessDefinition();
+		pd.assetDesc = assetDescList;
+
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.updateByKey(conn, "id", pdId, pd, true);
 		}
@@ -240,12 +256,12 @@ public class FlowService extends Controller {
 		renew.actions = actions;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-		
-			return activityRepository.updateByANDKeys(conn, new String[] {"pd_id","id"}, new Object[] {pdId, id}, renew, true);
-		
+
+			return activityRepository.updateByANDKeys(conn, new String[] { "pd_id", "id" }, new Object[] { pdId, id },
+					renew, true);
+
 		}
 	}
-	
 
 	@POSTAPI(//
 			path = "getPDActivityList", //
@@ -262,19 +278,18 @@ public class FlowService extends Controller {
 		}
 	}
 
-
 	@POSTAPI(//
 			path = "getPDActivityById", //
 			des = "通过流程定义编号与流程节点编号得到流程节点", //
 			ret = "ProcessActivity"//
 	)
-	public ProcessActivity getPDActivityById(
-			@P(t = "流程定义编号") Long pdid,//
+	public ProcessActivity getPDActivityById(@P(t = "流程定义编号") Long pdid, //
 			@P(t = "流程节点编号") Long activityid//
-			) throws Exception {
-		
+	) throws Exception {
+
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return activityRepository.getByANDKeys(conn, new String[] {"pd_id", "id"}, new Object[] {pdid, activityid});
+			return activityRepository.getByANDKeys(conn, new String[] { "pd_id", "id" },
+					new Object[] { pdid, activityid });
 		} catch (ServerException e) {
 			e.printStackTrace();
 		}
@@ -444,12 +459,11 @@ public class FlowService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			
+
 			return processLogRepository.getProcessLogList(conn, processId, count, offset);
 		}
 	}
 
-	
 	@POSTAPI(//
 			path = "createPDAsset", //
 			des = "创建流程定义全局资产（附件，文件，表单等）", //
