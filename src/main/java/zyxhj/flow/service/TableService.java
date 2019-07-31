@@ -22,6 +22,7 @@ import com.alibaba.fastjson.JSONObject;
 import zyxhj.flow.domain.TableData;
 import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
+import zyxhj.flow.domain.TableSchema.Column;
 import zyxhj.flow.domain.TableVirtual;
 import zyxhj.flow.repository.TableDataRepository;
 import zyxhj.flow.repository.TableQueryRepository;
@@ -200,9 +201,7 @@ public class TableService extends Controller {
 				for (int i = 0; i < ts.columns.size(); i++) {
 					JSONObject jo = ts.columns.getJSONObject(i);
 					String key = jo.keySet().iterator().next();
-					System.out.println("222");
-					TableSchema.Column c = jo.getObject(key, TableSchema.Column.class);
-					System.out.println("333");
+					Column c = jo.toJavaObject(Column.class);
 					
 					if (c.columnType.equals(TableSchema.Column.COLUMN_TYPE_COMPUTE)) {
 						// 计算列,开始计算

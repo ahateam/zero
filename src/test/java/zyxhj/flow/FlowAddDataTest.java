@@ -205,7 +205,7 @@ public class FlowAddDataTest {
 		JSONObject data = new JSONObject();
 		data.put("applicant", "谢晗玥");
 		data.put("reviewer", "苏葛菲");
-		//data.put("applicant_time", new SimpleDateFormat("yyyy-MM-dd").parse("2019-05-06"));
+		data.put("applicant_time", new SimpleDateFormat("yyyy-MM-dd").parse("2019-05-06"));
 		System.out.println(data);
 		
 		tableService.insertTableData(400523134913468L, data);
