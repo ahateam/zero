@@ -8,6 +8,7 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 
 import zyxhj.flow.domain.Department;
 import zyxhj.flow.repository.DepartmentRepository;
+import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
@@ -30,9 +31,11 @@ public class DepartmentService {
 		}
 	}
 	
+
 	public void createDepartment(DruidPooledConnection conn, String name, String remark) {
 		
 		Department d = new Department();
+		d.id = IDUtils.getSimpleId();
 		d.name = name ;
 		d.remark = remark;
 		try {

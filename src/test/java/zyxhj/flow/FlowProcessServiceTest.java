@@ -412,7 +412,7 @@ public class FlowProcessServiceTest {
 	}
 	
 	@Test
-	public void testQueryAssetDescList() {
+	public void testQueryAssetDescList() throws Exception {
 		List<ProcessAssetDesc> pad = flowService.getAssetDescList(activityId, 20, 0);
 		System.out.println(pad.size());
 	}

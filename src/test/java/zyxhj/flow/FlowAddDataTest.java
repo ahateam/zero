@@ -1,11 +1,14 @@
 package zyxhj.flow;
 
+import java.text.SimpleDateFormat;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.service.UserRoleService;
 import zyxhj.core.service.UserService;
@@ -39,15 +42,15 @@ public class FlowAddDataTest {
 		try {
 			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
 
-			userService = new UserService();
+			userService = Singleton.ins(UserService.class);
 			
-			roleService = new UserRoleService();
+			roleService = Singleton.ins(UserRoleService.class);
 			
-			flowService = new FlowService("");
+			flowService = Singleton.ins(FlowService.class,"flow");
 			
-			annexService = new AnnexService("");
+			annexService = Singleton.ins(AnnexService.class,"annex");
 			
-			tableService = new TableService("");
+			tableService = Singleton.ins(TableService.class,"table");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -193,8 +196,19 @@ public class FlowAddDataTest {
 		columns.add(c1);
 		columns.add(c2);
 		
-		
 		tableService.createTableSchema("请假申请表", TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v(), columns);
+	}
+	
+	@Test
+	public void testAddTableData() throws Exception {
+		
+		JSONObject data = new JSONObject();
+		data.put("applicant", "谢晗玥");
+		data.put("reviewer", "苏葛菲");
+		//data.put("applicant_time", new SimpleDateFormat("yyyy-MM-dd").parse("2019-05-06"));
+		System.out.println(data);
+		
+		tableService.insertTableData(400523134913468L, data);
 		
 		
 	}

@@ -13,6 +13,12 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import zyxhj.core.domain.User;
+import zyxhj.core.domain.UserRole;
+import zyxhj.core.repository.UserRepository;
+import zyxhj.core.repository.UserRoleRepository;
+import zyxhj.core.service.UserRoleService;
+import zyxhj.core.service.UserService;
 import zyxhj.flow.domain.Department;
 import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessActivity;
@@ -48,6 +54,8 @@ public class FlowService extends Controller {
 	private ProcessLogRepository processLogRepository;
 	private ProcessAssetRepository processAssetRepository;
 	private DepartmentRepository departmentRepository;
+	private UserRepository userRepository;
+	private UserRoleRepository roleRepository;
 
 	public FlowService(String node) {
 		super(node);
@@ -686,26 +694,56 @@ public class FlowService extends Controller {
 			@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId,
 			Integer count,
 			Integer offset
-			){
+			) throws Exception{
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return assetDescRepository.getListByKey(conn, "owner_id", ownerId, count, offset);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
+		} 
 	}
 	
-	public void createDepartment(DruidPooledConnection conn, String name, String remark) {
-		
-		Department d = new Department();
-		d.id = IDUtils.getSimpleId();
-		d.name = name ;
-		d.remark = remark;
-		try {
-			departmentRepository.insert(conn, d);
-		} catch (ServerException e) {
-			e.printStackTrace();
-		}
+
+	@POSTAPI(//
+			path = "getUserList", //
+			des = "得到用户列表",//
+			ret = "List<User>"//
+	)
+	public List<User> getUserList(//
+			Integer count,//
+			Integer offset//
+			) throws Exception{
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return userRepository.getList(conn, count, offset);
+		} 
+
 	}
+	
+	@POSTAPI(//
+			path = "getUserRoleList", //
+			des = "得到角色列表",//
+			ret = "List<UserRole>"//
+	)
+	public List<UserRole> getUserRoleList(//
+			Integer count,//
+			Integer offset//
+			) throws Exception{
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return roleRepository.getList(conn, count, offset);
+		} 
+	}
+	
+	
+	@POSTAPI(//
+			path = "getDepartmentList", //
+			des = "得到部门列表",//
+			ret = "List<Department>"//
+	)
+	public List<Department> getDepartmentList(//
+			Integer count,//
+			Integer offset//
+			) throws Exception{
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return departmentRepository.getList(conn, count, offset);
+		} 
+	}
+	
 	
 }

@@ -179,7 +179,8 @@ public class TableService extends Controller {
 			path = "insertTableData", //
 			des = "添加表数据" //
 	)
-	public void insertTableData(@P(t = "表结构编号") Long tableSchemaId, //
+	public void insertTableData(//
+			@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "运算表数据") JSONObject data//
 	) throws Exception {
 
@@ -199,8 +200,10 @@ public class TableService extends Controller {
 				for (int i = 0; i < ts.columns.size(); i++) {
 					JSONObject jo = ts.columns.getJSONObject(i);
 					String key = jo.keySet().iterator().next();
+					System.out.println("222");
 					TableSchema.Column c = jo.getObject(key, TableSchema.Column.class);
-		
+					System.out.println("333");
+					
 					if (c.columnType.equals(TableSchema.Column.COLUMN_TYPE_COMPUTE)) {
 						// 计算列,开始计算
 						System.out.println("开始计算");

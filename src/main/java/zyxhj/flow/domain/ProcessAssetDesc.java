@@ -18,26 +18,27 @@ public class ProcessAssetDesc {
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long ownerId;
-	
+
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
 
 	@RDSAnnField(column = "VARCHAR(32)")
 	public String type;// 资产类型
-	
 
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String name;// 名称
-	
 
 	@RDSAnnField(column = RDSAnnField.TEXT_TITLE)
 	public String remark;// 备注
-	
 
 	@RDSAnnField(column = RDSAnnField.BOOLEAN)
 	public Boolean necessary;// 是否必须
+
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String template;// 模版文件地址
+
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String ext;// 模版文件地址
 
 }
