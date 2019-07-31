@@ -353,6 +353,8 @@ public abstract class RDSRepository<T> {
 		buildCountAndOffset(sb, count, offset);
 
 		String sql = sb.toString();
+		
+		System.out.println(sql);
 		log.debug(sql);
 		return executeQuerySQL(conn, sql, whereParams);
 	}

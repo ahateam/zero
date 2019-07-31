@@ -87,7 +87,9 @@ public class FlowProcessServiceTest {
 
 			System.out.println("流程实例集合长度：" + jo.size());
 		} catch (Exception e) {
+			
 			e.printStackTrace();
+			
 		}
 	}
 
@@ -382,8 +384,43 @@ public class FlowProcessServiceTest {
 		}
 	}
 
+	
+	/**
+	 * 	ProcessAssetDesc
+	 * @throws Exception 
+	 */
+	
 	@Test
-	public void testTemp() {
-
+	public void testCreateAssetDesc() throws Exception {
+		flowService.createAssetDesc(activityId, "form", "测试资产定义", true, "测试创建资产定义");
 	}
+	
+	@Test
+	public void testEditAssetDesc() {
+		
+		try {
+			flowService.editAssetDesc(activityId, 400506106929216L, "FILE", "测试资产定义1", false, "测试修改资产定义");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testDelAssetDesc() {
+		
+		flowService.delAssetDesc(activityId, 400506162233926L);
+	}
+	
+	@Test
+	public void testQueryAssetDescList() {
+		List<ProcessAssetDesc> pad = flowService.getAssetDescList(activityId, 20, 0);
+		System.out.println(pad.size());
+	}
+	
+	
+	
+	
+	
+	
+	
 }
