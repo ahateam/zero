@@ -1,7 +1,6 @@
 package zyxhj.utils.data;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -77,4 +76,71 @@ public class EXPTest {
 
 	}
 
+	@Test
+	public void testLike() {
+
+		try {
+			EXP e = new EXP(true).exp("t1", "=", "?", 1).and(EXP.like("name", "namestr"));
+
+			StringBuffer sb = new StringBuffer();
+			ArrayList params = new ArrayList<>();
+
+			e.toSQL(sb, params);
+			System.out.println(">>>" + sb.toString());
+			Assert.assertEquals(sb.toString(), "t1 = ? AND name LIKE '%namestr%'");
+		} catch (ServerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testIn() {
+		try {
+			EXP e = new EXP(true).exp("t1", "=", "?", 1).and(EXP.in("name", 123, 234, "sdf", 3534, 3453, 334));
+
+			StringBuffer sb = new StringBuffer();
+			ArrayList params = new ArrayList<>();
+
+			e.toSQL(sb, params);
+			System.out.println(">>>" + sb.toString());
+//			Assert.assertEquals(sb.toString(), "t1 = ? AND name LIKE '%namestr%'");
+		} catch (ServerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testRemove() {
+
+		try {
+			EXP tt = new EXP(true);
+			tt.exp("this is shit", null).or("this is fuck", null);
+
+			EXP exp = new EXP(true);
+			exp.exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
+
+			EXP exp2 = new EXP(true);
+			exp2.exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
+
+			EXP expMax = new EXP(true);
+			expMax.exp(exp).and(exp2);
+
+			StringBuffer sb = new StringBuffer();
+			ArrayList<Object> params = new ArrayList<>();
+			expMax.toSQL(sb, params);
+
+			String str = sb.toString();
+			String pstr = JSON.toJSONString(params);
+			System.out.println("===" + str);
+			System.out.println(">>>" + pstr);
+
+			Assert.assertEquals(sb.toString(),
+					"t1 = ? AND t2 = ? AND (this is shit OR this is fuck) AND (t1 = ? AND t2 = ? AND (this is shit OR this is fuck))");
+		} catch (ServerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
 }

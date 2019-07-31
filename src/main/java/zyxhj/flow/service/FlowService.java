@@ -1,6 +1,5 @@
 package zyxhj.flow.service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -9,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -172,8 +170,8 @@ public class FlowService extends Controller {
 			@P(t = "流程定义编号") Long pdId, //
 			@P(t = "要设置的列表") List<ProcessAssetDesc> assetDescList//
 	) throws Exception {
-		
-		for(int i = 0; i < assetDescList.size(); i++) {
+
+		for (int i = 0; i < assetDescList.size(); i++) {
 			assetDescList.get(i).id = IDUtils.getSimpleId();
 		}
 
@@ -288,8 +286,7 @@ public class FlowService extends Controller {
 			des = "通过流程定义编号与流程节点编号得到流程节点", //
 			ret = "ProcessActivity"//
 	)
-	public ProcessActivity getPDActivityById(
-			@P(t = "流程定义编号") Long pdid, //
+	public ProcessActivity getPDActivityById(@P(t = "流程定义编号") Long pdid, //
 			@P(t = "流程节点编号") Long activityid//
 	) throws Exception {
 
@@ -317,29 +314,27 @@ public class FlowService extends Controller {
 			return activityRepository.updateByKey(conn, "id", activityId, pa, true);
 		}
 	}
-	
+
 	@POSTAPI(//
 			path = "setPDActivityVisualList", //
 			des = "设置流程节点样式信息", //
 			ret = "所影响的记录行数"//
 	)
 	public void setPDActivityVisualList(//
-			@P(t = "流程定义编号") Long pdId,//
-			@P(t = "流程节点编号") JSONArray activityVisualList,//
-			Integer count,
-			Integer offset
-	) throws Exception {
-		
-		for(int  i = 0;i < activityVisualList.size();i++) {
+			@P(t = "流程定义编号") Long pdId, //
+			@P(t = "流程节点编号") JSONArray activityVisualList, //
+			Integer count, Integer offset) throws Exception {
+
+		for (int i = 0; i < activityVisualList.size(); i++) {
 			JSONObject jo = activityVisualList.getJSONObject(i);
-			
-			Long id =  jo.getLong("id");
+
+			Long id = jo.getLong("id");
 			try {
 				setPDActivityVisual(id, jo);
-			}catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
+
 		}
 	}
 
@@ -514,11 +509,11 @@ public class FlowService extends Controller {
 			ret = "ProcessAsset实例"//
 	)
 	public ProcessAsset createActivityAsset(//
-			@P(t = "流程定义编号") Long pdId,//
+			@P(t = "流程定义编号") Long pdId, //
 			@P(t = "流程节点Activity编号") Long activityId, //
 			@P(t = "资产类型") String type, //
 			@P(t = "资产名称") String name, //
-			@P(t = "附件编号，可扩展") Long annexId,//
+			@P(t = "附件编号，可扩展") Long annexId, //
 			@P(t = "是否必须") Boolean necessary//
 	) throws Exception {
 
@@ -604,6 +599,5 @@ public class FlowService extends Controller {
 			return processAssetRepository.deleteByKey(conn, "id", assetId);
 		}
 	}
-	
-	
+
 }

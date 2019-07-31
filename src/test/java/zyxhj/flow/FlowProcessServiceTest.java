@@ -171,31 +171,31 @@ public class FlowProcessServiceTest {
 	public void testCreatePDActivity() {
 
 		List<Receiver> receivers = new ArrayList<ProcessActivity.Receiver>();
-		
-			Receiver r = new Receiver();
-			r.type = Receiver.TYPE_DEPARTMENT;
-			r.id = IDUtils.getSimpleId();
-			r.label = "测试部门";
-			r.remark = "单元测试Receiver数据";
-			
-			receivers.add(r);
-		
+
+		Receiver r = new Receiver();
+		r.type = Receiver.TYPE_DEPARTMENT;
+		r.id = IDUtils.getSimpleId();
+		r.label = "测试部门";
+		r.remark = "单元测试Receiver数据";
+
+		receivers.add(r);
+
 		List<Action> actions = new ArrayList<ProcessActivity.Action>();
-		
+
 		Action a = new Action();
 		a.label = "测试提交";
 		a.type = Action.TYPE_ACCEPT;
 		a.rule = "if(form.xxx.money > 100000 && form.xxx.money < 1000000) { goto path1 } else { goto path2 }";
 
 		actions.add(a);
-		
+
 		JSONArray jsona = JSONArray.parseArray(JSON.toJSONString(actions));
 
 		System.out.println(jsona);
 		try {
 			Long id = flowService.createPDActivity(pdId, "testActivityTitle2", "part2", receivers, actions);
-			
-			System.out.println("添加流程节点成功+"+id);
+
+			System.out.println("添加流程节点成功+" + id);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -206,9 +206,9 @@ public class FlowProcessServiceTest {
 	 */
 	@Test
 	public void testEditPDActivity() {
-		List<Receiver> receivers = new ArrayList<ProcessActivity.Receiver>(); 
-		
-		List<Action> actions = new ArrayList<ProcessActivity.Action>(); 
+		List<Receiver> receivers = new ArrayList<ProcessActivity.Receiver>();
+
+		List<Action> actions = new ArrayList<ProcessActivity.Action>();
 
 		try {
 			int state = flowService.editPDActivity(pdId, activityId, "修改流程节点标题", "修改part", receivers, actions);
@@ -382,4 +382,8 @@ public class FlowProcessServiceTest {
 		}
 	}
 
+	@Test
+	public void testTemp() {
+
+	}
 }
