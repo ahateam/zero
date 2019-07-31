@@ -245,5 +245,6 @@ public class UserService {
 		u.email = email;
 		return userRepository.updateByKey(conn, "id", userId, u, true);
 	}
+	
 
 }

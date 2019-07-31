@@ -13,6 +13,7 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import zyxhj.flow.domain.Department;
 import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessActivity.Action;
@@ -21,6 +22,7 @@ import zyxhj.flow.domain.ProcessAsset;
 import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
+import zyxhj.flow.repository.DepartmentRepository;
 import zyxhj.flow.repository.ProcessActivityRepository;
 import zyxhj.flow.repository.ProcessAssetDescRepository;
 import zyxhj.flow.repository.ProcessAssetRepository;
@@ -45,6 +47,7 @@ public class FlowService extends Controller {
 	private ProcessActivityRepository activityRepository;
 	private ProcessLogRepository processLogRepository;
 	private ProcessAssetRepository processAssetRepository;
+	private DepartmentRepository departmentRepository;
 
 	public FlowService(String node) {
 		super(node);
@@ -57,6 +60,7 @@ public class FlowService extends Controller {
 			processLogRepository = Singleton.ins(ProcessLogRepository.class);
 			processAssetRepository = Singleton.ins(ProcessAssetRepository.class);
 			assetDescRepository = Singleton.ins(ProcessAssetDescRepository.class);
+			departmentRepository = Singleton.ins(DepartmentRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -691,5 +695,17 @@ public class FlowService extends Controller {
 		return null;
 	}
 	
+	public void createDepartment(DruidPooledConnection conn, String name, String remark) {
+		
+		Department d = new Department();
+		d.id = IDUtils.getSimpleId();
+		d.name = name ;
+		d.remark = remark;
+		try {
+			departmentRepository.insert(conn, d);
+		} catch (ServerException e) {
+			e.printStackTrace();
+		}
+	}
 	
 }

@@ -8,7 +8,9 @@ import zyxhj.cms.domian.ContentTagGroup;
 import zyxhj.core.domain.Module;
 import zyxhj.core.domain.Tag;
 import zyxhj.core.domain.TagGroup;
+import zyxhj.core.domain.UserRole;
 import zyxhj.flow.domain.Annex;
+import zyxhj.flow.domain.Department;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
@@ -36,7 +38,7 @@ public class Test {
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 
-//			RDSUtils.createTableByEntity(dds, ProcessAssetDesc.class);
+			RDSUtils.createTableByEntity(dds, Department.class);
 
 
 //			TSUtils.createTableByEntity(client, TaskList.class);
