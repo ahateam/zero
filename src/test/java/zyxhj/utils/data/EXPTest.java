@@ -18,13 +18,13 @@ public class EXPTest {
 
 		EXP e1;
 		try {
-			e1 = new EXP(true).exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and("t5", "LIKE", "%abc%");
+			e1 = EXP.ins().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and("t5", "LIKE", "%abc%");
 
-			EXP e2 = new EXP(true).exp("tt1", "<>", "?", "a").or("tt2", "=", "?", "b");
+			EXP e2 = EXP.ins().exp("tt1", "<>", "?", "a").or("tt2", "=", "?", "b");
 
-			EXP e3 = new EXP(true).exp("t3", "=", "?", 3).and("t4", "=", "?", 4);
+			EXP e3 = EXP.ins().exp("t3", "=", "?", 3).and("t4", "=", "?", 4);
 
-			EXP exp = new EXP(true).exp(e1, "AND", e3).and(e2);
+			EXP exp = EXP.ins().exp(e1, "AND", e3).and(e2);
 
 			StringBuffer sb = new StringBuffer("WHERE ");
 			ArrayList<Object> params = new ArrayList<>();
@@ -53,14 +53,14 @@ public class EXPTest {
 		Object obj = null;
 
 		try {
-			EXP e1 = new EXP(true).exp("t1", "=", "?", 1).and("t2", "=", "?", obj).or("t3", "=", "?", obj);
+			EXP e1 = EXP.ins().exp("t1", "=", "?", 1).and("t2", "=", "?", obj).or("t3", "=", "?", obj);
 		} catch (ServerException e) {
 			// e.printStackTrace();
 			Assert.assertTrue(true);
 		}
 
 		try {
-			EXP e2 = new EXP(false).exp("t1", "=", "?", 1).and("t2", "=", "?", obj).or("t3", "=", "?", obj);
+			EXP e2 = EXP.ins(false).exp("t1", "=", "?", obj).and("t2", "=", "?", "t2").or("t3", "=", "?", obj);
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList<Object> params = new ArrayList<>();
@@ -70,7 +70,7 @@ public class EXPTest {
 			e2.toSQL(sb, params);
 			System.out.println(">>>" + sb.toString());
 
-			Assert.assertEquals(sb.toString(), "t1 = ?");
+			Assert.assertEquals(sb.toString(), "t2 = ?");
 		} catch (ServerException e) {
 			Assert.assertTrue(true);
 		}
@@ -81,7 +81,7 @@ public class EXPTest {
 	public void testLike() {
 
 		try {
-			EXP e = new EXP(true).exp("t1", "=", "?", 1).and(EXP.like("name", "namestr"));
+			EXP e = EXP.ins().exp("t1", "=", "?", 1).and(EXP.like("name", "namestr"));
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList params = new ArrayList<>();
@@ -98,7 +98,7 @@ public class EXPTest {
 	@Test
 	public void testIn() {
 		try {
-			EXP e = new EXP(true).exp("t1", "=", "?", 1).and(EXP.in("name", 123, 234, "sdf", 3534, 3453, 334));
+			EXP e = EXP.ins().exp("t1", "=", "?", 1).and(EXP.in("name", 123, 234, "sdf", 3534, 3453, 334));
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList params = new ArrayList<>();
@@ -115,7 +115,7 @@ public class EXPTest {
 	@Test
 	public void testInOrdered() {
 		try {
-			EXP e = new EXP(true).exp("t1", "=", "?", 1).and(EXP.inOrdered("name", 123, 234, "sdf", 3534, 3453, 334));
+			EXP e = EXP.ins().exp("t1", "=", "?", 1).and(EXP.inOrdered("name", 123, 234, "sdf", 3534, 3453, 334));
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList params = new ArrayList<>();
@@ -134,17 +134,13 @@ public class EXPTest {
 	public void testRemove() {
 
 		try {
-			EXP tt = new EXP(true);
-			tt.exp("this is shit", null).or("this is fuck", null);
+			EXP tt = EXP.ins().exp("this is shit", null).or("this is fuck", null);
 
-			EXP exp = new EXP(true);
-			exp.exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
+			EXP exp = EXP.ins().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
 
-			EXP exp2 = new EXP(true);
-			exp2.exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
+			EXP exp2 = EXP.ins().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
 
-			EXP expMax = new EXP(true);
-			expMax.exp(exp).and(exp2);
+			EXP expMax = EXP.ins().exp(exp).and(exp2);
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList<Object> params = new ArrayList<>();

@@ -41,8 +41,27 @@ public class EXP implements Cloneable {
 
 	private Object[] args;
 
-	public EXP(boolean exact) {
+	private EXP(boolean exact) {
 		this.exact = exact;
+	}
+
+	public static EXP ins(boolean exact) {
+		return new EXP(exact);
+	}
+
+	/**
+	 * 默认是严谨的
+	 */
+	public static EXP ins() {
+		return new EXP(true);
+	}
+
+	/**
+	 * 设置严谨性
+	 */
+	public EXP exact(boolean exact) {
+		this.exact = exact;
+		return this;
 	}
 
 	/**
@@ -92,8 +111,10 @@ public class EXP implements Cloneable {
 
 	/**
 	 * SQL的 key = value 语句（太常用，所以做一个）</br>
+	 * 
+	 * @throws ServerException
 	 */
-	public static EXP key(String key, Object value) {
+	public static EXP key(String key, Object value) throws ServerException {
 		return new EXP(true).exp(key, "=", "?", value);
 	}
 
@@ -142,13 +163,18 @@ public class EXP implements Cloneable {
 		return this;
 	}
 
-	public EXP exp(Object left, String op, Object right, Object... args) {
-		this.t = TYPE_EXP;
-		this.op = op;
-		this.ps = Arrays.asList(left, right);
-		this.args = args;
+	public EXP exp(Object left, String op, Object right, Object... args) throws ServerException {
+		if (isShit(exact, right, args)) {
+			// 宽松验证参数，且当前右参为空，放弃本次添加
+			return this;
+		} else {
+			this.t = TYPE_EXP;
+			this.op = op;
+			this.ps = Arrays.asList(left, right);
+			this.args = args;
 
-		return this;
+			return this;
+		}
 	}
 
 	protected EXP clone() {
