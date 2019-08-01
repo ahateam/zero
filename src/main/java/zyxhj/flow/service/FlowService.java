@@ -69,6 +69,9 @@ public class FlowService extends Controller {
 			processAssetRepository = Singleton.ins(ProcessAssetRepository.class);
 			assetDescRepository = Singleton.ins(ProcessAssetDescRepository.class);
 			departmentRepository = Singleton.ins(DepartmentRepository.class);
+			userRepository  = Singleton.ins(UserRepository.class);
+			roleRepository = Singleton.ins(UserRoleRepository.class);
+			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -711,7 +714,11 @@ public class FlowService extends Controller {
 			Integer offset//
 			) throws Exception{
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return userRepository.getList(conn, count, offset);
+			List<User> ulist =  userRepository.getList(conn, count, offset);
+			for(User u : ulist) {
+				u.pwd = null;
+			}
+			return ulist;
 		} 
 
 	}
@@ -744,6 +751,5 @@ public class FlowService extends Controller {
 			return departmentRepository.getList(conn, count, offset);
 		} 
 	}
-	
 	
 }

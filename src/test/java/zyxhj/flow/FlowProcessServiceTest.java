@@ -12,6 +12,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import zyxhj.core.domain.User;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessActivity.Action;
 import zyxhj.flow.domain.ProcessActivity.Receiver;
@@ -417,6 +418,14 @@ public class FlowProcessServiceTest {
 		System.out.println(pad.size());
 	}
 	
+	
+	@Test
+	public void testQueryUserList() throws Exception {
+		
+		List<User> ulist = flowService.getUserList(count, offset);
+		
+		System.out.println(ulist.size());
+	}
 	
 	
 	

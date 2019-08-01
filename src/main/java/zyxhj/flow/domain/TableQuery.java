@@ -12,7 +12,7 @@ import zyxhj.utils.data.rds.RDSAnnID;
 @RDSAnnEntity(alias = "tb_table_query")
 public class TableQuery {
 
-	/**
+	/** 
 	 * 表ID
 	 */
 	@RDSAnnID

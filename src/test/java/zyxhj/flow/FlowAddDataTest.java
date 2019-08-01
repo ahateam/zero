@@ -84,6 +84,7 @@ public class FlowAddDataTest {
 //			userService.registByNameAndPwd(conn, "雷丽文", "500107198205246560");
 //			userService.registByNameAndPwd(conn, "苏葛菲", "500107198303143346");
 //			userService.registByNameAndPwd(conn, "谢晗玥", "500107197602108343");
+			
 		} catch (Exception e) {
 			
 			e.printStackTrace();
@@ -137,6 +138,7 @@ public class FlowAddDataTest {
 //		flowService.createDepartment(conn, "公安部", "国家公安部");
 //		flowService.createDepartment(conn, "公安厅", "省公安厅");
 //		flowService.createDepartment(conn, "公安局", "市公安局");
+		
 	}
 	
 	@Test
@@ -196,7 +198,7 @@ public class FlowAddDataTest {
 		columns.add(c1);
 		columns.add(c2);
 		
-		tableService.createTableSchema("请假申请表", TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v(), columns);
+		tableService.createTableSchema("外勤申请表", TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v(), columns);
 	}
 	
 	@Test
@@ -205,11 +207,8 @@ public class FlowAddDataTest {
 		JSONObject data = new JSONObject();
 		data.put("applicant", "谢晗玥");
 		data.put("reviewer", "苏葛菲");
-		data.put("applicant_time", new SimpleDateFormat("yyyy-MM-dd").parse("2019-05-06"));
-		System.out.println(data);
-		
-		tableService.insertTableData(400523134913468L, data);
-		
+		data.put("applicant_time", new SimpleDateFormat("yyyy-MM-dd").parse("2019-07-20"));
+		tableService.insertTableData(400526607053613L, data);
 		
 	}
 	
