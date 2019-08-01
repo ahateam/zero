@@ -43,10 +43,10 @@ public class ProcessActivity {
 	 * 接收者（departments部门，roles角色，users用户）
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public List<Receiver> receivers;
+	public String receivers;
 
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public List<Action> actions;// 行为
+	public String actions;// 行为
 
 	/**
 	 * 存放节点样式信息
@@ -59,7 +59,7 @@ public class ProcessActivity {
 	 * 定义需要哪些公共资产
 	 */
 	@RDSAnnField(column = "VARCHAR(4096)")
-	public List<ProcessAssetDesc> assetDesc;
+	public String assetDesc;
 
 	/**
 	 * 逻辑删除

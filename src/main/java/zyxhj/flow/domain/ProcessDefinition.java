@@ -68,6 +68,6 @@ public class ProcessDefinition {
 	 * 定义需要哪些公共资产
 	 */
 	@RDSAnnField(column = "VARCHAR(4096)")
-	public List<ProcessAssetDesc> assetDesc;
+	public String assetDesc;
 
 }

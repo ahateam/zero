@@ -97,7 +97,7 @@ public class FlowService extends Controller {
 		pd.title = title;
 		pd.tags = tags;
 		pd.status = ProcessDefinition.STATUS_READY;
-		pd.assetDesc = new ArrayList<ProcessAssetDesc>();
+		pd.assetDesc = new String();
 		pd.visual = new JSONObject();
 		pd.lanes = lanes;
 
@@ -189,12 +189,24 @@ public class FlowService extends Controller {
 			ret = "更新影响的记录行数")
 	public int setPDAssetDescList(//
 			@P(t = "流程定义编号") Long pdId, //
-			@P(t = "要设置的列表") List<ProcessAssetDesc> assetDescList//
+			@P(t = "要设置的列表") String assetDescList//
 	) throws Exception {
-
-		for (int i = 0; i < assetDescList.size(); i++) {
-			assetDescList.get(i).id = IDUtils.getSimpleId();
-		}
+//		List<ProcessAssetDesc> assetDescList = new ArrayList<ProcessAssetDesc>();
+//
+//		if(assetDescObj.get("table") != null) {
+//			ProcessAssetDesc padTable = (ProcessAssetDesc) assetDescObj.get("table");
+//			assetDescList.add(padTable);
+//		}
+//		
+//		if(assetDescObj.get("report") != null) {
+//			ProcessAssetDesc padReport = (ProcessAssetDesc) assetDescObj.get("report");
+//			assetDescList.add(padReport);
+//		}
+//		
+//		if(assetDescObj.get("file") != null) {
+//			ProcessAssetDesc padFile = (ProcessAssetDesc) assetDescObj.get("file");
+//			assetDescList.add(padFile);
+//		}
 
 		ProcessDefinition pd = new ProcessDefinition();
 		pd.assetDesc = assetDescList;
@@ -202,7 +214,6 @@ public class FlowService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.updateByKey(conn, "id", pdId, pd, true);
 		}
-		
 	}
 
 	///////////////////////////////////////
@@ -218,8 +229,9 @@ public class FlowService extends Controller {
 			@P(t = "流程定义编号") Long pdId, //
 			@P(t = "活动标题") String title, //
 			@P(t = "所属泳道") String part, //
-			@P(t = "接收者（departments部门，roles角色，users用户）") List<Receiver> receivers, //
-			@P(t = "行为动作") List<Action> actions//
+			@P(t = "接收者（departments部门，roles角色，users用户）") String receivers, //
+			@P(t = "行为动作") String actions,//
+			@P(t = "资源定义") String assetDesc//
 	) throws Exception {
 		Long id = IDUtils.getSimpleId();
 		ProcessActivity pa = new ProcessActivity();
@@ -231,12 +243,11 @@ public class FlowService extends Controller {
 		pa.receivers = receivers;
 		pa.actions = actions;
 		pa.active = ProcessActivity.ACTIVE_DELETE_N;
-		pa.assetDesc = new ArrayList<ProcessAssetDesc>();
+		pa.assetDesc = assetDesc;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			activityRepository.insert(conn, pa);
 		}
-
 		return pa.id;
 	}
 
@@ -271,8 +282,9 @@ public class FlowService extends Controller {
 			@P(t = "流程节点编号") Long id, //
 			@P(t = "活动标题") String title, //
 			@P(t = "所属泳道") String part, //
-			@P(t = "接收者（departments部门，roles角色，users用户）") List<Receiver> receivers, //
-			@P(t = "行为动作") List<Action> actions//
+			@P(t = "接收者（departments部门，roles角色，users用户）") String receivers, //
+			@P(t = "行为动作") String actions,//
+			@P(t = "资源定义" ) String assetDesc//
 	) throws Exception {
 
 		ProcessActivity renew = new ProcessActivity();
@@ -280,6 +292,7 @@ public class FlowService extends Controller {
 		renew.part = part;
 		renew.receivers = receivers;
 		renew.actions = actions;
+		renew.assetDesc = assetDesc;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 
@@ -362,7 +375,7 @@ public class FlowService extends Controller {
 	}
 
 	///////////////////////////////////////
-	// Activity
+	// Process
 	///////////////////////////////////////
 
 	@POSTAPI(//
@@ -714,11 +727,7 @@ public class FlowService extends Controller {
 			Integer offset//
 			) throws Exception{
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			List<User> ulist =  userRepository.getList(conn, count, offset);
-			for(User u : ulist) {
-				u.pwd = null;
-			}
-			return ulist;
+			return userRepository.getList(conn, count, offset, "id", "real_name");
 		} 
 
 	}
@@ -733,7 +742,7 @@ public class FlowService extends Controller {
 			Integer offset//
 			) throws Exception{
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return roleRepository.getList(conn, count, offset);
+			return roleRepository.getList(conn, count, offset, "id", "name");
 		} 
 	}
 	
@@ -748,8 +757,7 @@ public class FlowService extends Controller {
 			Integer offset//
 			) throws Exception{
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return departmentRepository.getList(conn, count, offset);
-		} 
+			return departmentRepository.getList(conn, count, offset, "id", "name");
+		}
 	}
-	
 }
