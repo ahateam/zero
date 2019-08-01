@@ -170,7 +170,7 @@ public class TableService extends Controller {
 	) throws Exception {
 		
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableSchemaRepository.getList(conn, count, offset);
+			return tableSchemaRepository.getList(conn, count, offset, "id", "alias");
 		}
 		
 	}
