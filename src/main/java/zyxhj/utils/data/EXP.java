@@ -41,6 +41,10 @@ public class EXP implements Cloneable {
 
 	private Object[] args;
 
+	public EXP(boolean exact) {
+		this.exact = exact;
+	}
+
 	/**
 	 * SQL的 LIKE 语句</br>
 	 */
@@ -49,12 +53,24 @@ public class EXP implements Cloneable {
 		return new EXP(false).exp(StringUtils.join(key, " LIKE '%", str, "%'"), null);
 	}
 
+	public static EXP in(String key, Object... args) {
+		StringBuffer sb = new StringBuffer(key);
+		sb.append(" IN(");
+		for (Object arg : args) {
+			sb.append("?,");
+		}
+		sb.deleteCharAt(sb.length() - 1);
+		sb.append(")");
+
+		return new EXP(false).exp(sb.toString(), Arrays.asList(args));
+	}
+
 	/**
 	 * SQL的 IN 语句（带排序）</br>
 	 */
-	public static EXP in(String key, Object... args) {
+	public static EXP inOrdered(String key, Object... args) {
 		StringBuffer sb = new StringBuffer(key);
-		sb.append(" IN (");
+		sb.append(" IN(");
 		for (Object arg : args) {
 			sb.append("?,");
 		}
@@ -74,12 +90,22 @@ public class EXP implements Cloneable {
 		return new EXP(false).exp(sb.toString(), Arrays.asList(args));
 	}
 
-	public EXP(boolean exact) {
-		this.exact = exact;
+	/**
+	 * SQL的 key = value 语句（太常用，所以做一个）</br>
+	 */
+	public static EXP key(String key, Object value) {
+		return new EXP(true).exp(key, "=", "?", value);
 	}
 
+	/**
+	 * 拷贝构造
+	 * 
+	 * @param exp
+	 *            需要拷贝的表达式
+	 */
 	public EXP exp(EXP exp) {
 		EXP c = exp.clone();
+
 		this.op = c.op;
 		this.ps = c.ps;
 		this.t = c.t;
@@ -88,6 +114,17 @@ public class EXP implements Cloneable {
 		return this;
 	}
 
+	/**
+	 * 函数方法构造
+	 * 
+	 * @param exact
+	 *            是否严谨，true则字段参数不允许为空，false则字段为空时自动跳过
+	 * @param str
+	 *            表达式文本
+	 * @param args
+	 *            表达式参数列表，
+	 * @return
+	 */
 	public EXP exp(String str, List<Object> args) {
 		this.t = TYPE_METHOD;
 		this.op = str;
@@ -149,13 +186,13 @@ public class EXP implements Cloneable {
 	public EXP and(String str, List<Object> args) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
-			exp(str, args);
+			exp(this.exact, str, args);
 			return this;
 		} else {
 			if (StringUtils.isBlank(str)) {
 				return this;
 			} else {
-				return and(new EXP(exact).exp(str, args));
+				return and(new EXP(this.exact).exp(str, args));
 			}
 		}
 	}
@@ -191,6 +228,10 @@ public class EXP implements Cloneable {
 				}
 			}
 		}
+	}
+
+	public EXP andKey(String key, Object value) throws ServerException {
+		return and(key, "=", "?", value);
 	}
 
 	public EXP or(EXP exp) throws ServerException {

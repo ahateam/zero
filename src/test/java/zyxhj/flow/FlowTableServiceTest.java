@@ -102,7 +102,7 @@ public class FlowTableServiceTest {
 		try {
 			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
 
-			tableService = Singleton.ins(TableService.class);
+			tableService = Singleton.ins(TableService.class,"table");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -114,7 +114,7 @@ public class FlowTableServiceTest {
 		conn.close();
 	}
 
-	private static final Long schemaId = 400159699711499L;
+	private static final Long schemaId = 400526194308736L;
 
 	private static final Long dataId = 400159711950692L;
 

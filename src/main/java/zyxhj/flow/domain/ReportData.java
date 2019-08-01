@@ -1,4 +1,4 @@
-package zyxhj.flow.domain;
+ package zyxhj.flow.domain;
 
 public class ReportData {
 

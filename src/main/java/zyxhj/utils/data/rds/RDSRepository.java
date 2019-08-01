@@ -23,6 +23,7 @@ import com.alibaba.fastjson.JSONObject;
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.EXP;
 
 public abstract class RDSRepository<T> {
 
@@ -34,255 +35,156 @@ public abstract class RDSRepository<T> {
 
 	private Class<T> clazz;
 
-	public static PreparedStatement prepareStatement(Connection conn, String sql, Object[] params)
-			throws ServerException {
-		PreparedStatement ps = null;
-		try {
-			ps = conn.prepareStatement(sql);
-
-			if (null != params && params.length > 0) {
-				int ind = 1;
-				for (Object p : params) {
-					if (p instanceof Boolean) {
-						ps.setBoolean(ind++, (Boolean) p);
-					} else if (p instanceof Short) {
-						ps.setShort(ind++, (Short) p);
-					} else if (p instanceof Integer) {
-						ps.setInt(ind++, (Integer) p);
-					} else if (p instanceof Long) {
-						ps.setLong(ind++, (Long) p);
-					} else if (p instanceof Float) {
-						ps.setFloat(ind++, (Float) p);
-					} else if (p instanceof Double) {
-						ps.setDouble(ind++, (Double) p);
-					} else if (p instanceof String) {
-						ps.setString(ind++, (String) p);
-					} else if (p instanceof Date) {
-						ps.setDate(ind++, (Date) p);
-					} else {
-						ps.setObject(ind++, p);
-					}
-				}
-			}
-		} catch (SQLException e) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, e.getMessage());
-		}
-		return ps;
-	}
-
-	/**
-	 * 构建SELECT语句
-	 */
-	private static StringBuffer buildSELECT(String... selections) {
-		StringBuffer sb = new StringBuffer("SELECT ");
-		if (selections != null && selections.length > 0) {
-			int len = selections.length;
-			for (int i = 0; i < len; i++) {
-				sb.append(selections[i]);
-				if (i < (len - 1)) {
-					sb.append(',');
-				}
-			}
-		} else {
-			// 没有selection参数则全选
-			sb.append('*');
-		}
-		sb.append(' ');
-		return sb;
-	}
-
-	public static void buildFROM(StringBuffer sb, String tableName) {
-		sb.append("FROM ").append(tableName).append(' ');
-	}
-
-	private static void buildSET(StringBuffer sb, String set) throws ServerException {
-		if (StringUtils.isNotBlank(set)) {
-			sb.append(set).append(' ');
-		} else {
-			// 更新操作 set不能为空
-			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "set not null");
-		}
-	}
-
-	public static void buildWHERE(StringBuffer sb, String where) throws ServerException {
-		if (StringUtils.isNotBlank(where)) {
-			sb.append(BLANK).append(where);
-		} else {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "where not null");
-		}
-	}
-
-	public static void buildCountAndOffset(StringBuffer sb, Integer count, Integer offset) throws ServerException {
-		// 有oracle兼容性问题，不支持limit和offset
-		if (count != null) {
-			if (count < 1 || count > 512) {
-				throw new ServerException(BaseRC.REPOSITORY_COUNT_OFFSET_ERROR, "count < 1 or count > 512");
-			}
-			sb.append(" LIMIT ").append(count);
-		}
-		if (offset != null) {
-			if (offset < 0) {
-				throw new ServerException(BaseRC.REPOSITORY_COUNT_OFFSET_ERROR, "offset < 0");
-			}
-			sb.append(" OFFSET ").append(offset);
-		}
-	}
-
-	/**
-	 * 查询返回对象数组
-	 */
-	private List<T> executeQuerySQL(DruidPooledConnection conn, String sql, Object[] whereParams)
-			throws ServerException {
-		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
-		try {
-			ResultSet rs = ps.executeQuery();
-			return mapper.deserialize(rs, clazz);
-		} catch (Exception e) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
-		} finally {
-			try {
-				ps.close();
-			} catch (Exception e) {
-			}
-		}
-	}
-
-	/**
-	 * 根据要求的字段列，查询返回对象数组列表
-	 */
-	private List<Object[]> executeQuerySQLSelections(DruidPooledConnection conn, String sql, Object[] whereParams,
-			String... selections) throws ServerException {
-		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
-		try {
-			ResultSet rs = ps.executeQuery();
-			return mapper.deserialize(rs, selections);
-		} catch (Exception e) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
-		} finally {
-			try {
-				ps.close();
-			} catch (Exception e) {
-			}
-		}
-	}
-
-	/**
-	 * 根据要求的字段列，查询返回字段对象数组列表
-	 */
-	private static List<Object[]> executeQuerySQL2Objects(DruidPooledConnection conn, String sql, Object[] whereParams,
-			String... selections) throws ServerException {
-		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
-		try {
-			ResultSet rs = ps.executeQuery();
-
-			return RDSObjectMapper.deserialize2ObjectsList(rs);
-		} catch (Exception e) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
-		} finally {
-			try {
-				ps.close();
-			} catch (Exception e) {
-			}
-		}
-	}
-
-	/**
-	 * 根据要求的字段列，查询返回字段对象数组列表
-	 */
-	private static JSONArray executeQuerySQL2JSONArray(DruidPooledConnection conn, String sql, Object[] whereParams)
-			throws ServerException {
-		PreparedStatement ps = prepareStatement(conn, sql.toString(), whereParams);
-		try {
-			ResultSet rs = ps.executeQuery();
-
-			return RDSObjectMapper.deserialize2JSONArray(rs);
-		} catch (Exception e) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
-		} finally {
-			try {
-				ps.close();
-			} catch (Exception e) {
-			}
-		}
-	}
-
-	private int executeUpdateSQL(DruidPooledConnection conn, String sql, Object[] whereParams)
-			throws ServerException {
-		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
-		int count = 0;
-		try {
-			count = ps.executeUpdate();
-			return count;
-		} catch (Exception e) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
-		} finally {
-			try {
-				ps.close();
-			} catch (Exception e) {
-			}
-		}
-	}
-
-	private static JSONObject jsonArray2Obj(JSONArray array) {
-		if (array == null || array.size() <= 0) {
-			return null;
-		} else {
-			return array.getJSONObject(0);
-		}
-	}
-
-	private static Object[] mergeArray(Object[] a1, Object[] a2) {
-		Object[] total;
-		if (a1 == null) {
-			if (a2 == null) {
-				total = new Object[] {};
-			} else {
-				total = a2;
-			}
-		} else {
-			if (a2 == null) {
-				total = a1;
-			} else {
-				int totalCount = a1.length + a2.length;
-				total = new Object[totalCount];
-				System.arraycopy(a1, 0, total, 0, a1.length);
-				System.arraycopy(a2, 0, total, a1.length, a2.length);
-			}
-		}
-		return total;
-	}
-
-	/**
-	 * 判断WHERE语句中，是否包含表达式</br>
-	 * 如果有表达式，则后续拼接其它条件表达式时需要增加连接符AND或OR</br>
-	 * 如果没有表达式，则后续拼接时，不要添加AND或OR连接符
-	 * 
-	 */
-	private boolean checkWHEREContaineEx(String where) throws ServerException {
-		int ind = -1;
-		if (where.contains("where")) {
-			ind = where.indexOf("where") + 5;
-		} else if (where.contains("WHERE")) {
-			ind = where.indexOf("WHERE") + 5;
-		} else {
-			throw new ServerException(BaseRC.REPOSITORY_NOT_WHERE);
-		}
-
-		if (ind == where.length()) {
-			return false;
-		} else {
-			String sub = where.substring(ind);
-			if (StringUtils.isBlank(sub.trim())) {
-				return false;
-			} else {
-				return true;
-			}
-		}
-	}
-
 	protected RDSRepository(Class<T> clazz) {
 		this.clazz = clazz;
 		this.mapper = RDSObjectMapper.getInstance(clazz);
+	}
+
+	/**
+	 * 模版方法，插入对象</br>
+	 * 
+	 * @param T
+	 *            要插入的对象（泛型）,如果某字段为空则不插入该字段
+	 */
+	public void insert(DruidPooledConnection conn, T t) throws ServerException {
+		StringBuffer sb = new StringBuffer("INSERT INTO ").append(mapper.getTableName());
+		Map<String, Object> map;
+		List<Object> values = new ArrayList<>();
+		try {
+			map = mapper.serialize(t);
+
+			StringBuffer k = new StringBuffer(" (");
+			StringBuffer v = new StringBuffer(" (");
+
+			map.forEach((key, value) -> {
+				if (null != value) {
+					k.append(key).append(",");
+					v.append("?").append(",");
+					values.add(value);
+				}
+			});
+			k.deleteCharAt(k.length() - 1);
+			k.append(") ");
+			v.deleteCharAt(v.length() - 1);
+			v.append(") ");
+			sb.append(k).append("VALUES").append(v);
+			// System.err.println(sql);
+		} catch (Exception e) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, e.getMessage());
+		}
+
+		int count = executeUpdateSQL(conn, sb.toString(), values.toArray());
+		if (count != 1) {
+			throw new ServerException(BaseRC.REPOSITORY_INSERT_ERROR);
+		}
+	}
+
+	/**
+	 * 模版方法，批量插入对象列表</br>
+	 * 
+	 * @param list
+	 *            要插入的对象列表（泛型）
+	 * 
+	 * @return 插入的记录数
+	 */
+	public int insertList(DruidPooledConnection conn, List<T> list) throws ServerException {
+		StringBuffer sb = new StringBuffer("INSERT INTO ").append(mapper.getTableName());
+		Map<String, Object> map = null;
+		List<Object> values = new ArrayList<>();
+
+		try {
+			StringBuffer k = new StringBuffer(" (");
+			StringBuffer v = new StringBuffer(" (");
+			for (int i = 0; i < list.size(); i++) {
+				map = mapper.serialize(list.get(i));
+				if (i >= 1) {
+					v.append(",(");
+				}
+
+				if (i == 0) {
+					map.forEach((key, value) -> {
+						k.append(key + ",");
+						v.append("?,");
+						values.add(value);
+					});
+				} else {
+					map.forEach((key, value) -> {
+						v.append("?,");
+						values.add(value);
+					});
+				}
+
+				if (i == 0) {
+					k.deleteCharAt(k.length() - 1);
+					k.append(") ");
+				}
+				v.deleteCharAt(v.length() - 1);
+				v.append(")");
+			}
+
+			sb.append(k).append("VALUES").append(v);
+
+		} catch (Exception e) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, e.getMessage());
+		}
+		return executeUpdateSQL(conn, sb.toString(), values.toArray());
+	};
+
+	/**
+	 * 删除对象</br>
+	 * 
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
+	 * 
+	 * @return 返回影响的记录数
+	 */
+	protected int delete(DruidPooledConnection conn, String where, Object... whereParams) throws ServerException {
+		StringBuffer sb = new StringBuffer("DELETE ");
+		buildFROM(sb, mapper.getTableName());
+		buildWHERE(sb, where);
+		return executeUpdateSQL(conn, sb.toString(), whereParams);
+	}
+
+	public int delete(DruidPooledConnection conn, EXP exp) throws ServerException {
+		StringBuffer sb = new StringBuffer();
+		ArrayList<Object> args = new ArrayList<>();
+		exp.toSQL(sb, args);
+		return delete(conn, sb.toString(), args);
+	}
+
+	/**
+	 * 模版方法，根据某个唯一键值删除一个对象</br>
+	 * 
+	 * @param key
+	 *            列名
+	 * @param value
+	 *            值
+	 * @return 返回影响的记录数
+	 */
+	@Deprecated
+	public int deleteByKey(DruidPooledConnection conn, String key, Object value) throws ServerException {
+		return delete(conn, StringUtils.join("WHERE ", key, "=?"), value);
+	}
+
+	/**
+	 * 根据多个字段的值，删除对应的对象</br>
+	 * key1=? AND key2=? AND key3=?</br>
+	 * 
+	 * @param keys
+	 *            键数组
+	 * @param values
+	 *            值数组
+	 */
+	@Deprecated
+	public int deleteByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values) throws ServerException {
+		if (keys.length != values.length) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
+		}
+		StringBuffer sb = new StringBuffer("WHERE ");
+		SQLEx.exANDKeys(keys, values).toSQL(sb);
+		return delete(conn, sb.toString(), values);
 	}
 
 	/**
@@ -353,7 +255,7 @@ public abstract class RDSRepository<T> {
 		buildCountAndOffset(sb, count, offset);
 
 		String sql = sb.toString();
-		
+
 		System.out.println(sql);
 		log.debug(sql);
 		return executeQuerySQL(conn, sql, whereParams);
@@ -377,20 +279,133 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 删除对象</br>
+	 * 模版方法，无条件获取对象列表</br>
 	 * 
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * 
-	 * @return 返回影响的记录数
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 */
-	protected int delete(DruidPooledConnection conn, String where, Object... whereParams) throws ServerException {
-		StringBuffer sb = new StringBuffer("DELETE ");
+	@Deprecated
+	public List<T> getList(DruidPooledConnection conn, Integer count, Integer offset, String... selections)
+			throws ServerException {
+
+		StringBuffer sb = buildSELECT(selections);
 		buildFROM(sb, mapper.getTableName());
-		buildWHERE(sb, where);
-		return executeUpdateSQL(conn, sb.toString(), whereParams);
+		buildCountAndOffset(sb, count, offset);
+
+		// System.out.println(sb.toString());
+		return executeQuerySQL(conn, sb.toString(), null);
+	}
+
+	/**
+	 * 模版方法，根据某个唯一键值获取一个对象</br>
+	 * 
+	 * @param key
+	 *            列名
+	 * @param value
+	 *            值
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * 
+	 * @return 返回查询的对象，如果查询不到，则返回null
+	 */
+	@Deprecated
+	public T getByKey(DruidPooledConnection conn, String key, Object value, String... selections)
+			throws ServerException {
+		return get(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, selections);
+	}
+
+	/**
+	 * 模版方法，根据某个唯一键值获取对象数组</br>
+	 * 
+	 * @param key
+	 *            列名
+	 * @param value
+	 *            值
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * 
+	 * @return 返回查询的对象数组，如果查询不到，则数组长度为0
+	 */
+	@Deprecated
+	public List<T> getListByKey(DruidPooledConnection conn, String key, Object value, Integer count, Integer offset,
+			String... selections) throws ServerException {
+		return getList(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, count, offset, selections);
+	}
+
+	/**
+	 * 根据多个字段的值，获取对象</br>
+	 * key1=? AND key2=? AND key3=?</br>
+	 * 
+	 * @param keys
+	 *            键数组
+	 * @param values
+	 *            值数组
+	 * 
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择 *
+	 * 
+	 */
+	@Deprecated
+	public T getByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, String... selections)
+			throws ServerException {
+		return DataSource.list2Obj(getListByANDKeys(conn, keys, values, 1, 0, selections));
+	}
+
+	/**
+	 * 根据多个字段的值，获取对象列表</br>
+	 * key1=? AND key2=? AND key3=?</br>
+	 * 
+	 * @param keys
+	 *            键数组
+	 * @param values
+	 *            值数组
+	 * 
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择 *
+	 */
+	@Deprecated
+	public List<T> getListByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, Integer count,
+			Integer offset, String... selections) throws ServerException {
+		if (keys.length != values.length) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
+		}
+		StringBuffer sb = new StringBuffer("WHERE ");
+		SQLEx.exANDKeys(keys, values).toSQL(sb);
+		return getList(conn, sb.toString(), values, count, offset, selections);
+	}
+
+	/**
+	 * 模版方法，根据某个唯一键值的某些值，获取这些值所对应的对象数组</br>
+	 * 
+	 * @param key
+	 *            列名
+	 * @param values
+	 *            值数组（字符串，在外部转换好再放进来，防止隐式转换出问题）
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * 
+	 * @return 查询的对象列表
+	 */
+	@Deprecated
+	public List<T> getListByKeyInValues(DruidPooledConnection conn, String key, Object[] values, String... selections)
+			throws ServerException {
+		StringBuffer sb = buildSELECT(selections);
+		buildFROM(sb, mapper.getTableName());
+		sb.append(" WHERE ").append(key).append(" IN (");
+		List<Object> inValues = new ArrayList<>();
+		StringBuffer ordersb = new StringBuffer(" ORDER BY FIND_IN_SET(");
+		ordersb.append(key).append(",'");
+		for (Object id : values) {
+			sb.append("?").append(",");
+			ordersb.append(id).append(",");
+			inValues.add(id);
+		}
+		sb.deleteCharAt(sb.length() - 1);
+		sb.append(") ");
+		ordersb.deleteCharAt(ordersb.length() - 1);
+		ordersb.append("')");
+		sb.append(ordersb);
+		return executeQuerySQL(conn, sb.toString(), values);
 	}
 
 	/**
@@ -461,6 +476,110 @@ public abstract class RDSRepository<T> {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR);
 		}
 		return update(conn, set.toString(), values.toArray(), where, whereParams);
+	}
+
+	/**
+	 * 模版方法，根据某个唯一键值更新一个对象</br>
+	 * 
+	 * @param key
+	 *            列名
+	 * @param value
+	 *            值
+	 * @param t
+	 *            要更新的对象（最好在对象中将key所对应的值抹掉）
+	 * 
+	 * @return 返回影响的记录数
+	 */
+	@Deprecated
+	public int updateByKey(DruidPooledConnection conn, String key, Object value, T t, boolean skipNull)
+			throws ServerException {
+		return update(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, t, skipNull);
+	}
+
+	/**
+	 * 根据多个字段的值，更新对应的对象</br>
+	 * key1=? AND key2=? AND key3=?</br>
+	 * 
+	 * @param keys
+	 *            键数组
+	 * @param values
+	 *            值数组
+	 * 
+	 */
+	@Deprecated
+	public int updateByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, T t, boolean skipNull)
+			throws ServerException {
+		if (keys.length != values.length) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
+		}
+		StringBuffer sb = new StringBuffer("WHERE ");
+		SQLEx.exANDKeys(keys, values).toSQL(sb);
+		return update(conn, sb.toString(), values, t, skipNull);
+	}
+
+	///////////////// SQL原生方法
+
+	/**
+	 * 原生SQL方法，获取JSONArray
+	 */
+	protected static JSONArray sqlGetJSONArray(DruidPooledConnection conn, String sql, Object[] params, Integer count,
+			Integer offset) throws ServerException {
+		// System.out.println(sql);
+		StringBuffer sb = new StringBuffer(sql);
+		buildCountAndOffset(sb, count, offset);
+
+		return executeQuerySQL2JSONArray(conn, sb.toString(), params);
+	}
+
+	/**
+	 * 原生SQL方法，获取JSONOBJECT
+	 */
+	protected static JSONObject sqlGetJSONObject(DruidPooledConnection conn, String sql, Object[] params)
+			throws ServerException {
+		return jsonArray2Obj(sqlGetJSONArray(conn, sql, params, 1, 0));
+	}
+
+	/**
+	 * 原生SQL方法，根据查询获取某个表的某些字段值列表</br>
+	 */
+	protected static List<Object[]> sqlGetObjectsList(DruidPooledConnection conn, String sql, Object[] params,
+			Integer count, Integer offset) throws ServerException {
+
+		StringBuffer sb = new StringBuffer(sql);
+		buildCountAndOffset(sb, count, offset);
+		return executeQuerySQL2Objects(conn, sql.toString(), params);
+	}
+
+	/**
+	 * 原生SQL方法，获取某个表的某些字段值</br>
+	 * 
+	 */
+	protected static Object[] sqlGetObjects(DruidPooledConnection conn, String sql, Object[] params)
+			throws ServerException {
+		return DataSource.list2Obj(sqlGetObjectsList(conn, sql, params, 1, 0));
+	}
+
+	/**
+	 * 原生SQL方法，根据某个类的repository实例，获取对应对象的列表</br>
+	 * 方便跨对象操作的原生SQL模版方法</br>
+	 */
+	@SuppressWarnings("unchecked")
+	protected static <X> List<X> sqlGetOtherList(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
+			Object[] whereParams) throws ServerException {
+		// System.out.println(sql.toString());
+
+		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
+		try {
+			ResultSet rs = ps.executeQuery();
+			return repository.mapper.deserialize(rs, repository.clazz);
+		} catch (Exception e) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
+		} finally {
+			try {
+				ps.close();
+			} catch (Exception e) {
+			}
+		}
 	}
 
 	/**
@@ -719,342 +838,119 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 模版方法，插入对象</br>
-	 * 
-	 * @param T
-	 *            要插入的对象（泛型）,如果某字段为空则不插入该字段
-	 */
-	public void insert(DruidPooledConnection conn, T t) throws ServerException {
-		StringBuffer sb = new StringBuffer("INSERT INTO ").append(mapper.getTableName());
-		Map<String, Object> map;
-		List<Object> values = new ArrayList<>();
-		try {
-			map = mapper.serialize(t);
-
-			StringBuffer k = new StringBuffer(" (");
-			StringBuffer v = new StringBuffer(" (");
-
-			map.forEach((key, value) -> {
-				if (null != value) {
-					k.append(key).append(",");
-					v.append("?").append(",");
-					values.add(value);
-				}
-			});
-			k.deleteCharAt(k.length() - 1);
-			k.append(") ");
-			v.deleteCharAt(v.length() - 1);
-			v.append(") ");
-			sb.append(k).append("VALUES").append(v);
-			// System.err.println(sql);
-		} catch (Exception e) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, e.getMessage());
-		}
-
-		int count = executeUpdateSQL(conn, sb.toString(), values.toArray());
-		if (count != 1) {
-			throw new ServerException(BaseRC.REPOSITORY_INSERT_ERROR);
-		}
-	}
-
-	/**
-	 * 模版方法，批量插入对象列表</br>
-	 * 
-	 * @param list
-	 *            要插入的对象列表（泛型）
-	 * 
-	 * @return 插入的记录数
-	 */
-	public int insertList(DruidPooledConnection conn, List<T> list) throws ServerException {
-		StringBuffer sb = new StringBuffer("INSERT INTO ").append(mapper.getTableName());
-		Map<String, Object> map = null;
-		List<Object> values = new ArrayList<>();
-
-		try {
-			StringBuffer k = new StringBuffer(" (");
-			StringBuffer v = new StringBuffer(" (");
-			for (int i = 0; i < list.size(); i++) {
-				map = mapper.serialize(list.get(i));
-				if (i >= 1) {
-					v.append(",(");
-				}
-
-				if (i == 0) {
-					map.forEach((key, value) -> {
-						k.append(key + ",");
-						v.append("?,");
-						values.add(value);
-					});
-				} else {
-					map.forEach((key, value) -> {
-						v.append("?,");
-						values.add(value);
-					});
-				}
-
-				if (i == 0) {
-					k.deleteCharAt(k.length() - 1);
-					k.append(") ");
-				}
-				v.deleteCharAt(v.length() - 1);
-				v.append(")");
-			}
-
-			sb.append(k).append("VALUES").append(v);
-
-		} catch (Exception e) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, e.getMessage());
-		}
-		return executeUpdateSQL(conn, sb.toString(), values.toArray());
-	};
-
-	/**
-	 * 模版方法，无条件获取对象列表</br>
-	 * 
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
-	 */
-	public List<T> getList(DruidPooledConnection conn, Integer count, Integer offset, String... selections)
-			throws ServerException {
-
-		StringBuffer sb = buildSELECT(selections);
-		buildFROM(sb, mapper.getTableName());
-		buildCountAndOffset(sb, count, offset);
-
-		// System.out.println(sb.toString());
-		return executeQuerySQL(conn, sb.toString(), null);
-	}
-
-	/**
-	 * 模版方法，根据某个唯一键值获取一个对象</br>
-	 * 
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
-	 * 
-	 * @return 返回查询的对象，如果查询不到，则返回null
-	 */
-	public T getByKey(DruidPooledConnection conn, String key, Object value, String... selections)
-			throws ServerException {
-		return get(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, selections);
-	}
-
-	/**
-	 * 模版方法，根据某个唯一键值获取对象数组</br>
-	 * 
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
-	 * 
-	 * @return 返回查询的对象数组，如果查询不到，则数组长度为0
-	 */
-	public List<T> getListByKey(DruidPooledConnection conn, String key, Object value, Integer count, Integer offset,
-			String... selections) throws ServerException {
-		return getList(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, count, offset, selections);
-	}
-
-	/**
-	 * 根据多个字段的值，获取对象</br>
-	 * key1=? AND key2=? AND key3=?</br>
-	 * 
-	 * @param keys
-	 *            键数组
-	 * @param values
-	 *            值数组
-	 * 
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择 *
-	 * 
-	 */
-	public T getByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, String... selections)
-			throws ServerException {
-		return DataSource.list2Obj(getListByANDKeys(conn, keys, values, 1, 0, selections));
-	}
-
-	/**
-	 * 根据多个字段的值，获取对象列表</br>
-	 * key1=? AND key2=? AND key3=?</br>
-	 * 
-	 * @param keys
-	 *            键数组
-	 * @param values
-	 *            值数组
-	 * 
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择 *
-	 */
-	public List<T> getListByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, Integer count,
-			Integer offset, String... selections) throws ServerException {
-		if (keys.length != values.length) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
-		}
-		StringBuffer sb = new StringBuffer("WHERE ");
-		SQLEx.exANDKeys(keys, values).toSQL(sb);
-		return getList(conn, sb.toString(), values, count, offset, selections);
-	}
-
-	/**
-	 * 模版方法，根据某个唯一键值的某些值，获取这些值所对应的对象数组</br>
-	 * 
-	 * @param key
-	 *            列名
-	 * @param values
-	 *            值数组（字符串，在外部转换好再放进来，防止隐式转换出问题）
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
-	 * 
-	 * @return 查询的对象列表
-	 */
-	public List<T> getListByKeyInValues(DruidPooledConnection conn, String key, Object[] values, String... selections)
-			throws ServerException {
-		StringBuffer sb = buildSELECT(selections);
-		buildFROM(sb, mapper.getTableName());
-		sb.append(" WHERE ").append(key).append(" IN (");
-		List<Object> inValues = new ArrayList<>();
-		StringBuffer ordersb = new StringBuffer(" ORDER BY FIND_IN_SET(");
-		ordersb.append(key).append(",'");
-		for (Object id : values) {
-			sb.append("?").append(",");
-			ordersb.append(id).append(",");
-			inValues.add(id);
-		}
-		sb.deleteCharAt(sb.length() - 1);
-		sb.append(") ");
-		ordersb.deleteCharAt(ordersb.length() - 1);
-		ordersb.append("')");
-		sb.append(ordersb);
-		return executeQuerySQL(conn, sb.toString(), values);
-	}
-
-	/**
-	 * 模版方法，根据某个唯一键值删除一个对象</br>
-	 * 
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
-	 * @return 返回影响的记录数
-	 */
-	public int deleteByKey(DruidPooledConnection conn, String key, Object value) throws ServerException {
-		return delete(conn, StringUtils.join("WHERE ", key, "=?"), value);
-	}
-
-	/**
-	 * 根据多个字段的值，删除对应的对象</br>
-	 * key1=? AND key2=? AND key3=?</br>
-	 * 
-	 * @param keys
-	 *            键数组
-	 * @param values
-	 *            值数组
-	 */
-	public int deleteByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values) throws ServerException {
-		if (keys.length != values.length) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
-		}
-		StringBuffer sb = new StringBuffer("WHERE ");
-		SQLEx.exANDKeys(keys, values).toSQL(sb);
-		return delete(conn, sb.toString(), values);
-	}
-
-	/**
-	 * 模版方法，根据某个唯一键值更新一个对象</br>
-	 * 
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
-	 * @param t
-	 *            要更新的对象（最好在对象中将key所对应的值抹掉）
-	 * 
-	 * @return 返回影响的记录数
-	 */
-	public int updateByKey(DruidPooledConnection conn, String key, Object value, T t, boolean skipNull)
-			throws ServerException {
-		return update(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, t, skipNull);
-	}
-
-	/**
-	 * 根据多个字段的值，更新对应的对象</br>
-	 * key1=? AND key2=? AND key3=?</br>
-	 * 
-	 * @param keys
-	 *            键数组
-	 * @param values
-	 *            值数组
-	 * 
-	 */
-	public int updateByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, T t, boolean skipNull)
-			throws ServerException {
-		if (keys.length != values.length) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
-		}
-		StringBuffer sb = new StringBuffer("WHERE ");
-		SQLEx.exANDKeys(keys, values).toSQL(sb);
-		return update(conn, sb.toString(), values, t, skipNull);
-	}
-
-	///////////////// SQL原生方法
-
-	/**
-	 * 原生SQL方法，获取JSONArray
-	 */
-	protected static JSONArray sqlGetJSONArray(DruidPooledConnection conn, String sql, Object[] params, Integer count,
-			Integer offset) throws ServerException {
-		// System.out.println(sql);
-		StringBuffer sb = new StringBuffer(sql);
-		buildCountAndOffset(sb, count, offset);
-
-		return executeQuerySQL2JSONArray(conn, sb.toString(), params);
-	}
-
-	/**
-	 * 原生SQL方法，获取JSONOBJECT
-	 */
-	protected static JSONObject sqlGetJSONObject(DruidPooledConnection conn, String sql, Object[] params)
-			throws ServerException {
-		return jsonArray2Obj(sqlGetJSONArray(conn, sql, params, 1, 0));
-	}
-
-	/**
-	 * 原生SQL方法，根据查询获取某个表的某些字段值列表</br>
-	 */
-	protected static List<Object[]> sqlGetObjectsList(DruidPooledConnection conn, String sql, Object[] params,
-			Integer count, Integer offset) throws ServerException {
-
-		StringBuffer sb = new StringBuffer(sql);
-		buildCountAndOffset(sb, count, offset);
-		return executeQuerySQL2Objects(conn, sql.toString(), params);
-	}
-
-	/**
-	 * 原生SQL方法，获取某个表的某些字段值</br>
-	 * 
-	 */
-	protected static Object[] sqlGetObjects(DruidPooledConnection conn, String sql, Object[] params)
-			throws ServerException {
-		return DataSource.list2Obj(sqlGetObjectsList(conn, sql, params, 1, 0));
-	}
-
-	/**
-	 * 原生SQL方法，根据某个类的repository实例，获取对应对象的列表</br>
+	 * 原生SQL方法，根据某个类的repository实例，获取对应对象</br>
 	 * 方便跨对象操作的原生SQL模版方法</br>
 	 */
-	@SuppressWarnings("unchecked")
-	protected static <X> List<X> sqlGetOtherList(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
+	protected static <X> X sqlGetOther(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
 			Object[] whereParams) throws ServerException {
-		// System.out.println(sql.toString());
+		return DataSource.list2Obj(sqlGetOtherList(conn, repository, sql, whereParams));
+	}
 
+	/////////////////////////////////
+
+	public static PreparedStatement prepareStatement(Connection conn, String sql, Object[] params)
+			throws ServerException {
+		PreparedStatement ps = null;
+		try {
+			ps = conn.prepareStatement(sql);
+
+			if (null != params && params.length > 0) {
+				int ind = 1;
+				for (Object p : params) {
+					if (p instanceof Boolean) {
+						ps.setBoolean(ind++, (Boolean) p);
+					} else if (p instanceof Short) {
+						ps.setShort(ind++, (Short) p);
+					} else if (p instanceof Integer) {
+						ps.setInt(ind++, (Integer) p);
+					} else if (p instanceof Long) {
+						ps.setLong(ind++, (Long) p);
+					} else if (p instanceof Float) {
+						ps.setFloat(ind++, (Float) p);
+					} else if (p instanceof Double) {
+						ps.setDouble(ind++, (Double) p);
+					} else if (p instanceof String) {
+						ps.setString(ind++, (String) p);
+					} else if (p instanceof Date) {
+						ps.setDate(ind++, (Date) p);
+					} else {
+						ps.setObject(ind++, p);
+					}
+				}
+			}
+		} catch (SQLException e) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, e.getMessage());
+		}
+		return ps;
+	}
+
+	/**
+	 * 构建SELECT语句
+	 */
+	private static StringBuffer buildSELECT(String... selections) {
+		StringBuffer sb = new StringBuffer("SELECT ");
+		if (selections != null && selections.length > 0) {
+			int len = selections.length;
+			for (int i = 0; i < len; i++) {
+				sb.append(selections[i]);
+				if (i < (len - 1)) {
+					sb.append(',');
+				}
+			}
+		} else {
+			// 没有selection参数则全选
+			sb.append('*');
+		}
+		sb.append(' ');
+		return sb;
+	}
+
+	private static void buildFROM(StringBuffer sb, String tableName) {
+		sb.append("FROM ").append(tableName).append(' ');
+	}
+
+	private static void buildSET(StringBuffer sb, String set) throws ServerException {
+		if (StringUtils.isNotBlank(set)) {
+			sb.append(set).append(' ');
+		} else {
+			// 更新操作 set不能为空
+			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "set not null");
+		}
+	}
+
+	private static void buildWHERE(StringBuffer sb, String where) throws ServerException {
+		if (StringUtils.isNotBlank(where)) {
+			sb.append(BLANK).append(where);
+		} else {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "where not null");
+		}
+	}
+
+	public static void buildCountAndOffset(StringBuffer sb, Integer count, Integer offset) throws ServerException {
+		// 有oracle兼容性问题，不支持limit和offset
+		if (count != null) {
+			if (count < 1 || count > 512) {
+				throw new ServerException(BaseRC.REPOSITORY_COUNT_OFFSET_ERROR, "count < 1 or count > 512");
+			}
+			sb.append(" LIMIT ").append(count);
+		}
+		if (offset != null) {
+			if (offset < 0) {
+				throw new ServerException(BaseRC.REPOSITORY_COUNT_OFFSET_ERROR, "offset < 0");
+			}
+			sb.append(" OFFSET ").append(offset);
+		}
+	}
+
+	/**
+	 * 查询返回对象数组
+	 */
+	private List<T> executeQuerySQL(DruidPooledConnection conn, String sql, Object[] whereParams)
+			throws ServerException {
 		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
 		try {
 			ResultSet rs = ps.executeQuery();
-			return repository.mapper.deserialize(rs, repository.clazz);
+			return mapper.deserialize(rs, clazz);
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
 		} finally {
@@ -1066,12 +962,136 @@ public abstract class RDSRepository<T> {
 	}
 
 	/**
-	 * 原生SQL方法，根据某个类的repository实例，获取对应对象</br>
-	 * 方便跨对象操作的原生SQL模版方法</br>
+	 * 根据要求的字段列，查询返回对象数组列表
 	 */
-	protected static <X> X sqlGetOther(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
-			Object[] whereParams) throws ServerException {
-		return DataSource.list2Obj(sqlGetOtherList(conn, repository, sql, whereParams));
+	private List<Object[]> executeQuerySQLSelections(DruidPooledConnection conn, String sql, Object[] whereParams,
+			String... selections) throws ServerException {
+		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
+		try {
+			ResultSet rs = ps.executeQuery();
+			return mapper.deserialize(rs, selections);
+		} catch (Exception e) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
+		} finally {
+			try {
+				ps.close();
+			} catch (Exception e) {
+			}
+		}
+	}
+
+	/**
+	 * 根据要求的字段列，查询返回字段对象数组列表
+	 */
+	private static List<Object[]> executeQuerySQL2Objects(DruidPooledConnection conn, String sql, Object[] whereParams,
+			String... selections) throws ServerException {
+		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
+		try {
+			ResultSet rs = ps.executeQuery();
+
+			return RDSObjectMapper.deserialize2ObjectsList(rs);
+		} catch (Exception e) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
+		} finally {
+			try {
+				ps.close();
+			} catch (Exception e) {
+			}
+		}
+	}
+
+	/**
+	 * 根据要求的字段列，查询返回字段对象数组列表
+	 */
+	private static JSONArray executeQuerySQL2JSONArray(DruidPooledConnection conn, String sql, Object[] whereParams)
+			throws ServerException {
+		PreparedStatement ps = prepareStatement(conn, sql.toString(), whereParams);
+		try {
+			ResultSet rs = ps.executeQuery();
+
+			return RDSObjectMapper.deserialize2JSONArray(rs);
+		} catch (Exception e) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
+		} finally {
+			try {
+				ps.close();
+			} catch (Exception e) {
+			}
+		}
+	}
+
+	private static int executeUpdateSQL(DruidPooledConnection conn, String sql, Object[] whereParams)
+			throws ServerException {
+		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
+		int count = 0;
+		try {
+			count = ps.executeUpdate();
+			return count;
+		} catch (Exception e) {
+			throw new ServerException(BaseRC.REPOSITORY_SQL_EXECUTE_ERROR, e.getMessage());
+		} finally {
+			try {
+				ps.close();
+			} catch (Exception e) {
+			}
+		}
+	}
+
+	private static JSONObject jsonArray2Obj(JSONArray array) {
+		if (array == null || array.size() <= 0) {
+			return null;
+		} else {
+			return array.getJSONObject(0);
+		}
+	}
+
+	private static Object[] mergeArray(Object[] a1, Object[] a2) {
+		Object[] total;
+		if (a1 == null) {
+			if (a2 == null) {
+				total = new Object[] {};
+			} else {
+				total = a2;
+			}
+		} else {
+			if (a2 == null) {
+				total = a1;
+			} else {
+				int totalCount = a1.length + a2.length;
+				total = new Object[totalCount];
+				System.arraycopy(a1, 0, total, 0, a1.length);
+				System.arraycopy(a2, 0, total, a1.length, a2.length);
+			}
+		}
+		return total;
+	}
+
+	/**
+	 * 判断WHERE语句中，是否包含表达式</br>
+	 * 如果有表达式，则后续拼接其它条件表达式时需要增加连接符AND或OR</br>
+	 * 如果没有表达式，则后续拼接时，不要添加AND或OR连接符
+	 * 
+	 */
+	private static boolean checkWHEREContaineEx(String where) throws ServerException {
+		int ind = -1;
+		if (where.contains("where")) {
+			ind = where.indexOf("where") + 5;
+		} else if (where.contains("WHERE")) {
+			ind = where.indexOf("WHERE") + 5;
+		} else {
+			throw new ServerException(BaseRC.REPOSITORY_NOT_WHERE);
+		}
+
+		if (ind == where.length()) {
+			return false;
+		} else {
+			String sub = where.substring(ind);
+			if (StringUtils.isBlank(sub.trim())) {
+				return false;
+			} else {
+				return true;
+			}
+		}
 	}
 
 }

@@ -134,7 +134,7 @@ public class TableService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			tableSchemaRepository.insert(conn, ts);
 		}
-		
+
 	}
 
 	@POSTAPI(//
@@ -156,7 +156,7 @@ public class TableService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableSchemaRepository.updateByKey(conn, "id", id, ts, true);
 		}
-		
+
 	}
 
 	@POSTAPI(//
@@ -168,11 +168,11 @@ public class TableService extends Controller {
 			Integer count, //
 			Integer offset//
 	) throws Exception {
-		
+
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableSchemaRepository.getList(conn, count, offset);
 		}
-		
+
 	}
 
 	// 添加表数据
@@ -193,11 +193,12 @@ public class TableService extends Controller {
 		// 取出计算列，进行计算
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			TableSchema ts = tableSchemaRepository.getByKey(conn, "id", tableSchemaId);
-			
+
 			if (ts == null || ts.columns == null || ts.columns.size() <= 0) {
 				// 表结构不存在，抛异常
 				throw new ServerException(BaseRC.FLOW_FORM_TABLE_SCHEMA_NOT_FOUND);
 			} else {
+
 				for (int i = 0; i < ts.columns.size(); i++) {
 					JSONObject jo = ts.columns.getJSONObject(i);
 					String key = jo.keySet().iterator().next();
@@ -208,11 +209,11 @@ public class TableService extends Controller {
 						System.out.println("开始计算");
 						Object ret = compute(c.computeFormula, data);
 						System.out.println(JSON.toJSONString(ret));
-		
+
 						td.data.put(key, ret);
 					}
 				}
-		
+
 				tableDataRepository.insert(conn, td);
 			}
 		}
@@ -231,9 +232,9 @@ public class TableService extends Controller {
 			if (td == null) {
 				throw new ServerException(BaseRC.FLOW_FORM_TABLE_DATA_NOT_FOUND);
 			} else {
-	
+
 				td.data = data;
-	
+
 				// 取出计算列，进行计算
 				TableSchema ts = tableSchemaRepository.getByKey(conn, "id", tableSchemaId);
 				if (ts == null || ts.columns == null || ts.columns.size() <= 0) {
@@ -244,17 +245,17 @@ public class TableService extends Controller {
 						JSONObject jo = ts.columns.getJSONObject(i);
 						String key = jo.keySet().iterator().next();
 						TableSchema.Column c = jo.getObject(key, TableSchema.Column.class);
-	
+
 						if (c.columnType.equals(TableSchema.Column.COLUMN_TYPE_COMPUTE)) {
 							// 计算列,开始计算
 							System.out.println("开始计算");
 							Object ret = compute(c.computeFormula, data);
 							System.out.println(JSON.toJSONString(ret));
-	
+
 							td.data.put(key, ret);
 						}
 					}
-	
+
 					return tableDataRepository.updateByANDKeys(conn, new String[] { "table_schema_id", "id" },
 							new Object[] { tableSchemaId, dataId }, td, true);
 				}
@@ -262,53 +263,46 @@ public class TableService extends Controller {
 		}
 	}
 
-	@POSTAPI(
-			path = "delTableData",//
+	@POSTAPI(path = "delTableData", //
 			des = "删除表数据", //
 			ret = "state -- int"//
-			)
-	public int delTableData(
-			@P(t = "表结构编号") Long tableSchemaId,//
+	)
+	public int delTableData(@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "表数据编号") Long dataId//
-			) throws Exception {
+	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableDataRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
 					new Object[] { tableSchemaId, dataId });
 		}
-		
+
 	}
 
 	// 获取数据
-	@POSTAPI(
-			path = "getTableDatas",//
+	@POSTAPI(path = "getTableDatas", //
 			des = "获取表数据", //
 			ret = "List<TableData>"//
-			)
-	public List<TableData> getTableDatas(
-			@P(t = "表结构编号")Long tableSchemaId,//
-			Integer count,//
+	)
+	public List<TableData> getTableDatas(@P(t = "表结构编号") Long tableSchemaId, //
+			Integer count, //
 			Integer offset//
-			)throws Exception {
+	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableDataRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);	
+			return tableDataRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);
 		}
-		
+
 	}
 
 	/**
 	 * 创建表查询
 	 */
-	@POSTAPI(
-			path = "createTableQuery",//
+	@POSTAPI(path = "createTableQuery", //
 			des = "创建表查询" //
-			)
-	public void createTableQuery(
-			@P(t = "表结构编号")Long tableSchemaId,//
-			@P(t = "查询语句")JSONObject queryFormula//
-			)
-			throws Exception {
+	)
+	public void createTableQuery(@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "查询语句") JSONObject queryFormula//
+	) throws Exception {
 		TableQuery tq = new TableQuery();
 		tq.tableSchemaId = tableSchemaId;
 		tq.id = IDUtils.getSimpleId();
@@ -317,66 +311,60 @@ public class TableService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			tableQueryRepository.insert(conn, tq);
 		}
-		
+
 	}
 
 	// 获取查询
-	@POSTAPI(
-			path = "getTableQueries",//
+	@POSTAPI(path = "getTableQueries", //
 			des = "通过表结构编号获取表查询", //
 			ret = "List<TableQuery>"//
-			)
-	public List<TableQuery> getTableQueries(
-			@P(t = "表结构编号")Long tableSchemaId,//
-			Integer count,//
+	)
+	public List<TableQuery> getTableQueries(@P(t = "表结构编号") Long tableSchemaId, //
+			Integer count, //
 			Integer offset//
-			) throws Exception {
+	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableQueryRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);	
+			return tableQueryRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);
 		}
-		
+
 	}
 
 	// 删除查询
-	@POSTAPI(
-			path = "delTableQuery",//
+	@POSTAPI(path = "delTableQuery", //
 			des = "删除表查询", //
 			ret = "state --- int"//
-			)
-	public int delTableQuery(
-			@P(t = "表结构编号")Long tableSchemaId,//
-			@P(t = "表查询编号")Long queryId//
-			) throws Exception {
+	)
+	public int delTableQuery(@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "表查询编号") Long queryId//
+	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableQueryRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
 					new Object[] { tableSchemaId, queryId });
 		}
-		
+
 	}
 
 	/**
 	 * 根据条件查询</br>
 	 */
-	@POSTAPI(
-			path = "getTableDatasByQuery",//
+	@POSTAPI(path = "getTableDatasByQuery", //
 			des = "根据条件查询表数据", //
 			ret = "List<TableData>"//
-			)
-	public List<TableData> getTableDatasByQuery(
-			@P(t = "表结构编号")Long tableSchemaId,//
-			@P(t = "表查询编号")Long queryId,//
-			Integer count,//
+	)
+	public List<TableData> getTableDatasByQuery(@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "表查询编号") Long queryId, //
+			Integer count, //
 			Integer offset//
-			) throws Exception {
+	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			TableQuery tq = tableQueryRepository.getByANDKeys(conn, new String[] { "table_schema_id", "id" },
 					new Object[] { tableSchemaId, queryId });
 			if (tq == null || tq.queryFormula == null) {
 				throw new ServerException(BaseRC.FLOW_FORM_TABLE_QUERY_NOT_FOUND);
 			} else {
-				return getTableDatasByFormula(conn, tableSchemaId, tq.queryFormula, count, offset);	
+				return getTableDatasByFormula(conn, tableSchemaId, tq.queryFormula, count, offset);
 			}
 		}
 	}
@@ -385,97 +373,85 @@ public class TableService extends Controller {
 			JSONObject queryFormula, Integer count, Integer offset) throws Exception {
 		return tableDataRepository.getTableDatasByQuery(conn, tableSchemaId, queryFormula, count, offset);
 	}
-	
+
 	/**
 	 * 创建表格可视化样式
-	 * @throws ServerException 
-	 * @throws SQLException 
+	 * 
+	 * @throws ServerException
+	 * @throws SQLException
 	 */
-	@POSTAPI(
-			path = "createTableVirtual",//
+	@POSTAPI(path = "createTableVirtual", //
 			des = "创建表格可视化样式TableVirtual"//
-			)
-	public void createTableVirtual(
-			@P(t = "表结构编号tableSchemaId") Long tableSchemaId,//
+	)
+	public void createTableVirtual(@P(t = "表结构编号tableSchemaId") Long tableSchemaId, //
 			@P(t = " 可视化定义（具体前端定）") String virtual//
-			) throws ServerException, SQLException {
-		
+	) throws ServerException, SQLException {
+
 		TableVirtual tv = new TableVirtual();
 		tv.tableSchemaId = tableSchemaId;
 		tv.id = IDUtils.getSimpleId();
 		tv.virtual = virtual;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			tableVirtualRepository.insert(conn, tv);	
+			tableVirtualRepository.insert(conn, tv);
 		}
-		
+
 	}
-	
+
 	/**
 	 * 通过表结构编号TableSchemaId查询所有表格可视化样式
-	 * @throws ServerException 
-	 * @throws SQLException 
+	 * 
+	 * @throws ServerException
+	 * @throws SQLException
 	 */
-	@POSTAPI(
-			path = "getTableVirtualList",//
-			des = "通过表结构编号（tableSchemaId）查询表格可视化样式数据",//
+	@POSTAPI(path = "getTableVirtualList", //
+			des = "通过表结构编号（tableSchemaId）查询表格可视化样式数据", //
 			ret = "List<TableVirtual>"//
-			)
-	public List<TableVirtual> getTableVirtualList(
-			@P(t = "表结构编号") Long tableSchemaId,//
-			Integer count,//
+	)
+	public List<TableVirtual> getTableVirtualList(@P(t = "表结构编号") Long tableSchemaId, //
+			Integer count, //
 			Integer offset//
-			) throws Exception{
+	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableVirtualRepository.getListByKey(conn, "tableSchema_id", tableSchemaId, count, offset);	
+			return tableVirtualRepository.getListByKey(conn, "tableSchema_id", tableSchemaId, count, offset);
 		}
-		
-		
+
 	}
-	
+
 	/**
 	 * 编辑表可视化样式数据
-	 * @throws ServerException 
+	 * 
+	 * @throws ServerException
 	 */
-	@POSTAPI(
-			path = "editTableVirtual",//
-			des = " 编辑表可视化样式数据(TableVirtual)",
-			ret = "state -- int"
-			)
-	public  int editTableVirtual(
-			@P(t = "表结构编号") Long tableSchemaId,
-			@P(t = "表可视化样式编号") Long id,
-			@P(t = "表可视化样式数据")String virtual
-			) throws Exception {
+	@POSTAPI(path = "editTableVirtual", //
+			des = " 编辑表可视化样式数据(TableVirtual)", ret = "state -- int")
+	public int editTableVirtual(@P(t = "表结构编号") Long tableSchemaId, @P(t = "表可视化样式编号") Long id,
+			@P(t = "表可视化样式数据") String virtual) throws Exception {
 		TableVirtual tv = new TableVirtual();
 		tv.virtual = virtual;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableVirtualRepository.updateByANDKeys(conn, new String[] {"tableSchema_id", "id"}, new Object[] {tableSchemaId, id}, tv, true);	
+			return tableVirtualRepository.updateByANDKeys(conn, new String[] { "tableSchema_id", "id" },
+					new Object[] { tableSchemaId, id }, tv, true);
 		}
-		
+
 	}
-	
+
 	/**
 	 * 删除表可视化样式数据
-	 * @throws ServerException 
+	 * 
+	 * @throws ServerException
 	 */
-	@POSTAPI(
-			path = "delTableVirtual",//
-			des = " 通过表结构编号与表可视化样式编号删除表可视化样式数据(TableVirtual)",
-			ret = "state -- int"
-			)
-	public int delTableVirtual(
-			@P(t = "表结构编号")Long tableSchemaId,
-			@P(t = "表可视化样式编号")Long id//
-			) throws Exception {
+	@POSTAPI(path = "delTableVirtual", //
+			des = " 通过表结构编号与表可视化样式编号删除表可视化样式数据(TableVirtual)", ret = "state -- int")
+	public int delTableVirtual(@P(t = "表结构编号") Long tableSchemaId, @P(t = "表可视化样式编号") Long id//
+	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableVirtualRepository.deleteByANDKeys(conn, new String[] { "tableSchema_id", "id"}, new Object[] {tableSchemaId, id});
+			return tableVirtualRepository.deleteByANDKeys(conn, new String[] { "tableSchema_id", "id" },
+					new Object[] { tableSchemaId, id });
 		}
-		
-		
+
 	}
 }
-

@@ -55,6 +55,7 @@ public class EXPTest {
 		try {
 			EXP e1 = new EXP(true).exp("t1", "=", "?", 1).and("t2", "=", "?", obj).or("t3", "=", "?", obj);
 		} catch (ServerException e) {
+			// e.printStackTrace();
 			Assert.assertTrue(true);
 		}
 
@@ -104,7 +105,25 @@ public class EXPTest {
 
 			e.toSQL(sb, params);
 			System.out.println(">>>" + sb.toString());
-//			Assert.assertEquals(sb.toString(), "t1 = ? AND name LIKE '%namestr%'");
+			Assert.assertEquals(sb.toString(), "t1 = ? AND name IN(?,?,?,?,?,?)");
+		} catch (ServerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testInOrdered() {
+		try {
+			EXP e = new EXP(true).exp("t1", "=", "?", 1).and(EXP.inOrdered("name", 123, 234, "sdf", 3534, 3453, 334));
+
+			StringBuffer sb = new StringBuffer();
+			ArrayList params = new ArrayList<>();
+
+			e.toSQL(sb, params);
+			System.out.println(">>>" + sb.toString());
+			Assert.assertEquals(sb.toString(),
+					"t1 = ? AND name IN(?,?,?,?,?,?) ORDER BY FIND_IN_SET(name,123,234,sdf,3534,3453,334)");
 		} catch (ServerException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -138,6 +157,27 @@ public class EXPTest {
 
 			Assert.assertEquals(sb.toString(),
 					"t1 = ? AND t2 = ? AND (this is shit OR this is fuck) AND (t1 = ? AND t2 = ? AND (this is shit OR this is fuck))");
+		} catch (ServerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testANDKey() {
+		try {
+			EXP e = EXP.key("id", 123).andKey("name", "小四");
+
+			StringBuffer sb = new StringBuffer();
+			ArrayList<Object> params = new ArrayList<>();
+			e.toSQL(sb, params);
+
+			String str = sb.toString();
+			String pstr = JSON.toJSONString(params);
+			System.out.println("===" + str);
+			System.out.println(">>>" + pstr);
+
+			Assert.assertEquals(sb.toString(), "id = ? AND name = ?");
 		} catch (ServerException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
