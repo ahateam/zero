@@ -2,7 +2,6 @@ package zyxhj.core.service;
 
 import java.util.Date;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -212,13 +211,13 @@ public class UserService {
 	}
 
 	// 微信登录
-	public User loginByWxOpenId(DruidPooledConnection conn, String wxOpenId) throws Exception {
+	public User loginByWxOpenId(DruidPooledConnection conn, String wxOpenId, String name, String ext) throws Exception {
 
 		User user = userRepository.getByKey(conn, "wx_open_id", wxOpenId);
 
 		if (user == null) {
 			// 创建用户
-			return createUser(conn, wxOpenId);
+			return createUser(conn, wxOpenId, name, ext);
 		} else {
 			// 用户登录
 			return user;
@@ -226,12 +225,13 @@ public class UserService {
 	}
 
 	// 创建用户
-	private User createUser(DruidPooledConnection conn, String wxOpenId) throws Exception {
+	private User createUser(DruidPooledConnection conn, String wxOpenId, String name, String ext) throws Exception {
 		User u = new User();
 		u.id = IDUtils.getSimpleId();
 		u.wxOpenId = wxOpenId;
-		u.name = StringUtils.join("用户" + u.id);
+		u.name = name;
 		u.createDate = new Date();
+		u.ext = ext;
 		userRepository.insert(conn, u);
 		return u;
 	}
