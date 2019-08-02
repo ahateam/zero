@@ -18,9 +18,9 @@ public class TagGroupRepository extends RDSRepository<TagGroup> {
 	/**
 	 * 根据模块关键字，获取该模块下的type分类关键字列表
 	 */
-	public List<String> getTagGroupTypeList(DruidPooledConnection conn, String module) throws ServerException {
-		List<Object[]> objs = this.getObjectsList(conn, "WHERE module=? GROUP BY type", new Object[] { module }, 512, 0,
-				"type");
+	public List<String> getTagGroupTypeList(DruidPooledConnection conn, String moduleKey) throws ServerException {
+		List<Object[]> objs = this.getObjectsList(conn, "WHERE module_key=? GROUP BY type", new Object[] { moduleKey },
+				512, 0, "type");
 		if (objs != null || objs.size() > 0) {
 			ArrayList<String> ret = new ArrayList<>();
 			for (int i = 0; i < objs.size(); i++) {

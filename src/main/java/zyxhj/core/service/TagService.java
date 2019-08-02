@@ -16,6 +16,7 @@ import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.EXP;
 
 public class TagService extends Controller {
 
@@ -87,10 +88,10 @@ public class TagService extends Controller {
 			ret = "List<String>" //
 	)
 	public List<String> getTagGroupTypeList(//
-			@P(t = "分组所属模块关键字") String module //
+			@P(t = "分组所属模块关键字") String moduleKey //
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return groupRepository.getTagGroupTypeList(conn, module);
+			return groupRepository.getTagGroupTypeList(conn, moduleKey);
 		}
 	}
 
@@ -100,15 +101,15 @@ public class TagService extends Controller {
 			ret = "List<TagGroup>" //
 	)
 	public List<TagGroup> getTagGroupList(//
-			@P(t = "分组所属模块关键字") String module, //
+			@P(t = "分组所属模块关键字") String moduleKey, //
 			@P(t = "分组类型自定义关键字（可选参数），不填表示全选", r = false) String type, //
 			@P(t = "数量") Integer count, //
 			@P(t = "偏移") Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			// TODO 没有实现不填就全选的功能
-			return groupRepository.getListByANDKeys(conn, new String[] { "module", "type" },
-					new Object[] { module, type }, count, offset);
+			return groupRepository.getList(conn, EXP.ins().key("module_key", moduleKey).andKey("type", type), count,
+					offset);
 		}
 	}
 
@@ -125,7 +126,7 @@ public class TagService extends Controller {
 
 		ct.groupId = groupId;
 		ct.name = name;
-		ct.status = Tag.STATUS.ENABLED.v();
+		ct.status = Tag.STATUS.ENABLED;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			tagRepository.insert(conn, ct);
@@ -140,8 +141,7 @@ public class TagService extends Controller {
 	)
 	public List<Tag> getTagList(Long groupId, Byte status) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tagRepository.getListByANDKeys(conn, new String[] { "group_Id", "status" },
-					new Object[] { groupId, status }, 512, 0);
+			return tagRepository.getList(conn, EXP.ins().key("group_id", groupId).andKey("status", status), 512, 0);
 		}
 	}
 

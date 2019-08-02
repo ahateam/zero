@@ -1,5 +1,6 @@
 package zyxhj.flow.repository;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
@@ -14,12 +15,13 @@ public class ProcessLogRepository extends RDSRepository<ProcessLog> {
 		super(ProcessLog.class);
 	}
 
-	public List<ProcessLog> getProcessLogList(DruidPooledConnection conn, Long processId, Integer count, Integer offset) {
+	public List<ProcessLog> getProcessLogList(DruidPooledConnection conn, Long processId, Integer count,
+			Integer offset) {
 
-		String where = "where process_id = ? ORDER BY timestamp desc";
-		
+		String where = "process_id = ? ORDER BY timestamp desc";
+
 		try {
-			return this.getList(conn, where, new Object[] {processId}, count, offset);
+			return this.getList(conn, where, Arrays.asList(processId), count, offset);
 		} catch (ServerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

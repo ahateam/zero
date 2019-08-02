@@ -11,6 +11,7 @@ import zyxhj.core.domain.UserRole;
 import zyxhj.core.repository.UserRoleRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.data.EXP;
 
 /**
  * 用户角色service
@@ -59,14 +60,14 @@ public class UserRoleService {
 	 * 删除自定义角色
 	 */
 	public int delUserRole(DruidPooledConnection conn, Long roleId) throws Exception {
-		return roleRepository.deleteByKey(conn, "id", roleId);
+		return roleRepository.delete(conn, EXP.ins().key("id", roleId));
 	}
 
 	/**
 	 * 获取系统角色列表
 	 */
 	public List<UserRole> getUserRoles(DruidPooledConnection conn, Integer count, Integer offset) throws Exception {
-		return roleRepository.getList(conn, count, offset);
+		return roleRepository.getList(conn, null, count, offset);
 	}
 
 }

@@ -1,6 +1,7 @@
 package zyxhj.core.domain;
 
-import zyxhj.utils.api.Controller.ENUMVALUE;
+import zyxhj.utils.data.AnnDic;
+import zyxhj.utils.data.AnnDicField;
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
@@ -12,28 +13,14 @@ import zyxhj.utils.data.rds.RDSAnnID;
 @RDSAnnEntity(alias = "tb_tag")
 public class Tag {
 
-	public static enum STATUS implements ENUMVALUE {
-		DISABLED((byte) 0, "禁用"), //
-		ENABLED((byte) 1, "启用"), //
-		;
+	@AnnDic
+	public static final class STATUS {
 
-		private byte v;
-		private String txt;
+		@AnnDicField(alias = "禁用")
+		public static final Byte DISABLED = 0;
 
-		private STATUS(Byte v, String txt) {
-			this.v = v;
-			this.txt = txt;
-		}
-
-		@Override
-		public byte v() {
-			return v;
-		}
-
-		@Override
-		public String txt() {
-			return txt;
-		}
+		@AnnDicField(alias = "启用")
+		public static final Byte ENABLED = 1;
 	}
 
 	/**

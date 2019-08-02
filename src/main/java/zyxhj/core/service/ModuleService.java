@@ -98,24 +98,18 @@ public class ModuleService extends Controller {
 			ret = "模块列表"//
 	)
 	public List<Module> getModuleList(//
-			@P(t = "是否系统模块（可选参数），true表示系统模块，false表示自定义模块，不填代表不区分全部返回", r = false) Boolean sys, //
+			@P(t = "是否系统模块（可选参数），true表示系统模块，false表示自定义模块") Boolean sys, //
 			Integer count, //
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			if (sys == null) {
-				// 返回系统和自定义的全部模块
+			if (sys) {
+				// 返回系统模块
 				ArrayList<Module> list = new ArrayList<>(Module.SYS_MODULE_MAP.values());
 				return subList(list, count, offset);
 			} else {
-				if (sys) {
-					// 返回系统模块
-					ArrayList<Module> list = new ArrayList<>(Module.SYS_MODULE_MAP.values());
-					return subList(list, count, offset);
-				} else {
-					// 返回自定义模块
-					return moduleRepository.getList(conn, count, offset);
-				}
+				// 返回自定义模块
+				return moduleRepository.getList(conn, null, count, offset);
 			}
 		}
 	}

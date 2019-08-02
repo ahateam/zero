@@ -17,6 +17,7 @@ import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
+import zyxhj.utils.data.EXP;
 
 public class UserService {
 
@@ -79,14 +80,16 @@ public class UserService {
 	/**
 	 * 用户名密码注册
 	 * 
-	 * @param name 用户名（必填）
-	 * @param pwd  密码（必填）
+	 * @param name
+	 *            用户名（必填）
+	 * @param pwd
+	 *            密码（必填）
 	 * 
 	 * @return 刚注册的用户对象
 	 */
 	public User registByNameAndPwd(DruidPooledConnection conn, String name, String pwd) throws Exception {
 		// 判断用户是否存在
-		User existUser = userRepository.getByKey(conn, "name", name);
+		User existUser = userRepository.get(conn, EXP.ins().key("name", name));
 		if (null == existUser) {
 			// 用户不存在
 			User newUser = new User();
@@ -109,7 +112,7 @@ public class UserService {
 
 	public LoginBo loginByNameAndPwd(DruidPooledConnection conn, String name, String pwd) throws Exception {
 		// 判断用户是否存在
-		User existUser = userRepository.getByKey(conn, "name", name);
+		User existUser = userRepository.get(conn, EXP.ins().key("name", name));
 		if (null == existUser) {
 			// 用户不存在
 			throw new ServerException(BaseRC.USER_NOT_EXIST);
@@ -126,31 +129,31 @@ public class UserService {
 	}
 
 	public User getUserById(DruidPooledConnection conn, Long userId) throws Exception {
-		return userRepository.getByKey(conn, "id", userId);
+		return userRepository.get(conn, EXP.ins().key("id", userId));
 	}
 
 	public User getUserByName(DruidPooledConnection conn, String name) throws Exception {
-		return userRepository.getByKey(conn, "name", name);
+		return userRepository.get(conn, EXP.ins().key("name", name));
 	}
 
 	public User getUserByMobile(DruidPooledConnection conn, String mobile) throws Exception {
-		return userRepository.getByKey(conn, "mobile", mobile);
+		return userRepository.get(conn, EXP.ins().key("mobile", mobile));
 	}
 
 	public User getUserByEmail(DruidPooledConnection conn, String email) throws Exception {
-		return userRepository.getByKey(conn, "email", email);
+		return userRepository.get(conn, EXP.ins().key("email", email));
 	}
 
 	public User getUserByQQOpenId(DruidPooledConnection conn, String qqOpenId) throws Exception {
-		return userRepository.getByKey(conn, "qq_open_id", qqOpenId);
+		return userRepository.get(conn, EXP.ins().key("qq_open_id", qqOpenId));
 	}
 
 	public User getUserByWxOpenId(DruidPooledConnection conn, String wxOpenId) throws Exception {
-		return userRepository.getByKey(conn, "wx_open_id", wxOpenId);
+		return userRepository.get(conn, EXP.ins().key("wx_open_id", wxOpenId));
 	}
 
 	public User getUserByWbOpenId(DruidPooledConnection conn, String wbOpenId) throws Exception {
-		return userRepository.getByKey(conn, "wb_open_id", wbOpenId);
+		return userRepository.get(conn, EXP.ins().key("wb_open_id", wbOpenId));
 	}
 
 	public void setUserNickname(DruidPooledConnection conn, Long userId, String nickname) throws Exception {
@@ -166,12 +169,12 @@ public class UserService {
 	}
 
 	public int deleteUserById(DruidPooledConnection conn, Long userId) throws Exception {
-		return userRepository.deleteByKey(conn, "id", userId);
+		return userRepository.delete(conn, EXP.ins().key("id", userId));
 	}
 
 	public User auth(DruidPooledConnection conn, Long userId) throws Exception {
 		// 先判断user是否存在
-		User user = userRepository.getByKey(conn, "id", userId);
+		User user = userRepository.get(conn, EXP.ins().key("id", userId));
 		if (null == user) {
 			// user不存在
 			throw new ServerException(BaseRC.USER_NOT_EXIST);
@@ -213,7 +216,7 @@ public class UserService {
 	// 微信登录
 	public User loginByWxOpenId(DruidPooledConnection conn, String wxOpenId, String name, String ext) throws Exception {
 
-		User user = userRepository.getByKey(conn, "wx_open_id", wxOpenId);
+		User user = userRepository.get(conn, EXP.ins().key("wx_open_id", wxOpenId));
 
 		if (user == null) {
 			// 创建用户
@@ -245,6 +248,5 @@ public class UserService {
 		u.email = email;
 		return userRepository.updateByKey(conn, "id", userId, u, true);
 	}
-	
 
 }

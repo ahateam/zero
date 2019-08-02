@@ -1,5 +1,6 @@
 package zyxhj.flow.repository;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
@@ -18,11 +19,11 @@ public class TableDataRepository extends RDSRepository<TableData> {
 	public List<TableData> getTableDatasByQuery(DruidPooledConnection conn, Long tableSchemaId, JSONObject query,
 			Integer count, Integer offset) throws Exception {
 
-		StringBuffer sb = new StringBuffer("WHERE table_schema_id = ? AND ");
+		StringBuffer sb = new StringBuffer("table_schema_id = ? AND ");
 		EXP.jsonEXP2VirtualTableSQL(query, "data", sb);
 		System.out.println(sb.toString());
 
-		return this.getList(conn, sb.toString(), new Object[] { tableSchemaId }, count, offset);
+		return this.getList(conn, sb.toString(), Arrays.asList(tableSchemaId), count, offset);
 	}
 
 }

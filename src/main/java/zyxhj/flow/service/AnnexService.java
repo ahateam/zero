@@ -30,9 +30,9 @@ public class AnnexService extends Controller {
 		super(node);
 		try {
 			ds = DataSource.getDruidDataSource("rdsDefault.prop");
-			
+
 			annexRepository = Singleton.ins(AnnexRepository.class);
-			
+
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -62,14 +62,13 @@ public class AnnexService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			annexRepository.insert(conn, a);
 		}
-		
+
 	}
 
 	@POSTAPI(//
 			path = "delAnnex", //
 			des = "删除附件", //
-			ret = "state --- int"
-	)
+			ret = "state --- int")
 	public int delAnnex(//
 			@P(t = "附件持有者编号") Long ownerId, //
 			@P(t = "附件编号") Long id//
@@ -78,14 +77,13 @@ public class AnnexService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return annexRepository.delete(conn, EXP.ins().key("owner_id", ownerId).andKey("id", id));
 		}
-		
+
 	}
 
 	@POSTAPI(//
 			path = "editAnnex", //
 			des = "修改附件", //
-			ret = "state --- int"
-	)
+			ret = "state --- int")
 	public int editAnnex(//
 			@P(t = "附件持有者编号") Long ownerId, //
 			@P(t = "附件编号") Long id, //
@@ -104,9 +102,10 @@ public class AnnexService extends Controller {
 		a.tags = tags;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return annexRepository.updateByANDKeys(conn, new String[] {"owner_id", "id"}, new Object[] {ownerId, id}, a, true);
+			return annexRepository.updateByANDKeys(conn, new String[] { "owner_id", "id" },
+					new Object[] { ownerId, id }, a, true);
 		}
-		
+
 	}
 
 	@POSTAPI(//
@@ -121,7 +120,7 @@ public class AnnexService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return annexRepository.getList(conn,EXP.ins().key("owner_id", ownerId), count, offset);
+			return annexRepository.getList(conn, EXP.ins().key("owner_id", ownerId), count, offset);
 		}
 	}
 
@@ -136,10 +135,10 @@ public class AnnexService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			List<Annex> a =  annexRepository.getList(conn, EXP.ins().key("owner_id", ownerId).andKey("id", id), 1, 0);
+			List<Annex> a = annexRepository.getList(conn, EXP.ins().key("owner_id", ownerId).andKey("id", id), 1, 0);
 			return a.get(0);
 		}
-		
+
 	}
-	
+
 }
