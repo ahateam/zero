@@ -114,8 +114,8 @@ public class EXP implements Cloneable {
 	 * 
 	 * @throws ServerException
 	 */
-	public static EXP key(String key, Object value) throws ServerException {
-		return new EXP(true).exp(key, "=", "?", value);
+	public EXP key(String key, Object value) throws ServerException {
+		return exp(key, "=", "?", value);
 	}
 
 	/**
@@ -329,6 +329,10 @@ public class EXP implements Cloneable {
 		}
 	}
 
+	public EXP orKey(String key, Object value) throws ServerException {
+		return or(key, "=", "?", value);
+	}
+
 	private static String sqlFixOP(String op) {
 		op = StringUtils.trim(op);
 		if (op.equals("&&") || op.equals("AND") || op.equals("and")) {
@@ -513,6 +517,13 @@ public class EXP implements Cloneable {
 	}
 
 	private static boolean isShit(boolean exact, Object right, Object[] args) throws ServerException {
+		// if ("?".equals(right.toString().trim())) {
+		// System.out.println("??");
+		// }
+		// if (args != null) {
+		// System.out.println(args.length);
+		// System.out.println(args[0] == null ? "yes" : "no");
+		// }
 		if (exact) {
 			// 严谨表达式，参数不能为空，为空抛异常
 			if ("?".equals(right.toString().trim()) && args != null && args.length > 0 && args[0] == null) {

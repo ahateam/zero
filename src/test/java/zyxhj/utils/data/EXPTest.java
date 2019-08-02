@@ -162,18 +162,74 @@ public class EXPTest {
 	@Test
 	public void testANDKey() {
 		try {
-			EXP e = EXP.key("id", 123).andKey("name", "小四");
+			{
+				EXP e = EXP.ins().key("id", 123).andKey("name", "小四");
 
-			StringBuffer sb = new StringBuffer();
-			ArrayList<Object> params = new ArrayList<>();
-			e.toSQL(sb, params);
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
 
-			String str = sb.toString();
-			String pstr = JSON.toJSONString(params);
-			System.out.println("===" + str);
-			System.out.println(">>>" + pstr);
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
 
-			Assert.assertEquals(sb.toString(), "id = ? AND name = ?");
+				Assert.assertEquals(sb.toString(), "id = ? AND name = ?");
+			}
+
+			{
+				EXP e = EXP.ins(false).key("id", null).andKey("name", "小四").andKey("sex", null);
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(), "name = ?");
+			}
+
+		} catch (ServerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+	
+	
+	@Test
+	public void testORKey() {
+		try {
+			{
+				EXP e = EXP.ins().key("id", 123).orKey("name", "小四");
+
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(), "id = ? OR name = ?");
+			}
+
+			{
+				EXP e = EXP.ins(false).key("id", null).orKey("name", "小四").orKey("sex", null);
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(), "name = ?");
+			}
+
 		} catch (ServerException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

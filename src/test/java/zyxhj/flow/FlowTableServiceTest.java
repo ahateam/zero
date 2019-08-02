@@ -102,7 +102,7 @@ public class FlowTableServiceTest {
 		try {
 			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
 
-			tableService = Singleton.ins(TableService.class,"table");
+			tableService = Singleton.ins(TableService.class, "table");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -198,7 +198,7 @@ public class FlowTableServiceTest {
 	@Test
 	public void testCreateTableQuery() throws ServerException {
 
-		EXP exp = new EXP(true).exp("{{COL5}}", "=", 2).and("{{TOTAL1}}", ">", 100);
+		EXP exp = EXP.ins().exp("{{COL5}}", "=", 2).and("{{TOTAL1}}", ">", 100);
 
 		System.out.println(JSON.toJSONString(exp));
 		JSONObject jo = JSON.parseObject(JSON.toJSONString(exp));
