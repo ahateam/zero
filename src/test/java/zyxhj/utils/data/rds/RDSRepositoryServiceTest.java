@@ -116,6 +116,16 @@ public class RDSRepositoryServiceTest {
 		}
 	}
 	
+	@Test
+	public void testGetListByKeyIN() {
+		try {
+			List<TestDomain> t = testRepository.getList(conn, EXP.ins().in("status", 1,5,3) ,count, offset);
+			System.out.println(t.size());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	
 	
 	

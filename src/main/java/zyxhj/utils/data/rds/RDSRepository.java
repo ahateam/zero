@@ -221,14 +221,12 @@ public abstract class RDSRepository<T> {
 			buildCountAndOffset(sb, count, offset);
 
 			log.debug(sb.toString());
-
 //			System.out.println(sb.toString());
 			return executeQuerySQL(conn, sb.toString(), whereParams.toArray());
-
 		}
-
 	}
 
+	
 	public List<T> getList(DruidPooledConnection conn, EXP exp, Integer count, Integer offset, String... selections)
 			throws ServerException {
 		if (exp == null) {
@@ -241,132 +239,7 @@ public abstract class RDSRepository<T> {
 		}
 	}
 
-	/**
-	 * 获取一个对象</br>
-	 * 
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
-	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
-	 * 
-	 * @return 返回查询的对象，如果查询不到，则返回null
-	 */
-	protected T get(DruidPooledConnection conn, EXP where, String... selections) throws ServerException {
-		return DataSource.list2Obj(getList(conn, where, 1, 0, selections));
-	}
 
-	/**
-	 * 模版方法，无条件获取对象列表</br>
-	 * 
-	 * @param selections 要选择的列的列名（数据库字段名），不填表示*，全部选择
-	 */
-	@Deprecated
-	public List<T> getList(DruidPooledConnection conn, Integer count, Integer offset, String... selections)
-			throws ServerException {
-
-		StringBuffer sb = buildSELECT(selections);
-		buildFROM(sb, mapper.getTableName());
-		buildCountAndOffset(sb, count, offset);
-
-		System.out.println(sb.toString());
-		return executeQuerySQL(conn, sb.toString(), null);
-	}
-
-	/**
-	 * 模版方法，根据某个唯一键值获取一个对象</br>
-	 * 
-	 * @param key        列名
-	 * @param value      值
-	 * @param selections 要选择的列的列名（数据库字段名），不填表示*，全部选择
-	 * 
-	 * @return 返回查询的对象，如果查询不到，则返回null
-	 */
-//	@Deprecated
-//	public T getByKey(DruidPooledConnection conn, String key, Object value, String... selections)
-//			throws ServerException {
-//		return get(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, selections);
-//	}
-
-	/**
-	 * 模版方法，根据某个唯一键值获取对象数组</br>
-	 * 
-	 * @param key        列名
-	 * @param value      值
-	 * @param selections 要选择的列的列名（数据库字段名），不填表示*，全部选择
-	 * 
-	 * @return 返回查询的对象数组，如果查询不到，则数组长度为0
-	 */
-//	@Deprecated
-//	public List<T> getListByKey(DruidPooledConnection conn, String key, Object value, Integer count, Integer offset,
-//			String... selections) throws ServerException {
-//		return getList(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, count, offset, selections);
-//	}
-
-	/**
-	 * 根据多个字段的值，获取对象</br>
-	 * key1=? AND key2=? AND key3=?</br>
-	 * 
-	 * @param keys       键数组
-	 * @param values     值数组
-	 * 
-	 * @param selections 要选择的列的列名（数据库字段名），不填表示*，全部选择 *
-	 * 
-	 */
-//	@Deprecated
-//	public T getByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, String... selections)
-//			throws ServerException {
-//		return DataSource.list2Obj(getListByANDKeys(conn, keys, values, 1, 0, selections));
-//	}
-
-	/**
-	 * 根据多个字段的值，获取对象列表</br>
-	 * key1=? AND key2=? AND key3=?</br>
-	 * 
-	 * @param keys       键数组
-	 * @param values     值数组
-	 * 
-	 * @param selections 要选择的列的列名（数据库字段名），不填表示*，全部选择 *
-	 */
-//	@Deprecated
-//	public List<T> getListByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, Integer count,
-//			Integer offset, String... selections) throws ServerException {
-//		if (keys.length != values.length) {
-//			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
-//		}
-//		StringBuffer sb = new StringBuffer("WHERE ");
-//		SQLEx.exANDKeys(keys, values).toSQL(sb);
-//		return getList(conn, sb.toString(), values, count, offset, selections);
-//	}
-
-	/**
-	 * 模版方法，根据某个唯一键值的某些值，获取这些值所对应的对象数组</br>
-	 * 
-	 * @param key        列名
-	 * @param values     值数组（字符串，在外部转换好再放进来，防止隐式转换出问题）
-	 * @param selections 要选择的列的列名（数据库字段名），不填表示*，全部选择
-	 * 
-	 * @return 查询的对象列表
-	 */
-	@Deprecated
-	public List<T> getListByKeyInValues(DruidPooledConnection conn, String key, Object[] values, String... selections)
-			throws ServerException {
-		StringBuffer sb = buildSELECT(selections);
-		buildFROM(sb, mapper.getTableName());
-		sb.append(" WHERE ").append(key).append(" IN (");
-		List<Object> inValues = new ArrayList<>();
-		StringBuffer ordersb = new StringBuffer(" ORDER BY FIND_IN_SET(");
-		ordersb.append(key).append(",'");
-		for (Object id : values) {
-			sb.append("?").append(",");
-			ordersb.append(id).append(",");
-			inValues.add(id);
-		}
-		sb.deleteCharAt(sb.length() - 1);
-		sb.append(") ");
-		ordersb.deleteCharAt(ordersb.length() - 1);
-		ordersb.append("')");
-		sb.append(ordersb);
-		return executeQuerySQL(conn, sb.toString(), values);
-	}
 
 	/**
 	 * 更新</br>

@@ -143,7 +143,7 @@ public class FlowService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return definitionRepository.getListByKey(conn, "module_key", moduleKey, count, offset);
+			return definitionRepository.getList(conn, EXP.ins().key("module_key", moduleKey), count, offset);
 		}
 	}
 
@@ -155,7 +155,8 @@ public class FlowService extends Controller {
 	public ProcessDefinition getPDById(@P(t = "流程定义编号") Long pdId//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return definitionRepository.getByKey(conn, "id", pdId);
+			List<ProcessDefinition> p = definitionRepository.getList(conn, EXP.ins().key("id", pdId), 1, 0);
+			return p.get(0);
 		}
 	}
 
@@ -208,7 +209,8 @@ public class FlowService extends Controller {
 			Long pdId
 			) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return definitionRepository.getByKey(conn, "id", pdId, "id", "link");
+			List<ProcessDefinition> p =definitionRepository.getList(conn, EXP.ins().key("id", pdId), 1, 0, "id", "link");
+			return p.get(0);
 		}
 	}
 	
@@ -306,8 +308,7 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return activityRepository.getListByANDKeys(conn, new String[] { "pd_id", "active" },
-					new Object[] { pdId, 0 }, count, offset);
+			return activityRepository.getList(conn, EXP.ins().key("pd_id", pdId).andKey("active", 0), count, offset);
 		}
 	}
 
@@ -322,8 +323,8 @@ public class FlowService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return activityRepository.getByANDKeys(conn, new String[] { "pd_id", "id" },
-					new Object[] { pdid, activityid });
+			List<ProcessActivity> a = activityRepository.getList(conn, EXP.ins().key("pd_id", pdid).andKey("id", activityid), 1, 0);
+			return a.get(0);
 		} catch (ServerException e) {
 			e.printStackTrace();
 		}
@@ -451,8 +452,8 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processRepository.getListByANDKeys(conn, new String[] { "pd_id", "active" },
-					new Object[] { pdId, 0 }, count, offset);
+			
+			return processRepository.getList(conn, EXP.ins().key("pd_id", pdId).andKey("active", 0), count, offset);
 		}
 	}
 
@@ -470,7 +471,8 @@ public class FlowService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processRepository.getByKey(conn, "id", id);
+			List<Process> p =  processRepository.getList(conn, EXP.ins().key("id", id), 1, 0);
+			return p.get(0);
 		}
 	}
 
@@ -597,8 +599,8 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processAssetRepository.getListByANDKeys(conn, new String[] { "type", "owner_id" },
-					new Object[] { ProcessAsset.TYPE_DEFINITON, pdId }, count, offset);
+			
+			return processAssetRepository.getList(conn, EXP.ins().key("type", ProcessAsset.TYPE_DEFINITON).andKey("owner_id", pdId), count, offset);
 		}
 	}
 
@@ -613,8 +615,8 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processAssetRepository.getListByANDKeys(conn, new String[] { "type", "owner_id" },
-					new Object[] { ProcessAsset.TYPE_ACTIVITY, activityId }, count, offset);
+			
+			return processAssetRepository.getList(conn, EXP.ins().key("type", ProcessAsset.TYPE_DEFINITON).andKey("owner_id", activityId), count, offset);
 		}
 	}
 
@@ -719,7 +721,7 @@ public class FlowService extends Controller {
 	public List<ProcessAssetDesc> getAssetDescList(@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId, Integer count,
 			Integer offset) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return assetDescRepository.getListByKey(conn, "owner_id", ownerId, count, offset);
+			return assetDescRepository.getList(conn,EXP.ins().key("owner_id", ownerId) , count, offset);
 		}
 	}
 
@@ -733,7 +735,7 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return userRepository.getList(conn, count, offset, "id", "real_name");
+			return userRepository.getList(conn, null, count, offset, "id", "real_name");
 		}
 
 	}
@@ -748,7 +750,7 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return roleRepository.getList(conn, count, offset, "id", "name");
+			return roleRepository.getList(conn, null, count, offset, "id", "name");
 		}
 	}
 
@@ -762,7 +764,7 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return departmentRepository.getList(conn, count, offset, "id", "name");
+			return departmentRepository.getList(conn, null, count, offset, "id", "name");
 		}
 	}
 }

@@ -173,7 +173,7 @@ public class TableService extends Controller {
 	) throws Exception {
 		
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableSchemaRepository.getList(conn, count, offset, "id", "alias");
+			return tableSchemaRepository.getList(conn, null, count, offset, "id", "alias");
 		}
 
 	}
@@ -195,7 +195,7 @@ public class TableService extends Controller {
 
 		// 取出计算列，进行计算
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			TableSchema ts = tableSchemaRepository.getByKey(conn, "id", tableSchemaId);
+			TableSchema ts = tableSchemaRepository.getList(conn, EXP.ins().key("id", tableSchemaId), 1, 0).get(0);
 
 			if (ts == null || ts.columns == null || ts.columns.size() <= 0) {
 				// 表结构不存在，抛异常
@@ -230,8 +230,7 @@ public class TableService extends Controller {
 			@P(t = "表数据编号") Long dataId, //
 			@P(t = "表数据") JSONObject data) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			TableData td = tableDataRepository.getByANDKeys(conn, new String[] { "table_schema_id", "id" },
-					new Object[] { tableSchemaId, dataId });
+			TableData td = tableDataRepository.getList(conn, EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", dataId), 1, 0).get(0);
 			if (td == null) {
 				throw new ServerException(BaseRC.FLOW_FORM_TABLE_DATA_NOT_FOUND);
 			} else {
@@ -239,7 +238,7 @@ public class TableService extends Controller {
 				td.data = data;
 
 				// 取出计算列，进行计算
-				TableSchema ts = tableSchemaRepository.getByKey(conn, "id", tableSchemaId);
+				TableSchema ts = tableSchemaRepository.getList(conn, EXP.ins().key("id", tableSchemaId), 1, 0 ).get(0);
 				if (ts == null || ts.columns == null || ts.columns.size() <= 0) {
 					// 表结构不存在，抛异常
 					throw new ServerException(BaseRC.FLOW_FORM_TABLE_SCHEMA_NOT_FOUND);
@@ -291,7 +290,7 @@ public class TableService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableDataRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);
+			return tableDataRepository.getList(conn, EXP.ins().key("table_schema_id", tableSchemaId) , count, offset);
 		}
 
 	}
@@ -327,7 +326,7 @@ public class TableService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableQueryRepository.getListByKey(conn, "table_schema_id", tableSchemaId, count, offset);
+			return tableQueryRepository.getList(conn, EXP.ins().key("table_schema_id", tableSchemaId) , count, offset);
 		}
 
 	}
@@ -360,8 +359,8 @@ public class TableService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			TableQuery tq = tableQueryRepository.getByANDKeys(conn, new String[] { "table_schema_id", "id" },
-					new Object[] { tableSchemaId, queryId });
+			TableQuery tq = tableQueryRepository.getList(conn, EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", queryId), 1, 0).get(0);
+			
 			if (tq == null || tq.queryFormula == null) {
 				throw new ServerException(BaseRC.FLOW_FORM_TABLE_QUERY_NOT_FOUND);
 			} else {
@@ -415,7 +414,8 @@ public class TableService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableVirtualRepository.getListByKey(conn, "tableSchema_id", tableSchemaId, count, offset);
+			return tableVirtualRepository.getList(conn, EXP.ins().key("table_schema_id", tableSchemaId), count, offset);
+			
 		}
 
 	}
