@@ -162,7 +162,6 @@ public class Content extends TSEntity {
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String proviteData;
-
 	
 	/**
 	 * 是否付费

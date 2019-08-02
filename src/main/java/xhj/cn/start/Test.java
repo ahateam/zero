@@ -10,7 +10,6 @@ import zyxhj.core.domain.Tag;
 import zyxhj.core.domain.TagGroup;
 import zyxhj.core.domain.UserRole;
 import zyxhj.flow.domain.Annex;
-import zyxhj.flow.domain.Department;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
@@ -38,11 +37,11 @@ public class Test {
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 
-			RDSUtils.createTableByEntity(dds, Department.class);
+//			RDSUtils.createTableByEntity(dds, Department.class);
 
 
-//			TSUtils.createTableByEntity(client, TaskList.class);
-//			TSUtils.drapTableByEntity(client, TaskList.class);
+			TSUtils.createTableByEntity(client, TaskWall.class);
+//			TSUtils.drapTableByEntity(client, TaskWall.class);
 			client.shutdown();
 
 		} catch (Exception e) {

@@ -1,5 +1,7 @@
 package zyxhj.cms.domian;
 
+import java.util.Date;
+
 import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
 import com.alicloud.openservices.tablestore.model.search.FieldType;
 
@@ -50,12 +52,25 @@ public class Comment extends TSEntity {
 	public Long userId;
 
 	/**
+	 * 创建时间
+	 */
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Date createTime;
+
+	/**
 	 * 评论内容
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String commentContent;
 
-	
+	/**
+	 * 点赞数
+	 */
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Long upvote;
+
 	/**
 	 * 其他数据 比如-用户名 用户头像
 	 */

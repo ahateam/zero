@@ -60,6 +60,7 @@ public class Upvote extends TSEntity {
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long contentId;
 
+	
 	/**
 	 * 用户id
 	 */
