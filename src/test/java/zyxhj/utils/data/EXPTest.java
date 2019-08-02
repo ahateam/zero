@@ -196,8 +196,7 @@ public class EXPTest {
 			e1.printStackTrace();
 		}
 	}
-	
-	
+
 	@Test
 	public void testORKey() {
 		try {
@@ -229,6 +228,28 @@ public class EXPTest {
 
 				Assert.assertEquals(sb.toString(), "name = ?");
 			}
+
+		} catch (ServerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testTest() {
+		try {
+			EXP e = EXP.ins().key("id", 123).and(EXP.ins().key("name", "xs").or("age", "<", 18));
+
+			StringBuffer sb = new StringBuffer();
+			ArrayList<Object> params = new ArrayList<>();
+			e.toSQL(sb, params);
+
+			String str = sb.toString();
+			String pstr = JSON.toJSONString(params);
+			System.out.println("===" + str);
+			System.out.println(">>>" + pstr);
+
+			Assert.assertEquals(sb.toString(), "id = ? AND (name = ? OR age < 18)");
 
 		} catch (ServerException e1) {
 			// TODO Auto-generated catch block

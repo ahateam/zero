@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.model.search.query.BoolQuery;
 import com.alicloud.openservices.tablestore.model.search.query.Query;
@@ -31,47 +30,68 @@ public class EXP implements Cloneable {
 
 	private static final String TYPE_EXP = "e";// 二元表达式
 	private static final String TYPE_METHOD = "m";// 函数
-	// private static final String TYPE_LINK = "-";// 连接表达式
 
-	// 是否严谨，如果为true则表达式不允许为空，如果为false则字段为空时自动跳过
+	/**
+	 * 是否严谨，true则表达式右参不允许null，false则右参null时自动不添加该表达式</br>
+	 * (常用于多条件查询，右参null时该表达式无效)
+	 */
 	private boolean exact;
+
+	/**
+	 * 表达式类型
+	 */
 	private String t;
+	/**
+	 * 表达式操作符
+	 */
 	private String op;
+
+	/**
+	 * 表达式操作数</br>
+	 * 例如二元表达式中，ps[0]为左参，ps[1]为右参</br>
+	 * （同SQL一样，可用通配符 ? 表示需要被替换的参数，避免SQL注入）
+	 */
 	private List<Object> ps;
 
+	/**
+	 * 表达式参数（选填）</br>
+	 * 如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
+	 */
 	private Object[] args;
 
 	private EXP(boolean exact) {
 		this.exact = exact;
 	}
 
+	/**
+	 * 构造EXP实例
+	 * 
+	 * @param exact
+	 *            是否严谨，true则表达式右参不允许null，false则右参null时自动不添加该表达式</br>
+	 *            (常用于多条件查询，右参null时该表达式无效)
+	 */
 	public static EXP ins(boolean exact) {
 		return new EXP(exact);
 	}
 
 	/**
-	 * 默认是严谨的
+	 * 构造EXP实例，默认为严谨表达式
 	 */
 	public static EXP ins() {
 		return new EXP(true);
 	}
 
 	/**
-	 * 设置严谨性
-	 */
-	public EXP exact(boolean exact) {
-		this.exact = exact;
-		return this;
-	}
-
-	/**
-	 * SQL的 LIKE 语句</br>
+	 * SQL的 LIKE 语句
 	 */
 	public static EXP like(String key, String str) {
 		// LIKE语句中，不支持?号参数
 		return new EXP(false).exp(StringUtils.join(key, " LIKE '%", str, "%'"), null);
 	}
 
+	/**
+	 * SQL的 IN 语句，例如 where id IN(1,2,3)
+	 */
 	public static EXP in(String key, Object... args) {
 		StringBuffer sb = new StringBuffer(key);
 		sb.append(" IN(");
@@ -110,9 +130,8 @@ public class EXP implements Cloneable {
 	}
 
 	/**
-	 * SQL的 key = value 语句（太常用，所以做一个）</br>
+	 * SQL的 key = value 语句（很常用）</br>
 	 * 
-	 * @throws ServerException
 	 */
 	public EXP key(String key, Object value) throws ServerException {
 		return exp(key, "=", "?", value);
@@ -138,13 +157,11 @@ public class EXP implements Cloneable {
 	/**
 	 * 函数方法构造
 	 * 
-	 * @param exact
-	 *            是否严谨，true则字段参数不允许为空，false则字段为空时自动跳过
 	 * @param str
 	 *            表达式文本
 	 * @param args
-	 *            表达式参数列表，
-	 * @return
+	 *            表达式参数（选填）</br>
+	 *            如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
 	 */
 	public EXP exp(String str, List<Object> args) {
 		this.t = TYPE_METHOD;
@@ -154,15 +171,42 @@ public class EXP implements Cloneable {
 		return this;
 	}
 
-	public EXP exp(String op, List<Object> ps, Object... args) {
+	/**
+	 * 函数方法构造
+	 * 
+	 * @param str
+	 *            表达式函数文本
+	 * @param ps
+	 *            表达式操作数</br>
+	 *            例如二元表达式中，ps[0]为左参，ps[1]为右参</br>
+	 *            （同SQL一样，可用通配符 ? 表示需要被替换的参数，避免SQL注入）
+	 * @param args
+	 *            表达式参数（选填）</br>
+	 *            如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
+	 */
+	public EXP exp(String str, List<Object> ps, Object... args) {
 		this.t = TYPE_METHOD;
-		this.op = op;
+		this.op = str;
 		this.ps = ps;
 		this.args = args;
 
 		return this;
 	}
 
+	/**
+	 * 二元表达式构造
+	 * 
+	 * @param left
+	 *            表达式左操作数</br>
+	 * @param op
+	 *            表达式操作符
+	 * @param right
+	 *            表达式右操作数</br>
+	 *            （同SQL一样，可用通配符 ? 表示需要被替换的参数，避免SQL注入）
+	 * @param args
+	 *            表达式参数（选填）</br>
+	 *            如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
+	 */
 	public EXP exp(Object left, String op, Object right, Object... args) throws ServerException {
 		if (isShit(exact, right, args)) {
 			// 宽松验证参数，且当前右参为空，放弃本次添加
@@ -187,6 +231,9 @@ public class EXP implements Cloneable {
 		return clone;
 	}
 
+	/**
+	 * AND 连接表达式
+	 */
 	public EXP and(EXP exp) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
@@ -209,6 +256,9 @@ public class EXP implements Cloneable {
 		}
 	}
 
+	/**
+	 * AND 连接表达式
+	 */
 	public EXP and(String str, List<Object> args) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
@@ -223,6 +273,9 @@ public class EXP implements Cloneable {
 		}
 	}
 
+	/**
+	 * AND 连接表达式
+	 */
 	public EXP and(String op, List<Object> ps, Object... args) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
@@ -237,6 +290,9 @@ public class EXP implements Cloneable {
 		}
 	}
 
+	/**
+	 * AND 连接表达式
+	 */
 	public EXP and(Object l, String op, Object r, Object... args) throws ServerException {
 		if (isShit(exact, r, args)) {
 			// 宽松验证参数，且当前右参为空，放弃本次添加
@@ -256,10 +312,16 @@ public class EXP implements Cloneable {
 		}
 	}
 
+	/**
+	 * AND 连接key表达式（很常用，相当于key = value表达式）
+	 */
 	public EXP andKey(String key, Object value) throws ServerException {
 		return and(key, "=", "?", value);
 	}
 
+	/**
+	 * OR 连接表达式
+	 */
 	public EXP or(EXP exp) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
@@ -282,6 +344,9 @@ public class EXP implements Cloneable {
 		}
 	}
 
+	/**
+	 * OR 连接表达式
+	 */
 	public EXP or(String str, List<Object> args) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
@@ -296,6 +361,9 @@ public class EXP implements Cloneable {
 		}
 	}
 
+	/**
+	 * OR 连接表达式
+	 */
 	public EXP or(String op, List<Object> ps, Object... args) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
@@ -310,6 +378,9 @@ public class EXP implements Cloneable {
 		}
 	}
 
+	/**
+	 * OR 连接表达式
+	 */
 	public EXP or(Object l, String op, Object r, Object... args) throws ServerException {
 		if (isShit(exact, r, args)) {
 			// 宽松验证参数，且当前右参为空，放弃本次添加
@@ -329,6 +400,9 @@ public class EXP implements Cloneable {
 		}
 	}
 
+	/**
+	 * OR 连接key表达式（很常用，相当于key = value表达式）
+	 */
 	public EXP orKey(String key, Object value) throws ServerException {
 		return or(key, "=", "?", value);
 	}
@@ -538,37 +612,6 @@ public class EXP implements Cloneable {
 			} else {
 				return false;
 			}
-		}
-	}
-
-	public static void main(String[] args) {
-
-		try {
-
-			EXP tt = new EXP(true);
-			tt.exp("this is shit", null).or("this is fuck", null);
-
-			EXP exp = new EXP(true);
-			exp.exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
-
-			EXP exp2 = new EXP(true);
-			exp2.exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
-
-			EXP expMax = new EXP(true);
-			expMax.exp(exp).and(exp2);
-
-			StringBuffer sb = new StringBuffer("WHERE ");
-			ArrayList<Object> params = new ArrayList<>();
-			expMax.toSQL(sb, params);
-
-			String str = sb.toString();
-			String pstr = JSON.toJSONString(params);
-			System.out.println("===" + str);
-			System.out.println(">>>" + pstr);
-
-		} catch (ServerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 
