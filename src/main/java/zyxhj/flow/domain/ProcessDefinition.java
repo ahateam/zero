@@ -62,12 +62,13 @@ public class ProcessDefinition {
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public JSONObject visual;
-
+	
 	/**
-	 * 流程定义公共资产描述对象</br>
-	 * 定义需要哪些公共资产
+	 * 	存放节点关系连接线数据
 	 */
-	@RDSAnnField(column = "VARCHAR(4096)")
-	public String assetDesc;
+	@RDSAnnField(column = RDSAnnField.TEXT)
+	public JSONArray link;
+	
+
 
 }

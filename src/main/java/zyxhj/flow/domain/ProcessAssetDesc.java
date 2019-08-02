@@ -39,6 +39,6 @@ public class ProcessAssetDesc {
 	public String template;// 模版文件地址
 
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public String ext;// 模版文件地址
+	public String uri;// 模版文件地址
 
 }

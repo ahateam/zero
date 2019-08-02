@@ -69,9 +69,9 @@ public class FlowService extends Controller {
 			processAssetRepository = Singleton.ins(ProcessAssetRepository.class);
 			assetDescRepository = Singleton.ins(ProcessAssetDescRepository.class);
 			departmentRepository = Singleton.ins(DepartmentRepository.class);
-			userRepository  = Singleton.ins(UserRepository.class);
+			userRepository = Singleton.ins(UserRepository.class);
 			roleRepository = Singleton.ins(UserRoleRepository.class);
-			
+
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -97,7 +97,6 @@ public class FlowService extends Controller {
 		pd.title = title;
 		pd.tags = tags;
 		pd.status = ProcessDefinition.STATUS_READY;
-		pd.assetDesc = new String();
 		pd.visual = new JSONObject();
 		pd.lanes = lanes;
 
@@ -141,7 +140,7 @@ public class FlowService extends Controller {
 			Integer count, //
 			Integer offset//
 	) throws Exception {
-		
+
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return definitionRepository.getListByKey(conn, "module_key", moduleKey, count, offset);
 		}
@@ -182,39 +181,35 @@ public class FlowService extends Controller {
 			return definitionRepository.updateByKey(conn, "id", pdId, pd, true);
 		}
 	}
-
+	
 	@POSTAPI(//
-			path = "setPDAssetDescList", //
-			des = "为流程定义设置资产需求描述", //
-			ret = "更新影响的记录行数")
-	public int setPDAssetDescList(//
-			@P(t = "流程定义编号") Long pdId, //
-			@P(t = "要设置的列表") String assetDescList//
-	) throws Exception {
-//		List<ProcessAssetDesc> assetDescList = new ArrayList<ProcessAssetDesc>();
-//
-//		if(assetDescObj.get("table") != null) {
-//			ProcessAssetDesc padTable = (ProcessAssetDesc) assetDescObj.get("table");
-//			assetDescList.add(padTable);
-//		}
-//		
-//		if(assetDescObj.get("report") != null) {
-//			ProcessAssetDesc padReport = (ProcessAssetDesc) assetDescObj.get("report");
-//			assetDescList.add(padReport);
-//		}
-//		
-//		if(assetDescObj.get("file") != null) {
-//			ProcessAssetDesc padFile = (ProcessAssetDesc) assetDescObj.get("file");
-//			assetDescList.add(padFile);
-//		}
-
-		ProcessDefinition pd = new ProcessDefinition();
-		pd.assetDesc = assetDescList;
-
+			path = "setPDLink", //
+			des = "设置流程定义中所有节点关系数据（连线数据）"//
+			)
+	public void setPDLink(//
+			Long pdId,//
+			JSONArray link//
+			) throws Exception {
+		ProcessDefinition p = new ProcessDefinition();
+		p.link = link;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return definitionRepository.updateByKey(conn, "id", pdId, pd, true);
+			definitionRepository.updateByKey(conn, "id", pdId, p, true);
 		}
 	}
+	
+	@POSTAPI(//
+			path = "getPDLink", //
+			des = "得到流程定义中所有节点关系数据（连线数据）",//
+			ret = "ProcessDefinition"//
+			)
+	public ProcessDefinition getPDLink(
+			Long pdId
+			) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return definitionRepository.getByKey(conn, "id", pdId, "id", "link");
+		}
+	}
+	
 
 	///////////////////////////////////////
 	// Activity
@@ -230,8 +225,7 @@ public class FlowService extends Controller {
 			@P(t = "活动标题") String title, //
 			@P(t = "所属泳道") String part, //
 			@P(t = "接收者（departments部门，roles角色，users用户）") String receivers, //
-			@P(t = "行为动作") String actions,//
-			@P(t = "资源定义") String assetDesc//
+			@P(t = "行为动作") String actions//
 	) throws Exception {
 		Long id = IDUtils.getSimpleId();
 		ProcessActivity pa = new ProcessActivity();
@@ -243,7 +237,6 @@ public class FlowService extends Controller {
 		pa.receivers = receivers;
 		pa.actions = actions;
 		pa.active = ProcessActivity.ACTIVE_DELETE_N;
-		pa.assetDesc = assetDesc;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			activityRepository.insert(conn, pa);
@@ -283,8 +276,7 @@ public class FlowService extends Controller {
 			@P(t = "活动标题") String title, //
 			@P(t = "所属泳道") String part, //
 			@P(t = "接收者（departments部门，roles角色，users用户）") String receivers, //
-			@P(t = "行为动作") String actions,//
-			@P(t = "资源定义" ) String assetDesc//
+			@P(t = "行为动作") String actions//
 	) throws Exception {
 
 		ProcessActivity renew = new ProcessActivity();
@@ -292,7 +284,6 @@ public class FlowService extends Controller {
 		renew.part = part;
 		renew.receivers = receivers;
 		renew.actions = actions;
-		renew.assetDesc = assetDesc;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 
@@ -313,7 +304,8 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return activityRepository.getListByANDKeys(conn, new String[] {"pd_id", "active"}, new Object[] {pdId, 0}, count, offset);
+			return activityRepository.getListByANDKeys(conn, new String[] { "pd_id", "active" },
+					new Object[] { pdId, 0 }, count, offset);
 		}
 	}
 
@@ -322,7 +314,8 @@ public class FlowService extends Controller {
 			des = "通过流程定义编号与流程节点编号得到流程节点", //
 			ret = "ProcessActivity"//
 	)
-	public ProcessActivity getPDActivityById(@P(t = "流程定义编号") Long pdid, //
+	public ProcessActivity getPDActivityById(
+			@P(t = "流程定义编号") Long pdid, //
 			@P(t = "流程节点编号") Long activityid//
 	) throws Exception {
 
@@ -456,7 +449,8 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processRepository.getListByANDKeys(conn, new String[] {"pd_id","active"}, new Object[] {pdId, 0} , count, offset);
+			return processRepository.getListByANDKeys(conn, new String[] { "pd_id", "active" },
+					new Object[] { pdId, 0 }, count, offset);
 		}
 	}
 
@@ -636,16 +630,22 @@ public class FlowService extends Controller {
 		}
 	}
 
+	
+	/**
+	 *	返回值暂定为空，可能会返回desc对象 
+	 */
 	@POSTAPI(//
 			path = "createAssetDesc", //
 			des = "创建资产需求描述(资产定义)"//
 	)
 	public void createAssetDesc(//
-			@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId,//
-			@P(t = "资产类型") String type,//
-			@P(t = "资产名称") String name,//
-			@P(t = "是否必须") Boolean necessary,//
-			@P(t = "资产说明") String remark//
+			@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId, //
+			@P(t = "资产类型") String type, //
+			@P(t = "资产名称") String name, //
+			@P(t = "是否必须") Boolean necessary, //
+			@P(t = "资产说明") String remark,//
+			@P(t = "模板信息" ,r = false) String template,//
+			@P(t = "模板信息" ,r = false) String uri//
 			) throws Exception {
 		ProcessAssetDesc pad = new ProcessAssetDesc();
 		pad.id = IDUtils.getSimpleId();
@@ -654,108 +654,108 @@ public class FlowService extends Controller {
 		pad.name = name;
 		pad.necessary = necessary;
 		pad.remark = remark;
-		
+		pad.template = template;
+		pad.uri = uri;
+
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			assetDescRepository.insert(conn, pad);
 		}
 	}
-	
+
 	@POSTAPI(//
 			path = "editAssetDesc", //
-			des = "修改资产需求描述(资产定义)数据",//
-			ret = "受影响行数"
-	)
+			des = "修改资产需求描述(资产定义)数据", //
+			ret = "受影响行数")
 	public int editAssetDesc(//
-			@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId,//
-			@P(t = "资产定义编号") Long id,//
-			@P(t = "资产类型") String type,//
-			@P(t = "资产名称") String name,//
-			@P(t = "是否必须") Boolean necessary,//
-			@P(t = "资产说明") String remark//
-			) throws Exception {
+			@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId, //
+			@P(t = "资产定义编号") Long id, //
+			@P(t = "资产类型") String type, //
+			@P(t = "资产名称") String name, //
+			@P(t = "是否必须") Boolean necessary, //
+			@P(t = "资产说明") String remark,//
+			@P(t = "模板信息",r = false) String template,//
+			@P(t = "模板信息",r = false) String uri//
+	) throws Exception {
 		ProcessAssetDesc pad = new ProcessAssetDesc();
 		pad.type = type;
 		pad.name = name;
 		pad.necessary = necessary;
 		pad.remark = remark;
-		
+		pad.template = template;
+		pad.uri = uri;
+
+
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return assetDescRepository.updateByANDKeys(conn, new String[] {"owner_id", "id"}, new Object[] {ownerId, id}, pad, true);
-		} 
+			return assetDescRepository.updateByANDKeys(conn, new String[] { "owner_id", "id" },
+					new Object[] { ownerId, id }, pad, true);
+		}
 	}
-	
+
 	@POSTAPI(//
 			path = "delAssetDesc", //
-			des = "删除资产需求描述(资产定义)",//
-			ret = "受影响行数"
-	)
+			des = "删除资产需求描述(资产定义)", //
+			ret = "受影响行数")
 	public void delAssetDesc(
-			@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId,//
-			@P(t = "资产定义编号") Long id//
-			) {
+			@P(t = "资产定义编号") JSONArray ids//
+	) {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			assetDescRepository.deleteByANDKeys(conn, new String[] { "owner_id", "id" }, new Object[] {ownerId, id});
+			for(int i = 0; i < ids.size(); i++) {
+				assetDescRepository.deleteByKey(conn, "id", ids.get(i));
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	@POSTAPI(//
 			path = "getAssetDescList", //
-			des = "得到资产需求描述(资产定义)列表",//
-			ret = "List<ProcessAssetDesc>"
-	)
-	public List<ProcessAssetDesc> getAssetDescList(
-			@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId,
-			Integer count,
-			Integer offset
-			) throws Exception{
+			des = "得到资产需求描述(资产定义)列表", //
+			ret = "List<ProcessAssetDesc>")
+	public List<ProcessAssetDesc> getAssetDescList(@P(t = "资产所属编号（流程定义编号或流程节点编号）") Long ownerId, Integer count,
+			Integer offset) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return assetDescRepository.getListByKey(conn, "owner_id", ownerId, count, offset);
-		} 
+		}
 	}
-	
 
 	@POSTAPI(//
 			path = "getUserList", //
-			des = "得到用户列表",//
+			des = "得到用户列表", //
 			ret = "List<User>"//
 	)
 	public List<User> getUserList(//
-			Integer count,//
+			Integer count, //
 			Integer offset//
-			) throws Exception{
+	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return userRepository.getList(conn, count, offset, "id", "real_name");
-		} 
+		}
 
 	}
-	
+
 	@POSTAPI(//
 			path = "getUserRoleList", //
-			des = "得到角色列表",//
+			des = "得到角色列表", //
 			ret = "List<UserRole>"//
 	)
 	public List<UserRole> getUserRoleList(//
-			Integer count,//
+			Integer count, //
 			Integer offset//
-			) throws Exception{
+	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return roleRepository.getList(conn, count, offset, "id", "name");
-		} 
+		}
 	}
-	
-	
+
 	@POSTAPI(//
 			path = "getDepartmentList", //
-			des = "得到部门列表",//
+			des = "得到部门列表", //
 			ret = "List<Department>"//
 	)
 	public List<Department> getDepartmentList(//
-			Integer count,//
+			Integer count, //
 			Integer offset//
-			) throws Exception{
+	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return departmentRepository.getList(conn, count, offset, "id", "name");
 		}

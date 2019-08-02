@@ -196,7 +196,7 @@ public class FlowProcessServiceTest {
 
 		System.out.println(jsona);
 		try {
-			Long id = flowService.createPDActivity(pdId, "testActivityTitle2", "part2", "", "", "");
+			Long id = flowService.createPDActivity(pdId, "testActivityTitle2", "part2", "", "");
 
 			System.out.println("添加流程节点成功+" + id);
 		} catch (Exception e) {
@@ -214,7 +214,7 @@ public class FlowProcessServiceTest {
 		List<Action> actions = new ArrayList<ProcessActivity.Action>();
 
 		try {
-			int state = flowService.editPDActivity(pdId, activityId, "修改流程节点标题", "修改part", "", "", "");
+			int state = flowService.editPDActivity(pdId, activityId, "修改流程节点标题", "修改part", "", "");
 			System.out.println("修改流程节点状态：" + state);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -362,30 +362,6 @@ public class FlowProcessServiceTest {
 
 	}
 
-	@Test
-	public void testSetPDAssetDescList() {
-		try {
-
-//			JSONObject assetDescList = new JSONObject();
-//
-//			for (int i = 0; i < 2; i++) {
-//				ProcessAssetDesc p = new ProcessAssetDesc();
-//				p.id = IDUtils.getSimpleId();
-//				p.type = "ttt" + i;
-//				p.name = "name" + i;
-//				p.remark = "";
-//				p.necessary = true;
-//
-//				assetDescList.add(p);
-//			}
-
-			flowService.setPDAssetDescList(400484680137184L, "");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	
 	/**
 	 * 	ProcessAssetDesc
 	 * @throws Exception 
@@ -393,14 +369,14 @@ public class FlowProcessServiceTest {
 	
 	@Test
 	public void testCreateAssetDesc() throws Exception {
-		flowService.createAssetDesc(activityId, "form", "测试资产定义", true, "测试创建资产定义");
+		flowService.createAssetDesc(activityId, "form", "测试资产定义", true, "测试创建资产定义","","");
 	}
 	
 	@Test
 	public void testEditAssetDesc() {
 		
 		try {
-			flowService.editAssetDesc(activityId, 400506106929216L, "FILE", "测试资产定义1", false, "测试修改资产定义");
+			flowService.editAssetDesc(activityId, 400506106929216L, "FILE", "测试资产定义1", false, "测试修改资产定义","","");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -409,7 +385,7 @@ public class FlowProcessServiceTest {
 	@Test
 	public void testDelAssetDesc() {
 		
-		flowService.delAssetDesc(activityId, 400506162233926L);
+		flowService.delAssetDesc(new JSONArray());
 	}
 	
 	@Test

@@ -55,13 +55,6 @@ public class ProcessActivity {
 	public JSONObject visual;
 
 	/**
-	 * 流程节点资产描述对象</br>
-	 * 定义需要哪些公共资产
-	 */
-	@RDSAnnField(column = "VARCHAR(4096)")
-	public String assetDesc;
-
-	/**
 	 * 逻辑删除
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)

@@ -165,10 +165,12 @@ public class TableService extends Controller {
 			ret = "List<TableSchema>" //
 	)
 	public List<TableSchema> getTableSchemas(//
+			@P(t = "标签列表JSON列表，可以为空，即返回所有", r = false)JSONArray tags,//
 			Integer count, //
 			Integer offset//
+			
 	) throws Exception {
-
+		
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableSchemaRepository.getList(conn, count, offset, "id", "alias");
 		}

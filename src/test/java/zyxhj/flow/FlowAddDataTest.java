@@ -1,18 +1,22 @@
 package zyxhj.flow;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.service.UserRoleService;
 import zyxhj.core.service.UserService;
 import zyxhj.flow.domain.Annex;
+import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.domain.TableSchema.Column;
 import zyxhj.flow.service.AnnexService;
@@ -213,5 +217,67 @@ public class FlowAddDataTest {
 	}
 	
 	
+	@Test
+	public void testJSON() {
+		
+//		List<ProcessAssetDesc> a = new ArrayList<ProcessAssetDesc>();
+//		
+//		ProcessAssetDesc p = new ProcessAssetDesc();
+//		p.id = 400526607053613L;
+//		p.name = "file";
+//		p.type = ProcessAssetDesc.TYPE_FILE;
+//		p.ownerId = 400526607053613L;
+//		p.necessary = true;
+//		p.template = "url:123456";
+//		p.remark = "File";
+//		p.ext = "url:12345646456";
+//		
+//		ProcessAssetDesc p1 = new ProcessAssetDesc();
+//		p1.id = 400526607053613L;
+//		p1.name = "table";
+//		p1.type = ProcessAssetDesc.TYPE_TABLE;
+//		p1.ownerId = 400526607053613L;
+//		p1.necessary = true;
+//		p1.template = "url:123456";
+//		p1.remark = "table";
+//		p1.ext = "url:12345646456";
+//		
+//		ProcessAssetDesc p2 = new ProcessAssetDesc();
+//		p2.id = 400526607053613L;
+//		p2.name = "report";
+//		p2.type = ProcessAssetDesc.TYPE_REPORT;
+//		p2.ownerId = 400526607053613L;
+//		p2.necessary = true;
+//		p2.template = "url:123456";
+//		p2.remark = "report";
+//		p2.ext = "url:12345646456";
+//		
+//		a.add(p1);
+//		a.add(p2);
+//		a.add(p);
+//		
+//		String js = JSON.toJSONString(a);
+//	
+//		System.out.println(js);
+		
+		String jss = "{\"table\":[{\"ext\":\"url:12345646456\",\"id\":400526607053613,\"name\":\"table\",\"necessary\":true,\"ownerId\":400526607053613,\"remark\":\"table\",\"template\":\"url:123456\",\"type\":\"table\"},{\"ext\":\"url:12345646456\",\"id\":400526607053613,\"name\":\"table\",\"necessary\":true,\"ownerId\":400526607053613,\"remark\":\"table\",\"template\":\"url:123456\",\"type\":\"table\"}],\"report\":[{\"ext\":\"url:12345646456\",\"id\":400526607053613,\"name\":\"report\",\"necessary\":true,\"ownerId\":400526607053613,\"remark\":\"report\",\"template\":\"url:123456\",\"type\":\"report\"},{\"ext\":\"url:12345646456\",\"id\":400526607053613,\"name\":\"report\",\"necessary\":true,\"ownerId\":400526607053613,\"remark\":\"report\",\"template\":\"url:123456\",\"type\":\"report\"}],\"file\":[{\"ext\":\"url:12345646456\",\"id\":400526607053613,\"name\":\"file\",\"necessary\":true,\"ownerId\":400526607053613,\"remark\":\"File\",\"template\":\"url:123456\",\"type\":\"file\"},{\"ext\":\"url:12345646456\",\"id\":400526607053613,\"name\":\"file\",\"necessary\":true,\"ownerId\":400526607053613,\"remark\":\"File\",\"template\":\"url:123456\",\"type\":\"file\"}]}";
+		
+		JSONObject obj = JSONObject.parseObject(jss);
+		List plist = obj.getObject("table", List.class);
+		
+		for(int i = 0; i < plist.size(); i++) {
+			ProcessAssetDesc p = (ProcessAssetDesc) plist.get(i);
+			System.out.println(p.id);
+		}
+		
+	}
+	
+	
+	
+	
+	
 
 }
+
+
+
