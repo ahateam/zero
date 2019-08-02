@@ -16,6 +16,7 @@ import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.EXP;
 
 public class AnnexService extends Controller {
 
@@ -75,7 +76,7 @@ public class AnnexService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return annexRepository.deleteByANDKeys(conn, new String[] {"owner_id", "id"}, new Object[] {ownerId, id});
+			return annexRepository.delete(conn, EXP.ins().key("owner_id", ownerId).andKey("id", id));
 		}
 		
 	}

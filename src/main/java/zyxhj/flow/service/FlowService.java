@@ -40,6 +40,7 @@ import zyxhj.utils.Singleton;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.EXP;
 
 public class FlowService extends Controller {
 
@@ -163,7 +164,8 @@ public class FlowService extends Controller {
 			ret = "更新影响的记录行数")
 	public int delPD(@P(t = "流程定义编号") Long pdId) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return definitionRepository.deleteByKey(conn, "id", pdId);
+//			return definitionRepository.deleteByKey(conn, "id", pdId);
+			return definitionRepository.delete(conn, EXP.ins().andKey("id", pdId));
 		}
 	}
 
@@ -626,7 +628,7 @@ public class FlowService extends Controller {
 	) throws Exception {
 		// 流程资产可以真删除
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processAssetRepository.deleteByKey(conn, "id", assetId);
+			return processAssetRepository.delete(conn, EXP.ins().andKey("id", assetId));
 		}
 	}
 
@@ -699,8 +701,11 @@ public class FlowService extends Controller {
 			@P(t = "资产定义编号") JSONArray ids//
 	) {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			for(int i = 0; i < ids.size(); i++) {
-				assetDescRepository.deleteByKey(conn, "id", ids.get(i));
+			if(ids != null) {
+				for(int i = 0; i < ids.size(); i++) {
+					System.out.println(ids.get(i));
+					assetDescRepository.delete(conn, EXP.ins().key("id", ids.get(i)));
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

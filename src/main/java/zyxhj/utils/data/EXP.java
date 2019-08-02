@@ -209,7 +209,7 @@ public class EXP implements Cloneable {
 	 */
 	public EXP exp(Object left, String op, Object right, Object... args) throws ServerException {
 		if (isShit(exact, right, args)) {
-			// 宽松验证参数，且当前右参为空，放弃本次添加
+			// 	宽松验证参数，且当前右参为空，放弃本次添加
 			return this;
 		} else {
 			this.t = TYPE_EXP;

@@ -141,7 +141,7 @@ public class FlowProcessServiceTest {
 	@Test
 	public void testDelPD() {
 		try {
-			int state = flowService.delPD(400416892270325L);
+			int state = flowService.delPD(400572509456364L);
 			System.out.println("删除流程定义状态：" + state);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -384,8 +384,11 @@ public class FlowProcessServiceTest {
 	
 	@Test
 	public void testDelAssetDesc() {
-		
-		flowService.delAssetDesc(new JSONArray());
+		JSONArray j = new JSONArray();
+		j.add(400506160728610L);
+		j.add(400506162940044L);
+		System.out.println(j);
+		flowService.delAssetDesc(j);
 	}
 	
 	@Test

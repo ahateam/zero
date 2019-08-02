@@ -65,7 +65,6 @@ public class EXPTest {
 			StringBuffer sb = new StringBuffer();
 			ArrayList<Object> params = new ArrayList<>();
 
-			sb = new StringBuffer();
 			params = new ArrayList<>();
 			e2.toSQL(sb, params);
 			System.out.println(">>>" + sb.toString());
@@ -255,5 +254,23 @@ public class EXPTest {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void tsa() {
+		try {
+			EXP e1 = EXP.ins().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and("t5", ">", 456456);
+			StringBuffer sb = new StringBuffer();
+			ArrayList<Object> args = new ArrayList<Object>();
+			e1.toSQL(sb, args);
+			System.out.println(sb.toString());
+			System.out.println(args.get(0));
+			System.out.println(args.get(1));
+			System.out.println(args.get(2));
+		} catch (ServerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 }

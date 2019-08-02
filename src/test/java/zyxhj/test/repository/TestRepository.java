@@ -32,7 +32,7 @@ public class TestRepository extends RDSRepository<TestDomain> {
 	}
 
 	public int deleteById(DruidPooledConnection conn) throws Exception {
-		return delete(conn, "WHERE id = ? ", new Object[] { "11111" });
+		return delete(conn, "id = ? ", new Object[] { "11111" });
 	}
 
 	public JSONArray getJSONArray(DruidPooledConnection conn) throws Exception {

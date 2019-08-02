@@ -34,6 +34,7 @@ import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.EXP;
 
 public class TableService extends Controller {
 
@@ -274,8 +275,7 @@ public class TableService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableDataRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
-					new Object[] { tableSchemaId, dataId });
+			return tableDataRepository.delete(conn,EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", dataId));
 		}
 
 	}
@@ -342,8 +342,7 @@ public class TableService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableQueryRepository.deleteByANDKeys(conn, new String[] { "table_schema_id", "id" },
-					new Object[] { tableSchemaId, queryId });
+			return tableQueryRepository.delete(conn,EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", queryId));
 		}
 
 	}
@@ -449,10 +448,8 @@ public class TableService extends Controller {
 			des = " 通过表结构编号与表可视化样式编号删除表可视化样式数据(TableVirtual)", ret = "state -- int")
 	public int delTableVirtual(@P(t = "表结构编号") Long tableSchemaId, @P(t = "表可视化样式编号") Long id//
 	) throws Exception {
-
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableVirtualRepository.deleteByANDKeys(conn, new String[] { "tableSchema_id", "id" },
-					new Object[] { tableSchemaId, id });
+			return tableVirtualRepository.delete(conn,EXP.ins().key("tableSchema_id", tableSchemaId).andKey("id", id));
 		}
 
 	}
