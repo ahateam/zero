@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.fastjson.JSONArray;
 
 public class RDSUtils {
 
@@ -330,6 +331,18 @@ public class RDSUtils {
 		all.add(keys);
 		all.add(values);
 		return all;
+	}
+
+	/**
+	 * 用于解决MYSQL中，JSON字段，数组初始化是必须有[]的情况</br>
+	 * （字段为空时，添加会失败）
+	 */
+	public static JSONArray fixNullArray(JSONArray arr) {
+		if (arr == null) {
+			return new JSONArray();
+		} else {
+			return arr;
+		}
 	}
 
 }

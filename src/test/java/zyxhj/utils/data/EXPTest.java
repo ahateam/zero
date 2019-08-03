@@ -235,6 +235,112 @@ public class EXPTest {
 	}
 
 	@Test
+	public void testJsonAppendInArray() {
+		try {
+			{
+				// 可重复
+				EXP e = EXP.jsonAppendInArray("arrays", "tag4", true);
+
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(),
+						"arrays = IF((ISNULL(arrays) || LENGTH(trim(arrays))<1), JSON_ARRAY('tag4'), JSON_ARRAY_APPEND(arrays,'$','tag4'))");
+			}
+
+			{
+				// 不可重复
+				EXP e = EXP.jsonAppendInArray("arrays", "tag4", false);
+
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(),
+						"arrays = IF((ISNULL(arrays) || LENGTH(trim(arrays))<1), JSON_ARRAY('tag4'), IF(JSON_CONTAINS(arrays,'\"tag4\"','$'),arrays,JSON_ARRAY_APPEND(arrays,'$','tag4')))");
+			}
+		} catch (ServerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+
+	@Test
+	public void jsonAppendInKeyArray() {
+		try {
+			{
+				// 可重复
+				EXP e = EXP.jsonAppendInArrayOnKey("tags", "type", "tag4", true);
+
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(),
+						"tags = IF((ISNULL(tags) || LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY('tag4')),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),JSON_ARRAY_APPEND(tags, '$.type' ,'tag4'),JSON_SET(tags,'$.type',JSON_ARRAY('tag4'))))");
+			}
+
+			{
+				// 不可重复
+				EXP e = EXP.jsonAppendInArrayOnKey("tags", "type", "tag4", false);
+
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(),
+						"tags = IF((ISNULL(tags) || LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY('tag4')),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),IF(JSON_CONTAINS(tags,'\"tag4\"','$.type'),tags,JSON_ARRAY_APPEND(tags, '$.type' ,'tag4')),JSON_SET(tags,'$.type',JSON_ARRAY('tag4'))))");
+			}
+		} catch (ServerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testJsonArrayRemove() {
+		try {
+			EXP e = EXP.jsonArrayRemove("arrays", "$", 1);
+
+			StringBuffer sb = new StringBuffer();
+			ArrayList<Object> params = new ArrayList<>();
+			e.toSQL(sb, params);
+
+			String str = sb.toString();
+			String pstr = JSON.toJSONString(params);
+			System.out.println("===" + str);
+			System.out.println(">>>" + pstr);
+
+			Assert.assertEquals(sb.toString(), "arrays = JSON_REMOVE(arrays,'$[1]')");
+
+		} catch (ServerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+
+	@Test
 	public void testTest() {
 		try {
 			EXP e = EXP.ins().key("id", 123).and(EXP.ins().key("name", "xs").or("age", "<", 18));
@@ -255,7 +361,7 @@ public class EXPTest {
 			e1.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	public void tsa() {
 		try {
@@ -266,11 +372,11 @@ public class EXPTest {
 			System.out.println(sb.toString());
 			System.out.println(args.get(0));
 			System.out.println(args.get(1));
-			System.out.println(args.get(2));
+			// System.out.println(args.get(2));
 		} catch (ServerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 }

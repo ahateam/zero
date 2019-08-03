@@ -9,5 +9,4 @@ public class RDSRepositoryTest extends RDSRepository<TestDomain>{
 	}
 	
 
-
 }

@@ -61,6 +61,12 @@ public class TableSchema {
 	@RDSAnnField(column = RDSAnnField.JSON)
 	public JSONArray columns;
 
+	/**
+	 * 标签名列表
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_TITLE)
+	public JSONArray tagNames;
+
 	public static class Column {
 
 		public static final String COLUMN_TYPE_DATA = "data";

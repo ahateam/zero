@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +43,8 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，插入对象</br>
 	 * 
-	 * @param T 要插入的对象（泛型）,如果某字段为空则不插入该字段
+	 * @param T
+	 *            要插入的对象（泛型）,如果某字段为空则不插入该字段
 	 */
 	public void insert(DruidPooledConnection conn, T t) throws ServerException {
 		StringBuffer sb = new StringBuffer("INSERT INTO ").append(mapper.getTableName());
@@ -82,7 +82,8 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，批量插入对象列表</br>
 	 * 
-	 * @param list 要插入的对象列表（泛型）
+	 * @param list
+	 *            要插入的对象列表（泛型）
 	 * 
 	 * @return 插入的记录数
 	 */
@@ -132,8 +133,10 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 删除对象</br>
 	 * 
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
 	 * 
 	 * @return 返回影响的记录数
 	 */
@@ -147,8 +150,10 @@ public abstract class RDSRepository<T> {
 
 	/**
 	 * 
-	 * @param conn 数据连接对象
-	 * @param exp  SQL语句构造对象 EXP
+	 * @param conn
+	 *            数据连接对象
+	 * @param exp
+	 *            SQL语句构造对象 EXP
 	 * @return 返回受影响行数
 	 * @throws ServerException
 	 */
@@ -163,11 +168,16 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 获取字段对象数组列表</br>
 	 * 
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
-	 * @param count       查询的总数量
-	 * @param offset      查询的起始位置，下标从零开始（0表示从第一个开始查询）
-	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
+	 * @param count
+	 *            查询的总数量
+	 * @param offset
+	 *            查询的起始位置，下标从零开始（0表示从第一个开始查询）
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象数组列表，如果查询不到，则返回空数组
 	 */
@@ -184,9 +194,12 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 获取一行字段对象数组</br>
 	 * 
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
-	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象数组，如果查询不到，则返回null
 	 */
@@ -198,11 +211,16 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 获取对象列表</br>
 	 * 
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
-	 * @param count       查询的总数量
-	 * @param offset      查询的起始位置，下标从零开始（0表示从第一个开始查询）
-	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
+	 * @param count
+	 *            查询的总数量
+	 * @param offset
+	 *            查询的起始位置，下标从零开始（0表示从第一个开始查询）
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象列表，如果查询不到，则返回空数组
 	 */
@@ -260,10 +278,14 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 更新</br>
 	 * 
-	 * @param set         SQL的SET从句字符串
-	 * @param setParams   SET从句的参数
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
+	 * @param set
+	 *            SQL的SET从句字符串
+	 * @param setParams
+	 *            SET从句的参数
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
 	 * 
 	 * @return 返回影响的记录数
 	 */
@@ -276,25 +298,26 @@ public abstract class RDSRepository<T> {
 
 		List<Object> total = mergeArray(setParams, whereParams);
 
-		System.out.println(total.size());
-		
-		
+		// System.out.println(total.size());
+
 		String sql = sb.toString();
 		log.debug(sql);
-		 System.out.println(sb.toString());
+		System.out.println(sb.toString());
 		return executeUpdateSQL(conn, sb.toString(), total);
 	}
 
 	/**
 	 * 更新对象</br>
 	 * 
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
-	 * @param skipNull    是否跳过空字段
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
+	 * @param skipNull
+	 *            是否跳过空字段
 	 * 
 	 * @return 返回影响的记录数
 	 */
-	//TODO exp
 	protected int update(DruidPooledConnection conn, String where, List<Object> whereParams, T t, boolean skipNull)
 			throws ServerException {
 		StringBuffer set = new StringBuffer("SET ");
@@ -320,23 +343,34 @@ public abstract class RDSRepository<T> {
 			set.deleteCharAt(set.length() - 1);
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR);
-		
+
 		}
-		System.out.println(set.toString());
-		
-		System.out.println(whereParams.size());
-		System.out.println(values.size());
 		return update(conn, set.toString(), values, where, whereParams);
 	}
 
-	public int update(DruidPooledConnection conn, EXP exp, T t, boolean skipNull)
-			throws ServerException {
+	public int update(DruidPooledConnection conn, EXP set, EXP where) throws ServerException {
+		StringBuffer sbSet = new StringBuffer();
+		ArrayList<Object> argsSet = new ArrayList<>();
+
+		sbSet.append("SET ");
+		set.toSQL(sbSet, argsSet);
+
+		StringBuffer sbWhere = new StringBuffer();
+		ArrayList<Object> argsWhere = new ArrayList<>();
+
+		sbWhere.append("WHERE ");
+		where.toSQL(sbWhere, argsWhere);
+
+		return update(conn, sbSet.toString(), argsSet, sbWhere.toString(), argsWhere);
+	}
+
+	public int update(DruidPooledConnection conn, EXP exp, T t, boolean skipNull) throws ServerException {
 		StringBuffer sb = new StringBuffer();
 		ArrayList<Object> args = new ArrayList<>();
-		sb.append(" WHERE ");
+		sb.append("WHERE ");
 		exp.toSQL(sb, args);
 		System.out.println(sb.toString());
-		
+
 		return update(conn, sb.toString(), args, t, skipNull);
 	}
 
@@ -408,11 +442,16 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 设置标签（覆盖），可以批量设置多个标签
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param groupKeyword  标签分组关键字
-	 * @param tags          要设置的标签列表，JSONArray格式
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param groupKeyword
+	 *            标签分组关键字
+	 * @param tags
+	 *            要设置的标签列表，JSONArray格式
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
 	 * @return 影响记录行数
 	 */
 	protected int setTags(DruidPooledConnection conn, String tagColumnName, String groupKeyword, JSONArray tags,
@@ -440,11 +479,16 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 添加标签
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param groupKeyword  标签分组关键字
-	 * @param tag           要添加的标签
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param groupKeyword
+	 *            标签分组关键字
+	 * @param tag
+	 *            要添加的标签
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
 	 * @return 影响记录行数
 	 */
 	protected int addTag(DruidPooledConnection conn, String tagColumnName, String groupKeyword, String tag,
@@ -472,11 +516,16 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 删除标签
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param groupKeyword  标签分组关键字
-	 * @param tag           要删除的标签
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param groupKeyword
+	 *            标签分组关键字
+	 * @param tag
+	 *            要删除的标签
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
 	 * @return 影响记录行数
 	 */
 	protected int delTag(DruidPooledConnection conn, String tagColumnName, String groupKeyword, String tag,
@@ -499,10 +548,14 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 获取标签列表
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param groupKeyword  标签分组关键字
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param groupKeyword
+	 *            标签分组关键字
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
 	 * @return 标签列表JSONArray格式
 	 */
 	protected JSONArray getTags(DruidPooledConnection conn, String tagColumnName, String groupKeyword, String where,
@@ -527,12 +580,18 @@ public abstract class RDSRepository<T> {
 	 * 需要传入标签分组keyword和标签数组</br>
 	 * 如果keyword为blank，则从根上查询JSON数组
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param groupKeyword  标签分组关键字
-	 * @param tags          要匹配的标签列表，String[]格式
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
-	 * @param selections    要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param groupKeyword
+	 *            标签分组关键字
+	 * @param tags
+	 *            要匹配的标签列表，String[]格式
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 */
 	protected List<T> getListByTagsJSONArray(DruidPooledConnection conn, String tagColumnName, String groupKeyword,
@@ -574,11 +633,16 @@ public abstract class RDSRepository<T> {
 	 * 跟进标签查询对象列表</br>
 	 * 需要传入完整标签对象结构（keyword和标签name）
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param jsonTags      要匹配的完整标签对象结构（groupKeyword和标签name）
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
-	 * @param selections    要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param jsonTags
+	 *            要匹配的完整标签对象结构（groupKeyword和标签name）
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 */
 	protected List<T> getListByTagsJSONObject(DruidPooledConnection conn, String tagColumnName, JSONObject jsonTags,
 			String where, List<Object> whereParams, Integer count, Integer offset, String... selections)
@@ -852,9 +916,10 @@ public abstract class RDSRepository<T> {
 			} else {
 				int totalCount = a1.size() + a2.size();
 				total = new ArrayList<Object>(totalCount);
-				for(int i = 0; i < a1.size(); i++) {
+				for (int i = 0; i < a1.size(); i++) {
 					total.add(a1.get(i));
-				}for(int i = 0; i < a2.size(); i++) {
+				}
+				for (int i = 0; i < a2.size(); i++) {
 					total.add(a2.get(i));
 				}
 			}
@@ -889,5 +954,4 @@ public abstract class RDSRepository<T> {
 			}
 		}
 	}
-
 }

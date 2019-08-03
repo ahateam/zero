@@ -151,7 +151,7 @@ public class FlowTableServiceTest {
 		columns.add(jo);
 
 		try {
-			tableService.createTableSchema("表的别名", type, columns);
+			tableService.createTableSchema("表的别名", type, columns, null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -47,13 +47,13 @@ public class TagService extends Controller {
 	)
 	public TagGroup createTagGroup(//
 			@P(t = "分组所属模块关键字") String moduleKey, //
-			@P(t = "分组类型自定义关键字") String type, //
+			@P(t = "分组类型关键字") String typeKey, //
 			@P(t = "分组名称") String name, //
 			@P(t = "备注") String remark//
 	) throws Exception {
 		TagGroup tg = new TagGroup();
 		tg.moduleKey = moduleKey;
-		tg.type = type;
+		tg.typeKey = typeKey;
 		tg.id = IDUtils.getSimpleId();
 		tg.name = name;
 		tg.remark = remark;
@@ -104,14 +104,13 @@ public class TagService extends Controller {
 	)
 	public List<TagGroup> getTagGroupList(//
 			@P(t = "分组所属模块关键字") String moduleKey, //
-			@P(t = "分组类型自定义关键字（可选参数），不填表示全选", r = false) String type, //
+			@P(t = "分组类型自定义关键字（可选参数），不填表示全选", r = false) String typeKey, //
 			@P(t = "数量") Integer count, //
 			@P(t = "偏移") Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			// TODO 没有实现不填就全选的功能
-			return groupRepository.getList(conn, EXP.ins().key("module_key", moduleKey).andKey("type", type), count,
-					offset);
+			return groupRepository.getList(conn, EXP.ins(false).key("module_key", moduleKey).andKey("type", typeKey),
+					count, offset);
 		}
 	}
 

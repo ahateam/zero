@@ -1,5 +1,8 @@
 package zyxhj.test.domain;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
@@ -12,7 +15,7 @@ import zyxhj.utils.data.rds.RDSAnnID;
 public class TestDomain {
 	public static final Byte STATUS_OPEN = 0;
 	public static final Byte STATUS_CLOSE = 1;
-	
+
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
@@ -28,11 +31,16 @@ public class TestDomain {
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String year;
-	
+
 	/**
 	 * 状态
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte status;
 
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public JSONObject tags;
+
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public JSONArray arrays;
 }

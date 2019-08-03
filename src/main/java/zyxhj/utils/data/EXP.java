@@ -129,6 +129,73 @@ public class EXP implements Cloneable {
 		return new EXP(false).exp(sb.toString(), Arrays.asList(args));
 	}
 
+	public static EXP jsonAppendInArray(String column, String value, boolean duplicate) {
+		String temp = null;
+		if (duplicate) {
+			// 允许重复
+
+			// UPDATE `tb_rds_test` SET arrays = IF ((ISNULL(arrays) ||
+			// LENGTH(trim(arrays))<1), JSON_ARRAY('tag1'), JSON_ARRAY_APPEND(arrays,'$'
+			// ,'tag2')) WHERE `id` = 400570032412653
+
+			temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+					"))<1), JSON_ARRAY('", value, "'), JSON_ARRAY_APPEND(", column, ",'$','", value, "'))");
+		} else {
+			// 不允许重复
+
+			// UPDATE `tb_rds_test` SET arrays = IF ((ISNULL(arrays) ||
+			// LENGTH(trim(arrays))<1), JSON_ARRAY('tag1'), IF(ISNULL(JSON_SEARCH(arrays,
+			// 'one', 'tag3')),JSON_ARRAY_APPEND(arrays,'$' ,'tag3'),arrays) ) WHERE `id` =
+			// 400570032412653
+
+			temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+					"))<1), JSON_ARRAY('", value, "'), IF(JSON_CONTAINS(", column, ",'\"", value, "\"','$'),", column,
+					",JSON_ARRAY_APPEND(", column, ",'$','", value, "')))");
+		}
+		return new EXP(false).exp(temp, null);
+	}
+
+	public static EXP jsonAppendInArrayOnKey(String column, String key, String value, boolean duplicate) {
+		String temp = null;
+		if (duplicate) {
+			// 允许重复
+
+			// UPDATE `tb_rds_test` SET tags = IF((ISNULL(tags) ||
+			// LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY('tag1')),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),JSON_ARRAY_APPEND(tags,
+			// '$.type' ,'tag8'),JSON_SET(tags,'$.type',JSON_ARRAY('tag8')))) WHERE `id` =
+			// 400570032412653
+
+			temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+					"))<1),JSON_OBJECT('", key, "',JSON_ARRAY('", value, "')),IF(JSON_CONTAINS_PATH(", column,
+					",'one','$.", key, "'),JSON_ARRAY_APPEND(", column, ", '$.", key, "' ,'", value, "'),JSON_SET(",
+					column, ",'$.", key, "',JSON_ARRAY('", value, "'))))");
+		} else {
+			// 不允许重复
+
+			// UPDATE `tb_rds_test` SET tags = IF((ISNULL(tags) ||
+			// LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY('tag1')),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),IF(JSON_CONTAINS(tags,'"tag8"','$.type'),tags,JSON_ARRAY_APPEND(tags,
+			// '$.type' ,'tag8')),JSON_SET(tags,'$.type',JSON_ARRAY('tag8')))) WHERE `id` =
+			// 400570032412653
+
+			temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+					"))<1),JSON_OBJECT('", key, "',JSON_ARRAY('", value, "')),IF(JSON_CONTAINS_PATH(", column,
+					",'one','$.", key, "'),IF(JSON_CONTAINS(", column, ",'\"", value, "\"','$.", key, "'),", column,
+					",JSON_ARRAY_APPEND(", column, ", '$.", key, "' ,'", value, "')),JSON_SET(", column, ",'$.", key,
+					"',JSON_ARRAY('", value, "'))))");
+		}
+		return new EXP(false).exp(temp, null);
+	}
+
+	public static EXP jsonArrayRemove(String column, String path, int index) {
+		String temp = StringUtils.join(column, " = JSON_REMOVE(", column, ",'", path, "[", index, "]')");
+		return new EXP(false).exp(temp, null);
+	}
+
+	public static EXP jsonObjectRemove(String column, String path, int index) {
+		String temp = StringUtils.join(column, " = JSON_REMOVE(", column, ",'", path, "[", index, "]')");
+		return new EXP(false).exp(temp, null);
+	}
+
 	/**
 	 * SQL的 key = value 语句（很常用）</br>
 	 * 
@@ -209,7 +276,7 @@ public class EXP implements Cloneable {
 	 */
 	public EXP exp(Object left, String op, Object right, Object... args) throws ServerException {
 		if (isShit(exact, right, args)) {
-			// 	宽松验证参数，且当前右参为空，放弃本次添加
+			// 宽松验证参数，且当前右参为空，放弃本次添加
 			return this;
 		} else {
 			this.t = TYPE_EXP;
