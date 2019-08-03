@@ -159,13 +159,14 @@ public class UserService {
 	public void setUserNickname(DruidPooledConnection conn, Long userId, String nickname) throws Exception {
 		User forUpdate = new User();
 		forUpdate.nickname = nickname;
-		userRepository.updateByKey(conn, "id", userId, forUpdate, true);
+		userRepository.update(conn,EXP.ins().key("id", userId), forUpdate, true);
+		
 	}
 
 	public void setUserSignature(DruidPooledConnection conn, Long userId, String signature) throws Exception {
 		User forUpdate = new User();
 		forUpdate.signature = signature;
-		userRepository.updateByKey(conn, "id", userId, forUpdate, true);
+		userRepository.update(conn,EXP.ins().key("id", userId), forUpdate, true);
 	}
 
 	public int deleteUserById(DruidPooledConnection conn, Long userId) throws Exception {
@@ -209,7 +210,7 @@ public class UserService {
 		User u = new User();
 		u.id = userId;
 		u.idNumber = newIdNumber;// 身份证已添加唯一索引，无需再判断身份证号码是否重复
-		userRepository.updateByKey(conn, "id", userId, u, true);
+		userRepository.update(conn,EXP.ins().key("id", userId), u, true);
 		return u;
 	}
 
@@ -246,7 +247,7 @@ public class UserService {
 		u.name = name;
 		u.mobile = mobile;
 		u.email = email;
-		return userRepository.updateByKey(conn, "id", userId, u, true);
+		return userRepository.update(conn,EXP.ins().key("id", userId), u, true);
 	}
 
 }

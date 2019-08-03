@@ -1,5 +1,6 @@
 package zyxhj.core.service;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -23,6 +24,7 @@ import zyxhj.utils.CodecUtils;
 import zyxhj.utils.ExcelUtils;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.data.EXP;
 import zyxhj.utils.data.ts.ColumnBuilder;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
 
@@ -80,8 +82,8 @@ public class ImportTaskService {
 			renew.status = ImportTask.STATUS.FILE_READY.v();
 			renew.fileUrls = JSON.toJSONString(fileUrls);
 
-			return taskRepository.updateByANDKeys(conn, new String[] { "origin", "task_id" },
-					new Object[] { origin, taskId }, renew, true);
+			return taskRepository.update(conn,EXP.ins().key("origin", origin).andKey("task_id", taskId), renew, true);
+			
 		} else {
 			return 0;
 		}

@@ -14,6 +14,7 @@ import zyxhj.flow.repository.ModuleRepository;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.EXP;
 
 public class ModuleService extends Controller {
 
@@ -70,7 +71,8 @@ public class ModuleService extends Controller {
 		renew.name = name;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return moduleRepository.updateByKey(conn, "key", key, renew, true);
+			return moduleRepository.update(conn,EXP.ins().key("key", key), renew, true);
+			
 		}
 	}
 

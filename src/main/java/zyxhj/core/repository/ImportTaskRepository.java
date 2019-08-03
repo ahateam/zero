@@ -44,11 +44,11 @@ public class ImportTaskRepository extends RDSRepository<ImportTask> {
 
 	public void countORGUserImportCompletionTask(DruidPooledConnection conn, Long importTaskId) throws Exception {
 		this.update(conn, StringUtils.join("SET success_count = success_count+1,completed_count = completed_count + 1"),
-				null, "WHERE id = ?", new Object[] { importTaskId });
+				null, "WHERE id = ?", Arrays.asList( importTaskId));
 	}
 
 	public void countORGUserImportNotCompletionTask(DruidPooledConnection conn, Long importTaskId) throws Exception {
 		this.update(conn, StringUtils.join("SET failure_count = failure_count+1,completed_count = completed_count + 1"),
-				null, "WHERE id = ?", new Object[] { importTaskId });
+				null, "WHERE id = ?", Arrays.asList(importTaskId ));
 	}
 }

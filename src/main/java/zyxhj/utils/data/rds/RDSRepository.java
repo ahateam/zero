@@ -276,9 +276,12 @@ public abstract class RDSRepository<T> {
 
 		List<Object> total = mergeArray(setParams, whereParams);
 
+		System.out.println(total.size());
+		
+		
 		String sql = sb.toString();
 		log.debug(sql);
-		// System.out.println(sb.toString());
+		 System.out.println(sb.toString());
 		return executeUpdateSQL(conn, sb.toString(), total);
 	}
 
@@ -317,42 +320,24 @@ public abstract class RDSRepository<T> {
 			set.deleteCharAt(set.length() - 1);
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR);
+		
 		}
+		System.out.println(set.toString());
+		
+		System.out.println(whereParams.size());
+		System.out.println(values.size());
 		return update(conn, set.toString(), values, where, whereParams);
 	}
 
-	/**
-	 * 模版方法，根据某个唯一键值更新一个对象</br>
-	 * 
-	 * @param key   列名
-	 * @param value 值
-	 * @param t     要更新的对象（最好在对象中将key所对应的值抹掉）
-	 * 
-	 * @return 返回影响的记录数
-	 */
-	@Deprecated
-	public int updateByKey(DruidPooledConnection conn, String key, Object value, T t, boolean skipNull)
+	public int update(DruidPooledConnection conn, EXP exp, T t, boolean skipNull)
 			throws ServerException {
-		return update(conn, StringUtils.join("WHERE ", key, "=?"), Arrays.asList(value), t, skipNull);
-	}
-
-	/**
-	 * 根据多个字段的值，更新对应的对象</br>
-	 * key1=? AND key2=? AND key3=?</br>
-	 * 
-	 * @param keys   键数组
-	 * @param values 值数组
-	 * 
-	 */
-	@Deprecated
-	public int updateByANDKeys(DruidPooledConnection conn, String[] keys, List<Object> values, T t, boolean skipNull)
-			throws ServerException {
-		if (keys.size() != values.size()) {
-			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
-		}
-		StringBuffer sb = new StringBuffer("WHERE ");
-		SQLEx.exANDKeys(keys, values).toSQL(sb);
-		return update(conn, sb.toString(), values, t, skipNull);
+		StringBuffer sb = new StringBuffer();
+		ArrayList<Object> args = new ArrayList<>();
+		sb.append(" WHERE ");
+		exp.toSQL(sb, args);
+		System.out.println(sb.toString());
+		
+		return update(conn, sb.toString(), args, t, skipNull);
 	}
 
 	///////////////// SQL原生方法
@@ -867,8 +852,11 @@ public abstract class RDSRepository<T> {
 			} else {
 				int totalCount = a1.size() + a2.size();
 				total = new ArrayList<Object>(totalCount);
-				System.arraycopy(a1, 0, total, 0, a1.size());
-				System.arraycopy(a2, 0, total, a1.size(), a2.size());
+				for(int i = 0; i < a1.size(); i++) {
+					total.add(a1.get(i));
+				}for(int i = 0; i < a2.size(); i++) {
+					total.add(a2.get(i));
+				}
 			}
 		}
 		return total;

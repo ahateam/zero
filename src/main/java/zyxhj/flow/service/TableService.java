@@ -2,6 +2,7 @@ package zyxhj.flow.service;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.script.ScriptEngine;
@@ -155,7 +156,7 @@ public class TableService extends Controller {
 		ts.columns = columns;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableSchemaRepository.updateByKey(conn, "id", id, ts, true);
+			return tableSchemaRepository.update(conn,EXP.ins().key("id", id), ts, true);
 		}
 
 	}
@@ -258,8 +259,7 @@ public class TableService extends Controller {
 						}
 					}
 
-					return tableDataRepository.updateByANDKeys(conn, new String[] { "table_schema_id", "id" },
-							new Object[] { tableSchemaId, dataId }, td, true);
+					return tableDataRepository.update(conn,EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", dataId), td, true);
 				}
 			}
 		}
@@ -433,8 +433,8 @@ public class TableService extends Controller {
 		tv.virtual = virtual;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableVirtualRepository.updateByANDKeys(conn, new String[] { "tableSchema_id", "id" },
-					new Object[] { tableSchemaId, id }, tv, true);
+			return tableVirtualRepository.update(conn,EXP.ins().key("tableSchema_id", tableSchemaId).andKey("id", id), tv, true);
+			
 		}
 
 	}

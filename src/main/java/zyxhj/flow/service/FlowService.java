@@ -2,6 +2,7 @@ package zyxhj.flow.service;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -127,7 +128,8 @@ public class FlowService extends Controller {
 		renew.lanes = lanes;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return definitionRepository.updateByKey(conn, "id", id, renew, true);
+			return definitionRepository.update(conn, EXP.ins().key("id", id), renew, true);
+			
 		}
 	}
 
@@ -181,7 +183,7 @@ public class FlowService extends Controller {
 		ProcessDefinition pd = new ProcessDefinition();
 		pd.visual = visual;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return definitionRepository.updateByKey(conn, "id", pdId, pd, true);
+			return definitionRepository.update(conn, EXP.ins().key("id", pdId), pd, true);
 		}
 	}
 	
@@ -196,7 +198,7 @@ public class FlowService extends Controller {
 		ProcessDefinition p = new ProcessDefinition();
 		p.link = link;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			definitionRepository.updateByKey(conn, "id", pdId, p, true);
+			definitionRepository.update(conn, EXP.ins().key("id", pdId), p, true);
 		}
 	}
 	
@@ -264,8 +266,7 @@ public class FlowService extends Controller {
 		renew.active = ProcessActivity.ACTIVE_DELETE_Y;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return activityRepository.updateByANDKeys(conn, new String[] { "pd_id", "id" },
-					new Object[] { pdId, activityId }, renew, true);
+			return activityRepository.update(conn, EXP.ins().key("pd_id", pdId ).andKey("id", activityId), renew, true);
 		}
 
 	}
@@ -291,8 +292,7 @@ public class FlowService extends Controller {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 
-			return activityRepository.updateByANDKeys(conn, new String[] { "pd_id", "id" }, new Object[] { pdId, id },
-					renew, true);
+			return activityRepository.update(conn, EXP.ins().key("pd_id",  pdId).andKey("id", id),renew, true);
 
 		}
 	}
@@ -343,7 +343,7 @@ public class FlowService extends Controller {
 		ProcessActivity pa = new ProcessActivity();
 		pa.visual = visual;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return activityRepository.updateByKey(conn, "id", activityId, pa, true);
+			return activityRepository.update(conn, EXP.ins().key("id", activityId), pa, true);
 		}
 	}
 
@@ -421,8 +421,7 @@ public class FlowService extends Controller {
 		pro.state = state;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processRepository.updateByANDKeys(conn, new String[] { "pd_id", "id" },
-					new Object[] { pdId, processId }, pro, true);
+			return processRepository.update(conn, EXP.ins().key("pd_id", pdId ).andKey("id",processId ), pro, true);
 		}
 	}
 
@@ -437,7 +436,7 @@ public class FlowService extends Controller {
 		pro.active = Process.ACTIVE_DELETE_Y;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processRepository.updateByKey(conn, "id", id, pro, true);
+			return processRepository.update(conn, EXP.ins().key("id", id), pro, true);
 		}
 	}
 
@@ -583,7 +582,7 @@ public class FlowService extends Controller {
 		renew.annexId = annexId;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processAssetRepository.updateByKey(conn, "id", assetId, renew, true);
+			return processAssetRepository.update(conn, EXP.ins().key("id", assetId), renew, true);
 		}
 	}
 
@@ -690,8 +689,7 @@ public class FlowService extends Controller {
 
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return assetDescRepository.updateByANDKeys(conn, new String[] { "owner_id", "id" },
-					new Object[] { ownerId, id }, pad, true);
+			return assetDescRepository.update(conn, EXP.ins().key("owner_id",  ownerId).andKey("id",id ), pad, true);
 		}
 	}
 

@@ -1,5 +1,6 @@
 package zyxhj.flow.service;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -102,8 +103,7 @@ public class AnnexService extends Controller {
 		a.tags = tags;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return annexRepository.updateByANDKeys(conn, new String[] { "owner_id", "id" },
-					new Object[] { ownerId, id }, a, true);
+			return annexRepository.update(conn, EXP.ins().key("owner_id", ownerId).andKey("id", id), a, true);
 		}
 
 	}

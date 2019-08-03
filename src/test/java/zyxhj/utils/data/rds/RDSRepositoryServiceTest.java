@@ -81,9 +81,24 @@ public class RDSRepositoryServiceTest {
 	}
 	
 	@Test
-	public void testUpdateByKey() {
+	public void testUpdateByKey() throws ServerException {
 		
+		TestDomain t = new TestDomain();
+		t.name = "123sdaf";
+		t.status = 0;
+		t.year = "45641456asdfasd";
 		
+		testRepository.update(conn, EXP.ins().key("id", 400570027736826L), t, true);
+	}
+	
+	@Test
+	public void testUpdateByANDKey() throws ServerException {
+		
+		TestDomain t = new TestDomain();
+		t.status = 10;
+		t.year = "测试";
+		
+		testRepository.update(conn, EXP.ins().key("id", 400570027736826L).andKey("name", "123sdaf"), t, true);
 	}
 	
 	@Test
@@ -119,7 +134,7 @@ public class RDSRepositoryServiceTest {
 	@Test
 	public void testGetListByKeyIN() {
 		try {
-			List<TestDomain> t = testRepository.getList(conn, EXP.ins().in("status", 1,5,3) ,count, offset);
+			List<TestDomain> t = testRepository.getList(conn, EXP.ins().in("status", new Object[] {1,3,5}) ,null, null);
 			System.out.println(t.size());
 		} catch (Exception e) {
 			e.printStackTrace();

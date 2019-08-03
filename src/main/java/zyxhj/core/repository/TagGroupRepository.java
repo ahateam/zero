@@ -1,6 +1,7 @@
 package zyxhj.core.repository;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
@@ -19,7 +20,7 @@ public class TagGroupRepository extends RDSRepository<TagGroup> {
 	 * 根据模块关键字，获取该模块下的type分类关键字列表
 	 */
 	public List<String> getTagGroupTypeList(DruidPooledConnection conn, String moduleKey) throws ServerException {
-		List<Object[]> objs = this.getObjectsList(conn, "WHERE module_key=? GROUP BY type", new Object[] { moduleKey },
+		List<Object[]> objs = this.getObjectsList(conn, "WHERE module_key=? GROUP BY type",  Arrays.asList( moduleKey ),
 				512, 0, "type");
 		if (objs != null || objs.size() > 0) {
 			ArrayList<String> ret = new ArrayList<>();

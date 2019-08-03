@@ -53,7 +53,8 @@ public class UserRoleService {
 		renew.name = name;
 		renew.remark = remark;
 
-		return roleRepository.updateByKey(conn, "id", roleId, renew, true);
+		return roleRepository.update(conn,EXP.ins().key("id", roleId), renew, true);
+		
 	}
 
 	/**
