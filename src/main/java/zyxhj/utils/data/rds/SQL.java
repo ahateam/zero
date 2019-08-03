@@ -1,6 +1,7 @@
 package zyxhj.utils.data.rds;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -179,13 +180,13 @@ public class SQL {
 		return sb.toString();
 	}
 
-	public Object[] getParams() {
+	public List<Object> getParams() {
 		ArrayList<Object> objs = new ArrayList<>();
 		fillParams(objs);
 		if (objs == null || objs.size() <= 0) {
 			return null;
 		} else {
-			return objs.toArray();
+			return objs;
 		}
 	}
 

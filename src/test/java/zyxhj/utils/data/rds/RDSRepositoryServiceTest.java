@@ -126,6 +126,17 @@ public class RDSRepositoryServiceTest {
 		}
 	}
 	
+	@Test
+	public void testGetListByKeyORDERBY() throws ServerException {
+		ArrayList<Object> a = new ArrayList<Object>();
+		a.add("123sdaf");
+		List<TestDomain> t = testRepository.getList(conn, "name = ? ORDER BY id desc", a, count, offset);
+
+		for(TestDomain t1: t) {
+			System.out.println(t1.id);
+		}
+	}
+	
 	
 	
 	

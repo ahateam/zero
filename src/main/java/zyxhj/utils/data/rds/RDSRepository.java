@@ -6,8 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -41,8 +44,7 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，插入对象</br>
 	 * 
-	 * @param T
-	 *            要插入的对象（泛型）,如果某字段为空则不插入该字段
+	 * @param T 要插入的对象（泛型）,如果某字段为空则不插入该字段
 	 */
 	public void insert(DruidPooledConnection conn, T t) throws ServerException {
 		StringBuffer sb = new StringBuffer("INSERT INTO ").append(mapper.getTableName());
@@ -71,7 +73,7 @@ public abstract class RDSRepository<T> {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, e.getMessage());
 		}
 
-		int count = executeUpdateSQL(conn, sb.toString(), values.toArray());
+		int count = executeUpdateSQL(conn, sb.toString(), values);
 		if (count != 1) {
 			throw new ServerException(BaseRC.REPOSITORY_INSERT_ERROR);
 		}
@@ -80,8 +82,7 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，批量插入对象列表</br>
 	 * 
-	 * @param list
-	 *            要插入的对象列表（泛型）
+	 * @param list 要插入的对象列表（泛型）
 	 * 
 	 * @return 插入的记录数
 	 */
@@ -125,16 +126,14 @@ public abstract class RDSRepository<T> {
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, e.getMessage());
 		}
-		return executeUpdateSQL(conn, sb.toString(), values.toArray());
+		return executeUpdateSQL(conn, sb.toString(), values);
 	};
 
 	/**
 	 * 删除对象</br>
 	 * 
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
 	 * 
 	 * @return 返回影响的记录数
 	 */
@@ -143,15 +142,13 @@ public abstract class RDSRepository<T> {
 		buildFROM(sb, mapper.getTableName());
 		sb.append("WHERE ");
 		buildWHERE(sb, where);
-		return executeUpdateSQL(conn, sb.toString(), whereParams.toArray());
+		return executeUpdateSQL(conn, sb.toString(), whereParams);
 	}
 
 	/**
 	 * 
-	 * @param conn
-	 *            数据连接对象
-	 * @param exp
-	 *            SQL语句构造对象 EXP
+	 * @param conn 数据连接对象
+	 * @param exp  SQL语句构造对象 EXP
 	 * @return 返回受影响行数
 	 * @throws ServerException
 	 */
@@ -166,20 +163,15 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 获取字段对象数组列表</br>
 	 * 
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * @param count
-	 *            查询的总数量
-	 * @param offset
-	 *            查询的起始位置，下标从零开始（0表示从第一个开始查询）
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
+	 * @param count       查询的总数量
+	 * @param offset      查询的起始位置，下标从零开始（0表示从第一个开始查询）
+	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象数组列表，如果查询不到，则返回空数组
 	 */
-	protected List<Object[]> getObjectsList(DruidPooledConnection conn, String where, Object[] whereParams,
+	protected List<Object[]> getObjectsList(DruidPooledConnection conn, String where, List<Object> whereParams,
 			Integer count, Integer offset, String... selections) throws ServerException {
 		StringBuffer sql = buildSELECT(selections);
 		buildFROM(sql, mapper.getTableName());
@@ -192,33 +184,25 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 获取一行字段对象数组</br>
 	 * 
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
+	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象数组，如果查询不到，则返回null
 	 */
-	protected Object[] getObjects(DruidPooledConnection conn, String where, Object[] whereParams, String... selections)
-			throws ServerException {
+	protected Object[] getObjects(DruidPooledConnection conn, String where, List<Object> whereParams,
+			String... selections) throws ServerException {
 		return DataSource.list2Obj(getObjectsList(conn, where, whereParams, 1, 0, selections));
 	}
 
 	/**
 	 * 获取对象列表</br>
 	 * 
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * @param count
-	 *            查询的总数量
-	 * @param offset
-	 *            查询的起始位置，下标从零开始（0表示从第一个开始查询）
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
+	 * @param count       查询的总数量
+	 * @param offset      查询的起始位置，下标从零开始（0表示从第一个开始查询）
+	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象列表，如果查询不到，则返回空数组
 	 */
@@ -228,7 +212,7 @@ public abstract class RDSRepository<T> {
 		StringBuffer sb = buildSELECT(selections);
 		buildFROM(sb, mapper.getTableName());
 
-		if (StringUtils.isBlank(where) && whereParams == null) {
+		if (StringUtils.isBlank(where)) {
 			buildCountAndOffset(sb, count, offset);
 			return executeQuerySQL(conn, sb.toString(), null);
 		} else {
@@ -238,7 +222,7 @@ public abstract class RDSRepository<T> {
 
 			log.debug(sb.toString());
 			// System.out.println(sb.toString());
-			return executeQuerySQL(conn, sb.toString(), whereParams.toArray());
+			return executeQuerySQL(conn, sb.toString(), whereParams);
 		}
 	}
 
@@ -276,25 +260,21 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 更新</br>
 	 * 
-	 * @param set
-	 *            SQL的SET从句字符串
-	 * @param setParams
-	 *            SET从句的参数
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
+	 * @param set         SQL的SET从句字符串
+	 * @param setParams   SET从句的参数
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
 	 * 
 	 * @return 返回影响的记录数
 	 */
-	protected int update(DruidPooledConnection conn, String set, Object[] setParams, String where, Object[] whereParams)
-			throws ServerException {
+	protected int update(DruidPooledConnection conn, String set, List<Object> setParams, String where,
+			List<Object> whereParams) throws ServerException {
 		StringBuffer sb = new StringBuffer("UPDATE ");
 		sb.append(mapper.getTableName()).append(' ');
 		buildSET(sb, set);
 		buildWHERE(sb, where);
 
-		Object[] total = mergeArray(setParams, whereParams);
+		List<Object> total = mergeArray(setParams, whereParams);
 
 		String sql = sb.toString();
 		log.debug(sql);
@@ -305,16 +285,14 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 更新对象</br>
 	 * 
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数
-	 * @param skipNull
-	 *            是否跳过空字段
+	 * @param where       SQL的WHERE从句字符串
+	 * @param whereParams WHERE从句的参数
+	 * @param skipNull    是否跳过空字段
 	 * 
 	 * @return 返回影响的记录数
 	 */
-	protected int update(DruidPooledConnection conn, String where, Object[] whereParams, T t, boolean skipNull)
+	//TODO exp
+	protected int update(DruidPooledConnection conn, String where, List<Object> whereParams, T t, boolean skipNull)
 			throws ServerException {
 		StringBuffer set = new StringBuffer("SET ");
 		Map<String, Object> map;
@@ -340,41 +318,36 @@ public abstract class RDSRepository<T> {
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR);
 		}
-		return update(conn, set.toString(), values.toArray(), where, whereParams);
+		return update(conn, set.toString(), values, where, whereParams);
 	}
 
 	/**
 	 * 模版方法，根据某个唯一键值更新一个对象</br>
 	 * 
-	 * @param key
-	 *            列名
-	 * @param value
-	 *            值
-	 * @param t
-	 *            要更新的对象（最好在对象中将key所对应的值抹掉）
+	 * @param key   列名
+	 * @param value 值
+	 * @param t     要更新的对象（最好在对象中将key所对应的值抹掉）
 	 * 
 	 * @return 返回影响的记录数
 	 */
 	@Deprecated
 	public int updateByKey(DruidPooledConnection conn, String key, Object value, T t, boolean skipNull)
 			throws ServerException {
-		return update(conn, StringUtils.join("WHERE ", key, "=?"), new Object[] { value }, t, skipNull);
+		return update(conn, StringUtils.join("WHERE ", key, "=?"), Arrays.asList(value), t, skipNull);
 	}
 
 	/**
 	 * 根据多个字段的值，更新对应的对象</br>
 	 * key1=? AND key2=? AND key3=?</br>
 	 * 
-	 * @param keys
-	 *            键数组
-	 * @param values
-	 *            值数组
+	 * @param keys   键数组
+	 * @param values 值数组
 	 * 
 	 */
 	@Deprecated
-	public int updateByANDKeys(DruidPooledConnection conn, String[] keys, Object[] values, T t, boolean skipNull)
+	public int updateByANDKeys(DruidPooledConnection conn, String[] keys, List<Object> values, T t, boolean skipNull)
 			throws ServerException {
-		if (keys.length != values.length) {
+		if (keys.size() != values.size()) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "keys length not equal values length");
 		}
 		StringBuffer sb = new StringBuffer("WHERE ");
@@ -387,8 +360,8 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 原生SQL方法，获取JSONArray
 	 */
-	protected static JSONArray sqlGetJSONArray(DruidPooledConnection conn, String sql, Object[] params, Integer count,
-			Integer offset) throws ServerException {
+	protected static JSONArray sqlGetJSONArray(DruidPooledConnection conn, String sql, List<Object> params,
+			Integer count, Integer offset) throws ServerException {
 		// System.out.println(sql);
 		StringBuffer sb = new StringBuffer(sql);
 		buildCountAndOffset(sb, count, offset);
@@ -399,7 +372,7 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 原生SQL方法，获取JSONOBJECT
 	 */
-	protected static JSONObject sqlGetJSONObject(DruidPooledConnection conn, String sql, Object[] params)
+	protected static JSONObject sqlGetJSONObject(DruidPooledConnection conn, String sql, List<Object> params)
 			throws ServerException {
 		return jsonArray2Obj(sqlGetJSONArray(conn, sql, params, 1, 0));
 	}
@@ -407,7 +380,7 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 原生SQL方法，根据查询获取某个表的某些字段值列表</br>
 	 */
-	protected static List<Object[]> sqlGetObjectsList(DruidPooledConnection conn, String sql, Object[] params,
+	protected static List<Object[]> sqlGetObjectsList(DruidPooledConnection conn, String sql, List<Object> params,
 			Integer count, Integer offset) throws ServerException {
 
 		StringBuffer sb = new StringBuffer(sql);
@@ -419,7 +392,7 @@ public abstract class RDSRepository<T> {
 	 * 原生SQL方法，获取某个表的某些字段值</br>
 	 * 
 	 */
-	protected static Object[] sqlGetObjects(DruidPooledConnection conn, String sql, Object[] params)
+	protected static Object[] sqlGetObjects(DruidPooledConnection conn, String sql, List<Object> params)
 			throws ServerException {
 		return DataSource.list2Obj(sqlGetObjectsList(conn, sql, params, 1, 0));
 	}
@@ -430,7 +403,7 @@ public abstract class RDSRepository<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	protected static <X> List<X> sqlGetOtherList(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
-			Object[] whereParams) throws ServerException {
+			List<Object> whereParams) throws ServerException {
 		// System.out.println(sql.toString());
 
 		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
@@ -450,20 +423,15 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 设置标签（覆盖），可以批量设置多个标签
 	 * 
-	 * @param tagColumnName
-	 *            标签列名
-	 * @param groupKeyword
-	 *            标签分组关键字
-	 * @param tags
-	 *            要设置的标签列表，JSONArray格式
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数 参数
+	 * @param tagColumnName 标签列名
+	 * @param groupKeyword  标签分组关键字
+	 * @param tags          要设置的标签列表，JSONArray格式
+	 * @param where         SQL的WHERE从句字符串
+	 * @param whereParams   WHERE从句的参数 参数
 	 * @return 影响记录行数
 	 */
 	protected int setTags(DruidPooledConnection conn, String tagColumnName, String groupKeyword, JSONArray tags,
-			String where, Object[] whereParams) throws ServerException {
+			String where, List<Object> whereParams) throws ServerException {
 		// UPDATE `tb_cms_content` SET `tags` = JSON_SET(`tags`
 		// ,'$.kind_type2',JSON_ARRAY("tag4")) WHERE `id`="396368237107578"
 
@@ -487,20 +455,15 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 添加标签
 	 * 
-	 * @param tagColumnName
-	 *            标签列名
-	 * @param groupKeyword
-	 *            标签分组关键字
-	 * @param tag
-	 *            要添加的标签
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数 参数
+	 * @param tagColumnName 标签列名
+	 * @param groupKeyword  标签分组关键字
+	 * @param tag           要添加的标签
+	 * @param where         SQL的WHERE从句字符串
+	 * @param whereParams   WHERE从句的参数 参数
 	 * @return 影响记录行数
 	 */
 	protected int addTag(DruidPooledConnection conn, String tagColumnName, String groupKeyword, String tag,
-			String where, Object[] whereParams) throws ServerException {
+			String where, List<Object> whereParams) throws ServerException {
 		// UPDATE `tb_cms_content`
 		// SET tags=
 		// IF(JSON_CONTAINS_PATH(tags,'one','$.kind_type'),
@@ -524,20 +487,15 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 删除标签
 	 * 
-	 * @param tagColumnName
-	 *            标签列名
-	 * @param groupKeyword
-	 *            标签分组关键字
-	 * @param tag
-	 *            要删除的标签
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数 参数
+	 * @param tagColumnName 标签列名
+	 * @param groupKeyword  标签分组关键字
+	 * @param tag           要删除的标签
+	 * @param where         SQL的WHERE从句字符串
+	 * @param whereParams   WHERE从句的参数 参数
 	 * @return 影响记录行数
 	 */
 	protected int delTag(DruidPooledConnection conn, String tagColumnName, String groupKeyword, String tag,
-			String where, Object[] whereParams) throws ServerException {
+			String where, List<Object> whereParams) throws ServerException {
 		// UPDATE tb_cms_content
 		// SET tags=IF(JSON_CONTAINS(tags,'"tag8"','$.kind_type'),
 		// JSON_REMOVE(tags,
@@ -556,18 +514,14 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 获取标签列表
 	 * 
-	 * @param tagColumnName
-	 *            标签列名
-	 * @param groupKeyword
-	 *            标签分组关键字
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数 参数
+	 * @param tagColumnName 标签列名
+	 * @param groupKeyword  标签分组关键字
+	 * @param where         SQL的WHERE从句字符串
+	 * @param whereParams   WHERE从句的参数 参数
 	 * @return 标签列表JSONArray格式
 	 */
 	protected JSONArray getTags(DruidPooledConnection conn, String tagColumnName, String groupKeyword, String where,
-			Object[] whereParams) throws ServerException {
+			List<Object> whereParams) throws ServerException {
 		// SELECT tags->'$.k3' FROM tb_content WHERE id=?
 		StringBuffer sb = new StringBuffer(StringUtils.join("SELECT ", tagColumnName, "->'$.", groupKeyword, "'"));
 		buildFROM(sb, mapper.getTableName());
@@ -588,147 +542,126 @@ public abstract class RDSRepository<T> {
 	 * 需要传入标签分组keyword和标签数组</br>
 	 * 如果keyword为blank，则从根上查询JSON数组
 	 * 
-	 * @param tagColumnName
-	 *            标签列名
-	 * @param groupKeyword
-	 *            标签分组关键字
-	 * @param tags
-	 *            要匹配的标签列表，String[]格式
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数 参数
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param tagColumnName 标签列名
+	 * @param groupKeyword  标签分组关键字
+	 * @param tags          要匹配的标签列表，String[]格式
+	 * @param where         SQL的WHERE从句字符串
+	 * @param whereParams   WHERE从句的参数 参数
+	 * @param selections    要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 */
-	// protected List<T> getListByTagsJSONArray(DruidPooledConnection conn, String
-	// tagColumnName, String groupKeyword,
-	// String[] tags, String where, Object[] whereParams, Integer count, Integer
-	// offset, String... selections)
-	// throws ServerException {
-	// // WHERE org_id=? AND (JSON_CONTAINS(roles, '"101"', '$') OR
-	// // JSON_CONTAINS(roles,
-	// // '"102"', '$') OR JSON_CONTAINS(roles, '"103"', '$') )
-	//
-	// StringBuffer sb = new StringBuffer(where);
-	// if (tags != null && tags.length > 0) {
-	// SQL sql = new SQL();
-	// for (int i = 0; i < tags.length; i++) {
-	// String group = tags[i];
-	// if (StringUtils.isBlank(groupKeyword)) {
-	// sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '", group, "',
-	// '$')"));
-	// } else {
-	// sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '\"", group, "',
-	// '$.", groupKeyword,
-	// "')"));
-	// }
-	// }
-	//
-	// // 前面的where语句可能为空
-	// if (checkWHEREContaineEx(where)) {
-	// // 前面有表达式
-	// sb.append(" AND (");
-	// sql.fillSQL(sb);
-	// sb.append(')');
-	// } else {
-	// // 前面没有表达式
-	// sql.fillSQL(sb);
-	// }
-	// }
-	// // System.out.println(sb.toString());
-	// return this.getList(conn, sb.toString(), whereParams, count, offset,
-	// selections);
-	// }
+	protected List<T> getListByTagsJSONArray(DruidPooledConnection conn, String tagColumnName, String groupKeyword,
+			String[] tags, String where, List<Object> whereParams, Integer count, Integer offset, String... selections)
+			throws ServerException {
+		// WHERE org_id=? AND (JSON_CONTAINS(roles, '"101"', '$') OR
+		// JSON_CONTAINS(roles,
+		// '"102"', '$') OR JSON_CONTAINS(roles, '"103"', '$') )
+
+		StringBuffer sb = new StringBuffer(where);
+		if (tags != null && tags.length > 0) {
+			SQL sql = new SQL();
+			for (int i = 0; i < tags.length; i++) {
+				String group = tags[i];
+				if (StringUtils.isBlank(groupKeyword)) {
+					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '", group, "','$')"));
+				} else {
+					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '\"", group, "','$.", groupKeyword,
+							"')"));
+				}
+			}
+
+			// 前面的where语句可能为空
+			if (checkWHEREContaineEx(where)) {
+				// 前面有表达式
+				sb.append(" AND (");
+				sql.fillSQL(sb);
+				sb.append(')');
+			} else {
+				// 前面没有表达式
+				sql.fillSQL(sb);
+			}
+		}
+		// System.out.println(sb.toString());
+		return this.getList(conn, sb.toString(), whereParams, count, offset, selections);
+	}
 
 	/**
 	 * 跟进标签查询对象列表</br>
 	 * 需要传入完整标签对象结构（keyword和标签name）
 	 * 
-	 * @param tagColumnName
-	 *            标签列名
-	 * @param jsonTags
-	 *            要匹配的完整标签对象结构（groupKeyword和标签name）
-	 * @param where
-	 *            SQL的WHERE从句字符串
-	 * @param whereParams
-	 *            WHERE从句的参数 参数
-	 * @param selections
-	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param tagColumnName 标签列名
+	 * @param jsonTags      要匹配的完整标签对象结构（groupKeyword和标签name）
+	 * @param where         SQL的WHERE从句字符串
+	 * @param whereParams   WHERE从句的参数 参数
+	 * @param selections    要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 */
-	// protected List<T> getListByTagsJSONObject(DruidPooledConnection conn, String
-	// tagColumnName, JSONObject jsonTags,
-	// String where, Object[] whereParams, Integer count, Integer offset, String...
-	// selections)
-	// throws ServerException {
-	// // WHERE org_id=? AND (JSON_CONTAINS(tags, '101', '$.key1') OR
-	// // JSON_CONTAINS(tags, '102', '$.key2') OR JSON_CONTAINS(tags, '103',
-	// '$.key1')
-	// // )
-	//
-	// StringBuffer sb = new StringBuffer(where);
-	//
-	// if (jsonTags != null && jsonTags.entrySet().size() > 0) {
-	// boolean flg = false;
-	//
-	// StringBuffer sss = new StringBuffer();
-	// Iterator<Entry<String, Object>> it = jsonTags.entrySet().iterator();
-	// while (it.hasNext()) {
-	// Entry<String, Object> entry = it.next();
-	// String key = entry.getKey();
-	// JSONArray arr = (JSONArray) entry.getValue();
-	//
-	// if (arr != null && arr.size() > 0) {
-	// SQL sql = new SQL();
-	// for (int i = 0; i < arr.size(); i++) {
-	// String temp = arr.getString(i);
-	// sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '", temp, "',
-	// '$.", key, "')"));
-	// flg = true;
-	// }
-	// sql.fillSQL(sss);
-	// }
-	// }
-	//
-	// if (flg) {
-	// // 有tag表达式
-	//
-	// // 前面的where语句可能为空
-	// if (checkWHEREContaineEx(where)) {
-	// // 前面有表达式
-	// sb.append(" AND (");
-	// sb.append(sss);
-	// sb.append(" )");
-	// } else {
-	// // 前面没有表达式，直接添加tag表达式
-	// sb.append(sss);
-	// }
-	// } else {
-	// // 没有tag表达式，无需拼接
-	// }
-	// }
-	// return this.getList(conn, sb.toString(), whereParams, count, offset,
-	// selections);
-	// }
+	protected List<T> getListByTagsJSONObject(DruidPooledConnection conn, String tagColumnName, JSONObject jsonTags,
+			String where, List<Object> whereParams, Integer count, Integer offset, String... selections)
+			throws ServerException {
+		// WHERE org_id=? AND (JSON_CONTAINS(tags, '101', '$.key1') OR
+		// JSON_CONTAINS(tags, '102', '$.key2') OR JSON_CONTAINS(tags, '103', '$.key1')
+		// )
+
+		StringBuffer sb = new StringBuffer(where);
+
+		if (jsonTags != null && jsonTags.entrySet().size() > 0) {
+			boolean flg = false;
+
+			StringBuffer sss = new StringBuffer();
+			Iterator<Entry<String, Object>> it = jsonTags.entrySet().iterator();
+			while (it.hasNext()) {
+				Entry<String, Object> entry = it.next();
+				String key = entry.getKey();
+				JSONArray arr = (JSONArray) entry.getValue();
+
+				if (arr != null && arr.size() > 0) {
+					SQL sql = new SQL();
+					for (int i = 0; i < arr.size(); i++) {
+						String temp = arr.getString(i);
+						sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '", temp, "','$.", key, "')"));
+						flg = true;
+					}
+					sql.fillSQL(sss);
+				}
+			}
+
+			if (flg) {
+				// 有tag表达式
+
+				// 前面的where语句可能为空
+				if (checkWHEREContaineEx(where)) {
+					// 前面有表达式
+					sb.append(" AND (");
+					sb.append(sss);
+					sb.append(" )");
+				} else {
+					// 前面没有表达式，直接添加tag表达式
+					sb.append(sss);
+				}
+			} else {
+				// 没有tag表达式，无需拼接
+			}
+		}
+		return this.getList(conn, sb.toString(), whereParams, count, offset, selections);
+	}
 
 	/**
 	 * 原生SQL方法，根据某个类的repository实例，获取对应对象</br>
 	 * 方便跨对象操作的原生SQL模版方法</br>
 	 */
 	protected static <X> X sqlGetOther(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
-			Object[] whereParams) throws ServerException {
+			List<Object> whereParams) throws ServerException {
 		return DataSource.list2Obj(sqlGetOtherList(conn, repository, sql, whereParams));
 	}
 
 	/////////////////////////////////
 
-	public static PreparedStatement prepareStatement(Connection conn, String sql, Object[] params)
+	public static PreparedStatement prepareStatement(Connection conn, String sql, List<Object> params)
 			throws ServerException {
 		PreparedStatement ps = null;
 		try {
 			ps = conn.prepareStatement(sql);
-			if (null != params && params.length > 0) {
+			if (null != params && params.size() > 0) {
 				int ind = 1;
 				for (Object p : params) {
 					if (p instanceof Boolean) {
@@ -820,7 +753,7 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 查询返回对象数组
 	 */
-	private List<T> executeQuerySQL(DruidPooledConnection conn, String sql, Object[] whereParams)
+	private List<T> executeQuerySQL(DruidPooledConnection conn, String sql, List<Object> whereParams)
 			throws ServerException {
 		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
 		try {
@@ -839,7 +772,7 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 根据要求的字段列，查询返回对象数组列表
 	 */
-	private List<Object[]> executeQuerySQLSelections(DruidPooledConnection conn, String sql, Object[] whereParams,
+	private List<Object[]> executeQuerySQLSelections(DruidPooledConnection conn, String sql, List<Object> whereParams,
 			String... selections) throws ServerException {
 		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
 		try {
@@ -858,8 +791,8 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 根据要求的字段列，查询返回字段对象数组列表
 	 */
-	private static List<Object[]> executeQuerySQL2Objects(DruidPooledConnection conn, String sql, Object[] whereParams,
-			String... selections) throws ServerException {
+	private static List<Object[]> executeQuerySQL2Objects(DruidPooledConnection conn, String sql,
+			List<Object> whereParams, String... selections) throws ServerException {
 		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
 		try {
 			ResultSet rs = ps.executeQuery();
@@ -878,7 +811,7 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 根据要求的字段列，查询返回字段对象数组列表
 	 */
-	private static JSONArray executeQuerySQL2JSONArray(DruidPooledConnection conn, String sql, Object[] whereParams)
+	private static JSONArray executeQuerySQL2JSONArray(DruidPooledConnection conn, String sql, List<Object> whereParams)
 			throws ServerException {
 		PreparedStatement ps = prepareStatement(conn, sql.toString(), whereParams);
 		try {
@@ -895,7 +828,7 @@ public abstract class RDSRepository<T> {
 		}
 	}
 
-	private static int executeUpdateSQL(DruidPooledConnection conn, String sql, Object[] whereParams)
+	private static int executeUpdateSQL(DruidPooledConnection conn, String sql, List<Object> whereParams)
 			throws ServerException {
 		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
 		int count = 0;
@@ -920,11 +853,11 @@ public abstract class RDSRepository<T> {
 		}
 	}
 
-	private static Object[] mergeArray(Object[] a1, Object[] a2) {
-		Object[] total;
+	private static List<Object> mergeArray(List<Object> a1, List<Object> a2) {
+		List<Object> total;
 		if (a1 == null) {
 			if (a2 == null) {
-				total = new Object[] {};
+				total = new ArrayList<Object>();
 			} else {
 				total = a2;
 			}
@@ -932,10 +865,10 @@ public abstract class RDSRepository<T> {
 			if (a2 == null) {
 				total = a1;
 			} else {
-				int totalCount = a1.length + a2.length;
-				total = new Object[totalCount];
-				System.arraycopy(a1, 0, total, 0, a1.length);
-				System.arraycopy(a2, 0, total, a1.length, a2.length);
+				int totalCount = a1.size() + a2.size();
+				total = new ArrayList<Object>(totalCount);
+				System.arraycopy(a1, 0, total, 0, a1.size());
+				System.arraycopy(a2, 0, total, a1.size(), a2.size());
 			}
 		}
 		return total;
