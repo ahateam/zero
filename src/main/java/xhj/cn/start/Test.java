@@ -5,6 +5,7 @@ import com.alicloud.openservices.tablestore.SyncClient;
 
 import zyxhj.cms.domian.ContentTag;
 import zyxhj.cms.domian.ContentTagGroup;
+import zyxhj.cms.domian.Template;
 import zyxhj.core.domain.Module;
 import zyxhj.core.domain.Tag;
 import zyxhj.core.domain.TagGroup;

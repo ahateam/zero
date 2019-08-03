@@ -247,6 +247,13 @@ public class TaskWall extends TSEntity {
 	public String detail;
 
 	/**
+	 * 创建时间
+	 */
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
+	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	public Date createTime;
+	
+	/**
 	 * 任务接取状态
 	 */
 	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
