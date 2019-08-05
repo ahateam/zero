@@ -2,6 +2,7 @@ package zyxhj.flow;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -18,6 +19,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import zyxhj.core.domain.TagGroup;
 import zyxhj.flow.domain.TableData;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.service.TableService;
@@ -149,9 +151,19 @@ public class FlowTableServiceTest {
 		JSONObject jo = new JSONObject();
 		jo.put(tscTotal.name, tscTotal);
 		columns.add(jo);
-
+		
+		//为表定义添加标签
+//		JSONObject tags = new JSONObject();
+		JSONArray tag = new JSONArray();
+		
+		tag.add(TableSchema.SYS_TABLE_SCHEMA_TAG1);
+		tag.add(TableSchema.SYS_TABLE_SCHEMA_TAG2);
+		tag.add(TableSchema.SYS_TABLE_SCHEMA_TAG3);
+//		tags.put(TableSchema.SYS_TABLE_SCHEMA_TAGGROUP, tag);
+		
 		try {
-			tableService.createTableSchema("表的别名", type, columns, null);
+			tableService.createTableSchema("表的别名", type, columns, tag);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -221,5 +233,20 @@ public class FlowTableServiceTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testUpdateTableSchemaTags() {
+
+		try {
+			JSONArray tags = new JSONArray();
+			List<TableSchema> datas = tableService.getTableSchemaByTags(tags, 500, 0);
+			System.out.println(JSON.toJSONString(datas));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 	}
 }

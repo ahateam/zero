@@ -126,7 +126,7 @@ public class TableService extends Controller {
 	public void createTableSchema(@P(t = "表名") String alias, //
 			@P(t = "表类型") Byte type, //
 			@P(t = "数据列") JSONArray columns, //
-			@P(t = "标签名称列表") JSONArray tagNames//
+			@P(t = "标签名称列表") JSONArray tags//
 	) throws Exception {
 		// TODO 暂时只支持VIRTUAL_QUERY_TABLE
 
@@ -137,12 +137,11 @@ public class TableService extends Controller {
 
 		// JSON字段需要填入初始值[]或{}，避免后续操作出问题
 		ts.columns = RDSUtils.fixNullArray(columns);
-		ts.tagNames = RDSUtils.fixNullArray(tagNames);
-
+		ts.tags = RDSUtils.fixNullArray(tags);
+		
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			tableSchemaRepository.insert(conn, ts);
 		}
-
 	}
 
 	@POSTAPI(//
@@ -153,7 +152,7 @@ public class TableService extends Controller {
 	public int updateTableSchema(@P(t = "表结构编号") Long id, //
 			@P(t = "表名") String alias, //
 			@P(t = "数据列") JSONArray columns, //
-			@P(t = "标签名称列表") JSONArray tagNames//
+			@P(t = "标签名称列表") JSONArray tags//
 	) throws Exception {
 		TableSchema ts = new TableSchema();
 		ts.alias = alias;
@@ -162,7 +161,7 @@ public class TableService extends Controller {
 		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v();
 
 		ts.columns = columns;
-		ts.tagNames = tagNames;
+		ts.tags = tags;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableSchemaRepository.update(conn,EXP.ins().key("id", id), ts, true);
@@ -189,15 +188,17 @@ public class TableService extends Controller {
 
 	}
 	
-	public List<TableSchema> getTableSchemaById(
-			Long id,
-			Integer count,
-			Integer offset
+	@POSTAPI(//
+			path = "getTableSchemaById", //
+			des = "根据表结构编号获取表结构", //
+			ret = "TableSchema" //
+	)
+	public TableSchema getTableSchemaById(
+			@P(t = "表结构编号") Long id
 			)throws Exception{
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableSchemaRepository.getList(conn, EXP.ins().key("id", id), count, offset);
+			return tableSchemaRepository.get(conn, EXP.ins().key("id", id));
 		}
-		
 	}
 	
 
