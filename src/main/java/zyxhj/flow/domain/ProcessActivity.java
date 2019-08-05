@@ -1,7 +1,5 @@
 package zyxhj.flow.domain;
 
-import java.util.List;
-
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.utils.data.rds.RDSAnnEntity;
@@ -92,6 +90,8 @@ public class ProcessActivity {
 		public static final String TYPE_ACCEPT = "accept";
 		public static final String TYPE_REJECT = "reject";
 		public static final String TYPE_TERMINATE = "terminate";
+
+		public String id;
 
 		public String type;
 

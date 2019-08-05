@@ -272,6 +272,28 @@ public class EXP implements Cloneable {
 	}
 
 	/**
+	 * 判断JSON中是否包含指定元素的语句
+	 * 
+	 * @param column
+	 *            字段名
+	 * @param path
+	 *            JSON Path，例如$.tags或$
+	 * @param value
+	 *            需要查找的值
+	 */
+	public static EXP jsonContains(String column, String path, Object value) {
+		String temp = null;
+		if (isNumber(value)) {
+			// 数字，语句中不加引号，但是JSON_CONTAINS中仍然需要单引号
+			temp = StringUtils.join("JSON_CONTAINS(", column, ", '", value, "','", path, "')");
+		} else {
+			// 字符，语句中要注意引号的使用
+			temp = StringUtils.join("JSON_CONTAINS(", column, ", '\"", value, "\"','", path, "')");
+		}
+		return new EXP(false).exp(temp, null);
+	}
+
+	/**
 	 * SQL的 key = value 语句（很常用）</br>
 	 * 
 	 */

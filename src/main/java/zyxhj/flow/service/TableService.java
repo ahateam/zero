@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import zyxhj.core.domain.Tag;
 import zyxhj.flow.domain.TableData;
 import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
@@ -126,7 +127,7 @@ public class TableService extends Controller {
 	public void createTableSchema(@P(t = "表名") String alias, //
 			@P(t = "表类型") Byte type, //
 			@P(t = "数据列") JSONArray columns, //
-			@P(t = "标签名称列表") JSONArray tagNames//
+			@P(t = "标签名称列表") JSONArray tags//
 	) throws Exception {
 		// TODO 暂时只支持VIRTUAL_QUERY_TABLE
 
@@ -135,14 +136,12 @@ public class TableService extends Controller {
 		ts.alias = alias;
 		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v();
 
-		// JSON字段需要填入初始值[]或{}，避免后续操作出问题
-		ts.columns = RDSUtils.fixNullArray(columns);
-		ts.tagNames = RDSUtils.fixNullArray(tagNames);
+		ts.columns = columns;
+		ts.tags = tags;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			tableSchemaRepository.insert(conn, ts);
 		}
-
 	}
 
 	@POSTAPI(//
@@ -153,7 +152,7 @@ public class TableService extends Controller {
 	public int updateTableSchema(@P(t = "表结构编号") Long id, //
 			@P(t = "表名") String alias, //
 			@P(t = "数据列") JSONArray columns, //
-			@P(t = "标签名称列表") JSONArray tagNames//
+			@P(t = "标签名称列表") JSONArray tags//
 	) throws Exception {
 		TableSchema ts = new TableSchema();
 		ts.alias = alias;
@@ -162,10 +161,10 @@ public class TableService extends Controller {
 		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v();
 
 		ts.columns = columns;
-		ts.tagNames = tagNames;
+		ts.tags = tags;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableSchemaRepository.update(conn,EXP.ins().key("id", id), ts, true);
+			return tableSchemaRepository.update(conn, EXP.ins().key("id", id), ts, true);
 		}
 
 	}
@@ -187,6 +186,29 @@ public class TableService extends Controller {
 			return tableSchemaRepository.getList(conn, null, count, offset);
 		}
 
+	}
+
+	@POSTAPI(//
+			path = "getTableSchemaById", //
+			des = "根据表结构编号获取表结构", //
+			ret = "TableSchema" //
+	)
+	public TableSchema getTableSchemaById(@P(t = "表结构编号") Long id) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableSchemaRepository.get(conn, EXP.ins().key("id", id));
+		}
+	}
+
+	@POSTAPI(//
+			path = "getSysTableTags", //
+			des = "获取标签列表", //
+			ret = "JSONArray" //
+	)
+	public JSONArray getSysTableTags() {
+		JSONArray tags = new JSONArray();
+		tags.add(Tag.SYS_TABLE_SCHEMA_DATA);
+		tags.add(Tag.SYS_TABLE_SCHEMA_APPLICATION);
+		return tags;
 	}
 
 	// 添加表数据
@@ -270,7 +292,8 @@ public class TableService extends Controller {
 						}
 					}
 
-					return tableDataRepository.update(conn,EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", dataId), td, true);
+					return tableDataRepository.update(conn,
+							EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", dataId), td, true);
 				}
 			}
 		}
@@ -447,8 +470,9 @@ public class TableService extends Controller {
 		tv.virtual = virtual;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableVirtualRepository.update(conn,EXP.ins().key("tableSchema_id", tableSchemaId).andKey("id", id), tv, true);
-			
+			return tableVirtualRepository.update(conn, EXP.ins().key("tableSchema_id", tableSchemaId).andKey("id", id),
+					tv, true);
+
 		}
 
 	}

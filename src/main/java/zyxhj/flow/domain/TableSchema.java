@@ -13,7 +13,7 @@ import zyxhj.utils.data.rds.RDSAnnID;
  */
 @RDSAnnEntity(alias = "tb_table_schema")
 public class TableSchema {
-
+	
 	public static enum TYPE implements ENUMVALUE {
 		QUERY_TABLE((byte) 0, "独立建表模式，可以查询"), //
 		VIRTUAL_QUERY_TABLE((byte) 1, "RDS的JSON内嵌虚拟表模式，可以查询"), //
@@ -65,12 +65,12 @@ public class TableSchema {
 	 * 标签名列表
 	 */
 	@RDSAnnField(column = RDSAnnField.TEXT_TITLE)
-	public JSONArray tagNames;
+	public JSONArray tags;
 
 	public static class Column {
 
-		public static final String COLUMN_TYPE_DATA = "data";
-		public static final String COLUMN_TYPE_COMPUTE = "compute";
+		public static final String COLUMN_TYPE_DATA = "data"; // 数据列
+		public static final String COLUMN_TYPE_COMPUTE = "compute"; // 计算列
 
 		public static final String DATA_TYPE_INTEGER = "int";
 		public static final String DATA_TYPE_DECIMAL = "decimal";

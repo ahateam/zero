@@ -448,4 +448,37 @@ public class EXPTest {
 		}
 
 	}
+
+	@Test
+	public void testJsonContains() {
+		try {
+			{
+				EXP e = EXP.ins().jsonContains("tags", "$.group1", "temp");
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+			}
+
+			{
+				EXP e = EXP.ins().jsonContains("tags", "$.group1", 234);
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+			}
+
+		} catch (ServerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
