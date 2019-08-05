@@ -156,7 +156,7 @@ public class RDSRepositoryServiceTest {
 	@Test
 	public void testJsonAppendInArrayAndRemove() throws ServerException {
 		{
-			EXP set = EXP.jsonAppendInArray("arrays", "tag1", false);
+			EXP set = EXP.jsonArrayAppend("arrays", "tag1", false);
 			EXP where = EXP.ins().key("id", 400570031730692L);
 			int ret = testRepository.update(conn, set, where);
 			System.out.println(ret);
@@ -173,7 +173,7 @@ public class RDSRepositoryServiceTest {
 	@Test
 	public void testJsonAppendInArrayOnKeyAndRemove() throws ServerException {
 		{
-			EXP set = EXP.jsonAppendInArrayOnKey("tags", "type", "tag1", false);
+			EXP set = EXP.jsonArrayAppendOnKey("tags", "type", "tag1", false);
 			EXP where = EXP.ins().key("id", 400570031730692L);
 			int ret = testRepository.update(conn, set, where);
 			System.out.println(ret);

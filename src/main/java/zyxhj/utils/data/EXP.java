@@ -129,69 +129,144 @@ public class EXP implements Cloneable {
 		return new EXP(false).exp(sb.toString(), Arrays.asList(args));
 	}
 
-	public static EXP jsonAppendInArray(String column, String value, boolean duplicate) {
-		String temp = null;
-		if (duplicate) {
-			// 允许重复
-
-			// UPDATE `tb_rds_test` SET arrays = IF ((ISNULL(arrays) ||
-			// LENGTH(trim(arrays))<1), JSON_ARRAY('tag1'), JSON_ARRAY_APPEND(arrays,'$'
-			// ,'tag2')) WHERE `id` = 400570032412653
-
-			temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
-					"))<1), JSON_ARRAY('", value, "'), JSON_ARRAY_APPEND(", column, ",'$','", value, "'))");
+	private static boolean isNumber(Object obj) {
+		if (obj instanceof Integer || //
+				obj instanceof Short || //
+				obj instanceof Byte || //
+				obj instanceof Long || //
+				obj instanceof Double || //
+				obj instanceof Float) {
+			return true;
 		} else {
-			// 不允许重复
+			return false;
+		}
+	}
 
-			// UPDATE `tb_rds_test` SET arrays = IF ((ISNULL(arrays) ||
-			// LENGTH(trim(arrays))<1), JSON_ARRAY('tag1'), IF(ISNULL(JSON_SEARCH(arrays,
-			// 'one', 'tag3')),JSON_ARRAY_APPEND(arrays,'$' ,'tag3'),arrays) ) WHERE `id` =
-			// 400570032412653
+	/**
+	 * JSON操作，添加到数组
+	 * 
+	 * @param column
+	 *            字段列名（JSON数组字段）
+	 * @param value
+	 *            要添加的值，可以是数字或字符
+	 * @param duplicate
+	 *            数组是否允许重复
+	 */
+	public static EXP jsonArrayAppend(String column, Object value, boolean duplicate) {
+		String temp = null;
 
-			temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
-					"))<1), JSON_ARRAY('", value, "'), IF(JSON_CONTAINS(", column, ",'\"", value, "\"','$'),", column,
-					",JSON_ARRAY_APPEND(", column, ",'$','", value, "')))");
+		if (isNumber(value)) {
+			// 数字，语句中不加引号，但是JSON_CONTAINS中仍然需要单引号
+			if (duplicate) {
+				// 允许重复
+				temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+						"))<1), JSON_ARRAY(", value, "), JSON_ARRAY_APPEND(", column, ",'$',", value, "))");
+			} else {
+				// 不允许重复
+				temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+						"))<1), JSON_ARRAY(", value, "), IF(JSON_CONTAINS(", column, ",'", value, "','$'),", column,
+						",JSON_ARRAY_APPEND(", column, ",'$',", value, ")))");
+			}
+		} else {
+			// 字符，语句中要注意引号的使用
+			if (duplicate) {
+				// 允许重复
+
+				// UPDATE `tb_rds_test` SET arrays = IF ((ISNULL(arrays) ||
+				// LENGTH(trim(arrays))<1), JSON_ARRAY('tag1'), JSON_ARRAY_APPEND(arrays,'$'
+				// ,'tag2')) WHERE `id` = 400570032412653
+
+				temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+						"))<1), JSON_ARRAY('", value, "'), JSON_ARRAY_APPEND(", column, ",'$','", value, "'))");
+			} else {
+				// 不允许重复
+
+				// UPDATE `tb_rds_test` SET arrays = IF ((ISNULL(arrays) ||
+				// LENGTH(trim(arrays))<1), JSON_ARRAY('tag1'), IF(ISNULL(JSON_SEARCH(arrays,
+				// 'one', 'tag3')),JSON_ARRAY_APPEND(arrays,'$' ,'tag3'),arrays) ) WHERE `id` =
+				// 400570032412653
+
+				temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+						"))<1), JSON_ARRAY('", value, "'), IF(JSON_CONTAINS(", column, ",'\"", value, "\"','$'),",
+						column, ",JSON_ARRAY_APPEND(", column, ",'$','", value, "')))");
+			}
 		}
 		return new EXP(false).exp(temp, null);
 	}
 
-	public static EXP jsonAppendInArrayOnKey(String column, String key, String value, boolean duplicate) {
+	/**
+	 * JSON操作，添加到数组，数组值将添加到column.key对应的数组下
+	 * 
+	 * @param column
+	 *            字段列名（JSON数组字段）
+	 * @param key
+	 *            字段内的JSON key，数组值将添加到column.key对应的数组下
+	 * @param value
+	 *            要添加的值，可以是数字或字符
+	 * @param duplicate
+	 *            数组是否允许重复
+	 */
+	public static EXP jsonArrayAppendOnKey(String column, String key, Object value, boolean duplicate) {
 		String temp = null;
-		if (duplicate) {
-			// 允许重复
-
-			// UPDATE `tb_rds_test` SET tags = IF((ISNULL(tags) ||
-			// LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY('tag1')),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),JSON_ARRAY_APPEND(tags,
-			// '$.type' ,'tag8'),JSON_SET(tags,'$.type',JSON_ARRAY('tag8')))) WHERE `id` =
-			// 400570032412653
-
-			temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
-					"))<1),JSON_OBJECT('", key, "',JSON_ARRAY('", value, "')),IF(JSON_CONTAINS_PATH(", column,
-					",'one','$.", key, "'),JSON_ARRAY_APPEND(", column, ", '$.", key, "' ,'", value, "'),JSON_SET(",
-					column, ",'$.", key, "',JSON_ARRAY('", value, "'))))");
+		if (isNumber(value)) {
+			// 数字，语句中不加引号，但是JSON_CONTAINS中仍然需要单引号
+			if (duplicate) {
+				// 允许重复
+				temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+						"))<1),JSON_OBJECT('", key, "',JSON_ARRAY(", value, ")),IF(JSON_CONTAINS_PATH(", column,
+						",'one','$.", key, "'),JSON_ARRAY_APPEND(", column, ", '$.", key, "' ,", value, "),JSON_SET(",
+						column, ",'$.", key, "',JSON_ARRAY(", value, "))))");
+			} else {
+				// 不允许重复
+				temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+						"))<1),JSON_OBJECT('", key, "',JSON_ARRAY(", value, ")),IF(JSON_CONTAINS_PATH(", column,
+						",'one','$.", key, "'),IF(JSON_CONTAINS(", column, ",'", value, "','$.", key, "'),", column,
+						",JSON_ARRAY_APPEND(", column, ", '$.", key, "' ,", value, ")),JSON_SET(", column, ",'$.", key,
+						"',JSON_ARRAY(", value, "))))");
+			}
 		} else {
-			// 不允许重复
+			// 字符，语句中要注意引号的使用
+			if (duplicate) {
+				// 允许重复
 
-			// UPDATE `tb_rds_test` SET tags = IF((ISNULL(tags) ||
-			// LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY('tag1')),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),IF(JSON_CONTAINS(tags,'"tag8"','$.type'),tags,JSON_ARRAY_APPEND(tags,
-			// '$.type' ,'tag8')),JSON_SET(tags,'$.type',JSON_ARRAY('tag8')))) WHERE `id` =
-			// 400570032412653
+				// UPDATE `tb_rds_test` SET tags = IF((ISNULL(tags) ||
+				// LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY('tag1')),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),JSON_ARRAY_APPEND(tags,
+				// '$.type' ,'tag8'),JSON_SET(tags,'$.type',JSON_ARRAY('tag8')))) WHERE `id` =
+				// 400570032412653
 
-			temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
-					"))<1),JSON_OBJECT('", key, "',JSON_ARRAY('", value, "')),IF(JSON_CONTAINS_PATH(", column,
-					",'one','$.", key, "'),IF(JSON_CONTAINS(", column, ",'\"", value, "\"','$.", key, "'),", column,
-					",JSON_ARRAY_APPEND(", column, ", '$.", key, "' ,'", value, "')),JSON_SET(", column, ",'$.", key,
-					"',JSON_ARRAY('", value, "'))))");
+				temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+						"))<1),JSON_OBJECT('", key, "',JSON_ARRAY('", value, "')),IF(JSON_CONTAINS_PATH(", column,
+						",'one','$.", key, "'),JSON_ARRAY_APPEND(", column, ", '$.", key, "' ,'", value, "'),JSON_SET(",
+						column, ",'$.", key, "',JSON_ARRAY('", value, "'))))");
+			} else {
+				// 不允许重复
+
+				// UPDATE `tb_rds_test` SET tags = IF((ISNULL(tags) ||
+				// LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY('tag1')),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),IF(JSON_CONTAINS(tags,'"tag8"','$.type'),tags,JSON_ARRAY_APPEND(tags,
+				// '$.type' ,'tag8')),JSON_SET(tags,'$.type',JSON_ARRAY('tag8')))) WHERE `id` =
+				// 400570032412653
+
+				temp = StringUtils.join(column, " = IF((ISNULL(", column, ") || LENGTH(trim(", column,
+						"))<1),JSON_OBJECT('", key, "',JSON_ARRAY('", value, "')),IF(JSON_CONTAINS_PATH(", column,
+						",'one','$.", key, "'),IF(JSON_CONTAINS(", column, ",'\"", value, "\"','$.", key, "'),", column,
+						",JSON_ARRAY_APPEND(", column, ", '$.", key, "' ,'", value, "')),JSON_SET(", column, ",'$.",
+						key, "',JSON_ARRAY('", value, "'))))");
+			}
 		}
 		return new EXP(false).exp(temp, null);
 	}
 
+	/**
+	 * 移除JSON数组元素
+	 * 
+	 * @param column
+	 *            JSON列
+	 * @param path
+	 *            JSON PATH
+	 * @param index
+	 *            数组索引编号，从0开始
+	 */
 	public static EXP jsonArrayRemove(String column, String path, int index) {
-		String temp = StringUtils.join(column, " = JSON_REMOVE(", column, ",'", path, "[", index, "]')");
-		return new EXP(false).exp(temp, null);
-	}
-
-	public static EXP jsonObjectRemove(String column, String path, int index) {
 		String temp = StringUtils.join(column, " = JSON_REMOVE(", column, ",'", path, "[", index, "]')");
 		return new EXP(false).exp(temp, null);
 	}

@@ -235,11 +235,11 @@ public class EXPTest {
 	}
 
 	@Test
-	public void testJsonAppendInArray() {
+	public void testJsonArrayAppend() {
 		try {
 			{
-				// 可重复
-				EXP e = EXP.jsonAppendInArray("arrays", "tag4", true);
+				// 字符 可重复
+				EXP e = EXP.jsonArrayAppend("arrays", "tag4", true);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -255,8 +255,8 @@ public class EXPTest {
 			}
 
 			{
-				// 不可重复
-				EXP e = EXP.jsonAppendInArray("arrays", "tag4", false);
+				// 字符 不可重复
+				EXP e = EXP.jsonArrayAppend("arrays", "tag4", false);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -270,6 +270,40 @@ public class EXPTest {
 				Assert.assertEquals(sb.toString(),
 						"arrays = IF((ISNULL(arrays) || LENGTH(trim(arrays))<1), JSON_ARRAY('tag4'), IF(JSON_CONTAINS(arrays,'\"tag4\"','$'),arrays,JSON_ARRAY_APPEND(arrays,'$','tag4')))");
 			}
+
+			{
+				// 数字 可重复
+				EXP e = EXP.jsonArrayAppend("arrays", 123, true);
+
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(),
+						"arrays = IF((ISNULL(arrays) || LENGTH(trim(arrays))<1), JSON_ARRAY(123), JSON_ARRAY_APPEND(arrays,'$',123))");
+			}
+
+			{
+				// 数字 不可重复
+				EXP e = EXP.jsonArrayAppend("arrays", 123, false);
+
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(),
+						"arrays = IF((ISNULL(arrays) || LENGTH(trim(arrays))<1), JSON_ARRAY(123), IF(JSON_CONTAINS(arrays,'123','$'),arrays,JSON_ARRAY_APPEND(arrays,'$',123)))");
+			}
 		} catch (ServerException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -277,11 +311,11 @@ public class EXPTest {
 	}
 
 	@Test
-	public void jsonAppendInKeyArray() {
+	public void testJsonArrayAppendOnKey() {
 		try {
 			{
-				// 可重复
-				EXP e = EXP.jsonAppendInArrayOnKey("tags", "type", "tag4", true);
+				// 字符 可重复
+				EXP e = EXP.jsonArrayAppendOnKey("tags", "type", "tag4", true);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -297,8 +331,8 @@ public class EXPTest {
 			}
 
 			{
-				// 不可重复
-				EXP e = EXP.jsonAppendInArrayOnKey("tags", "type", "tag4", false);
+				// 字符 不可重复
+				EXP e = EXP.jsonArrayAppendOnKey("tags", "type", "tag4", false);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -312,6 +346,41 @@ public class EXPTest {
 				Assert.assertEquals(sb.toString(),
 						"tags = IF((ISNULL(tags) || LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY('tag4')),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),IF(JSON_CONTAINS(tags,'\"tag4\"','$.type'),tags,JSON_ARRAY_APPEND(tags, '$.type' ,'tag4')),JSON_SET(tags,'$.type',JSON_ARRAY('tag4'))))");
 			}
+
+			{
+				// 数字 可重复
+				EXP e = EXP.jsonArrayAppendOnKey("tags", "type", 123, true);
+
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(),
+						"tags = IF((ISNULL(tags) || LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY(123)),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),JSON_ARRAY_APPEND(tags, '$.type' ,123),JSON_SET(tags,'$.type',JSON_ARRAY(123))))");
+			}
+
+			{
+				// 数字 不可重复
+				EXP e = EXP.jsonArrayAppendOnKey("tags", "type", 123, false);
+
+				StringBuffer sb = new StringBuffer();
+				ArrayList<Object> params = new ArrayList<>();
+				e.toSQL(sb, params);
+
+				String str = sb.toString();
+				String pstr = JSON.toJSONString(params);
+				System.out.println("===" + str);
+				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(),
+						"tags = IF((ISNULL(tags) || LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY(123)),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),IF(JSON_CONTAINS(tags,'123','$.type'),tags,JSON_ARRAY_APPEND(tags, '$.type' ,123)),JSON_SET(tags,'$.type',JSON_ARRAY(123))))");
+			}
+
 		} catch (ServerException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
