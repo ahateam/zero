@@ -188,6 +188,18 @@ public class TableService extends Controller {
 		}
 
 	}
+	
+	public List<TableSchema> getTableSchemaById(
+			Long id,
+			Integer count,
+			Integer offset
+			)throws Exception{
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableSchemaRepository.getList(conn, EXP.ins().key("id", id), count, offset);
+		}
+		
+	}
+	
 
 	// 添加表数据
 	@POSTAPI(//
