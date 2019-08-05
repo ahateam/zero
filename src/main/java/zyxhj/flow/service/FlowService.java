@@ -187,35 +187,6 @@ public class FlowService extends Controller {
 		}
 	}
 	
-	@POSTAPI(//
-			path = "setPDLink", //
-			des = "设置流程定义中所有节点关系数据（连线数据）"//
-			)
-	public void setPDLink(//
-			Long pdId,//
-			JSONArray link//
-			) throws Exception {
-		ProcessDefinition p = new ProcessDefinition();
-		p.link = link;
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			definitionRepository.update(conn, EXP.ins().key("id", pdId), p, true);
-		}
-	}
-	
-	@POSTAPI(//
-			path = "getPDLink", //
-			des = "得到流程定义中所有节点关系数据（连线数据）",//
-			ret = "ProcessDefinition"//
-			)
-	public ProcessDefinition getPDLink(
-			Long pdId
-			) throws Exception {
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			List<ProcessDefinition> p =definitionRepository.getList(conn, EXP.ins().key("id", pdId), 1, 0, "id", "link");
-			return p.get(0);
-		}
-	}
-	
 
 	///////////////////////////////////////
 	// Activity

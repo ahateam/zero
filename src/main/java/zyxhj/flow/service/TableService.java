@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import zyxhj.core.domain.Tag;
 import zyxhj.flow.domain.TableData;
 import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
@@ -135,10 +136,9 @@ public class TableService extends Controller {
 		ts.alias = alias;
 		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v();
 
-		// JSON字段需要填入初始值[]或{}，避免后续操作出问题
-		ts.columns = RDSUtils.fixNullArray(columns);
-		ts.tags = RDSUtils.fixNullArray(tags);
-		
+		ts.columns = columns;
+		ts.tags = tags;
+
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			tableSchemaRepository.insert(conn, ts);
 		}
@@ -164,7 +164,7 @@ public class TableService extends Controller {
 		ts.tags = tags;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableSchemaRepository.update(conn,EXP.ins().key("id", id), ts, true);
+			return tableSchemaRepository.update(conn, EXP.ins().key("id", id), ts, true);
 		}
 
 	}
@@ -187,20 +187,29 @@ public class TableService extends Controller {
 		}
 
 	}
-	
+
 	@POSTAPI(//
 			path = "getTableSchemaById", //
 			des = "根据表结构编号获取表结构", //
 			ret = "TableSchema" //
 	)
-	public TableSchema getTableSchemaById(
-			@P(t = "表结构编号") Long id
-			)throws Exception{
+	public TableSchema getTableSchemaById(@P(t = "表结构编号") Long id) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableSchemaRepository.get(conn, EXP.ins().key("id", id));
 		}
 	}
-	
+
+	@POSTAPI(//
+			path = "getSysTableTags", //
+			des = "获取标签列表", //
+			ret = "JSONArray" //
+	)
+	public JSONArray getSysTableTags() {
+		JSONArray tags = new JSONArray();
+		tags.add(Tag.SYS_TABLE_SCHEMA_DATA);
+		tags.add(Tag.SYS_TABLE_SCHEMA_APPLICATION);
+		return tags;
+	}
 
 	// 添加表数据
 	@POSTAPI(//
@@ -283,7 +292,8 @@ public class TableService extends Controller {
 						}
 					}
 
-					return tableDataRepository.update(conn,EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", dataId), td, true);
+					return tableDataRepository.update(conn,
+							EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", dataId), td, true);
 				}
 			}
 		}
@@ -460,8 +470,9 @@ public class TableService extends Controller {
 		tv.virtual = virtual;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableVirtualRepository.update(conn,EXP.ins().key("tableSchema_id", tableSchemaId).andKey("id", id), tv, true);
-			
+			return tableVirtualRepository.update(conn, EXP.ins().key("tableSchema_id", tableSchemaId).andKey("id", id),
+					tv, true);
+
 		}
 
 	}

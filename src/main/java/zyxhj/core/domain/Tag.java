@@ -42,5 +42,18 @@ public class Tag {
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte status;
-
+	
+	
+	private static Tag buildSysTag(Long groupId, String name,Byte status) {
+		Tag t = new Tag();
+		t.groupId = groupId;
+		t.name = name;
+		t.status = status;
+		return t;
+	}
+	
+	public static final Tag SYS_TABLE_SCHEMA_APPLICATION = buildSysTag(TagGroup.flow_undefinition.id, "申请", Tag.STATUS.ENABLED);
+	
+	public static final Tag SYS_TABLE_SCHEMA_DATA = buildSysTag(TagGroup.flow_undefinition.id, "数据", Tag.STATUS.ENABLED);
+	
 }

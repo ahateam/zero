@@ -66,12 +66,15 @@ public class TagGroup {
 			"流程资产描述——表格", null);
 	public static final TagGroup flow_asset_desc_report = buildSysTagGroup(Module.FLOW.key, "report", temp++,
 			"流程资产描述——报告", null);
+	public static final TagGroup flow_undefinition = buildSysTagGroup(Module.FLOW.key, "undefinition", temp++,
+			"未定义分组", null);
 
 	public static TreeMap<String, TagGroup> SYS_TAG_GROUP_MAP = new TreeMap<>();
 
 	static {
 		SYS_TAG_GROUP_MAP.put(flow_asset_desc_table.moduleKey, flow_asset_desc_table);
 		SYS_TAG_GROUP_MAP.put(flow_asset_desc_report.moduleKey, flow_asset_desc_report);
+		SYS_TAG_GROUP_MAP.put(flow_undefinition.moduleKey, flow_undefinition);
 	}
 
 }

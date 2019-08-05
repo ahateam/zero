@@ -62,13 +62,6 @@ public class ProcessDefinition {
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public JSONObject visual;
-	
-	/**
-	 * 	存放节点关系连接线数据
-	 */
-	@RDSAnnField(column = RDSAnnField.TEXT)
-	public JSONArray link;
-	
 
 
 }

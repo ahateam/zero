@@ -575,6 +575,32 @@ public abstract class RDSRepository<T> {
 		}
 	}
 
+	
+	public List<T> getListByTags(DruidPooledConnection conn, String tagColumnName, String groupKeyword,
+			String[] tags, EXP where, Integer count, Integer offset,
+			String... selections)
+	throws Exception{
+		StringBuffer sb = new StringBuffer();
+		ArrayList<Object> args = new ArrayList<>();
+		EXP sub = EXP.ins();
+		if(tags != null && tags.length > 0) {
+			for(int i = 0; i < tags.length; i++) {
+				String tag = tags[i];
+				if(StringUtils.isBlank(groupKeyword)) {
+					sub.or(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '\"", tag , "\"','$')"), null);
+				}else {
+					sub.or(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '\"", tag , "\"','$.", groupKeyword,"')"), null);
+				}
+			}
+		}
+		if( where!=null ) {
+			where.and(sub);
+		}
+		where.toSQL(sb, args);
+		return getList(conn, sb.toString(), args, count, offset);
+	}
+	
+	
 	/**
 	 * 根据标签查询对象列表</br>
 	 * 需要传入标签分组keyword和标签数组</br>
@@ -609,8 +635,7 @@ public abstract class RDSRepository<T> {
 				if (StringUtils.isBlank(groupKeyword)) {
 					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '", group, "','$')"));
 				} else {
-					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '\"", group, "','$.", groupKeyword,
-							"')"));
+					sql.OR(StringUtils.join("JSON_CONTAINS(", tagColumnName, ", '\"", group, "','$.", groupKeyword,"')"));
 				}
 			}
 

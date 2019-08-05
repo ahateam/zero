@@ -13,13 +13,6 @@ import zyxhj.utils.data.rds.RDSAnnID;
  */
 @RDSAnnEntity(alias = "tb_table_schema")
 public class TableSchema {
-
-	public static final String SYS_TABLE_SCHEMA_TAGGROUP = "sysTagGroup";
-	
-	public static final String SYS_TABLE_SCHEMA_TAG1 = "sysTag1";
-	public static final String SYS_TABLE_SCHEMA_TAG2 = "sysTag2";
-	public static final String SYS_TABLE_SCHEMA_TAG3 = "sysTag3";
-	
 	
 	public static enum TYPE implements ENUMVALUE {
 		QUERY_TABLE((byte) 0, "独立建表模式，可以查询"), //
