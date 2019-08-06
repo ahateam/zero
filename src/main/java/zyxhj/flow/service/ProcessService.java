@@ -42,15 +42,10 @@ public class ProcessService extends Controller {
 
 	private DruidDataSource ds;
 
-	private ProcessAssetDescRepository assetDescRepository;
 	private ProcessRepository processRepository;
-	private ProcessDefinitionRepository definitionRepository;
 	private ProcessActivityRepository activityRepository;
 	private ProcessLogRepository processLogRepository;
 	private ProcessAssetRepository processAssetRepository;
-	private DepartmentRepository departmentRepository;
-	private UserRepository userRepository;
-	private UserRoleRepository roleRepository;
 
 	public ProcessService(String node) {
 		super(node);
@@ -58,23 +53,14 @@ public class ProcessService extends Controller {
 			ds = DataSource.getDruidDataSource("rdsDefault.prop");
 
 			processRepository = Singleton.ins(ProcessRepository.class);
-			definitionRepository = Singleton.ins(ProcessDefinitionRepository.class);
 			activityRepository = Singleton.ins(ProcessActivityRepository.class);
 			processLogRepository = Singleton.ins(ProcessLogRepository.class);
 			processAssetRepository = Singleton.ins(ProcessAssetRepository.class);
-			assetDescRepository = Singleton.ins(ProcessAssetDescRepository.class);
-			departmentRepository = Singleton.ins(DepartmentRepository.class);
-			userRepository = Singleton.ins(UserRepository.class);
-			roleRepository = Singleton.ins(UserRoleRepository.class);
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 	}
-
-	///////////////////////////////////////
-	// Activity
-	///////////////////////////////////////
 
 	///////////////////////////////////////
 	// Process
@@ -382,7 +368,7 @@ public class ProcessService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 
 			return processAssetRepository.getList(conn,
-					EXP.ins().key("type", ProcessAsset.TYPE_DEFINITON).andKey("owner_id", activityId), count, offset);
+					EXP.ins().key("type", ProcessAsset.TYPE_ACTIVITY).andKey("owner_id", activityId), count, offset);
 		}
 	}
 

@@ -145,11 +145,11 @@ public class TableService extends Controller {
 	}
 
 	@POSTAPI(//
-			path = "updateTableSchema", //
+			path = "editTableSchema", //
 			des = "修改表结构", //
 			ret = "state --- int" //
 	)
-	public int updateTableSchema(@P(t = "表结构编号") Long id, //
+	public int editTableSchema(@P(t = "表结构编号") Long id, //
 			@P(t = "表名") String alias, //
 			@P(t = "数据列") JSONArray columns, //
 			@P(t = "标签名称列表") JSONArray tags//
@@ -168,6 +168,20 @@ public class TableService extends Controller {
 		}
 
 	}
+	
+	@POSTAPI(//
+			path = "delTableSchema", //
+			des = "删除表结构" //
+	)
+	public void delTableSchema(
+			@P(t = "表结构编号") Long id
+			)throws Exception{
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			tableSchemaRepository.delete(conn, EXP.ins().key("id", id));
+		}
+		
+	}
+	
 
 	@POSTAPI(//
 			path = "getTableSchemaByTags", //

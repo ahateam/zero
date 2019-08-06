@@ -20,6 +20,7 @@ import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
 import zyxhj.flow.service.FlowService;
+import zyxhj.flow.service.ProcessService;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.data.DataSource;
@@ -29,6 +30,7 @@ public class FlowProcessServiceTest {
 	private static DruidPooledConnection conn;
 
 	private static FlowService flowService;
+	private static ProcessService processService;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -36,6 +38,7 @@ public class FlowProcessServiceTest {
 			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
 
 			flowService = Singleton.ins(FlowService.class, "sdf");
+			processService = Singleton.ins(ProcessService.class, "sdf");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -287,11 +290,11 @@ public class FlowProcessServiceTest {
 	@Test
 	public void testCreateProcess() {
 
-		String title = "测试流程实例标题10";
+		String title = "测试流程实例标题101";
 		String remark = "测试流程实例";
 
 		try {
-			flowService.createProcess(pdId, activityId, title, remark);
+			processService.createProcess(400638318999538L, 400638319630067L, title, remark);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -303,7 +306,7 @@ public class FlowProcessServiceTest {
 	@Test
 	public void testEditProcess() {
 		try {
-			int state = flowService.editProcess(400479222889007L, pdId, activityId, "修改流程实例数据", "修改流程实例",
+			int state = processService.editProcess(400654738395523L, 400638318999538L, 400638319630067L, "修改流程实例数据", "修改流程实例",
 					new Byte("1"));
 			System.out.println("修改流程实例数据状态：" + state);
 		} catch (Exception e) {
@@ -318,7 +321,7 @@ public class FlowProcessServiceTest {
 	public void testDelProcess() {
 
 		try {
-			int state = flowService.delProcess(400479228206263L);
+			int state = processService.delProcess(400654732028268L);
 
 			System.out.println("删除流程实例状态：" + state);
 		} catch (Exception e) {
@@ -333,10 +336,10 @@ public class FlowProcessServiceTest {
 	@Test
 	public void testCreateProcessLog() {
 		JSONObject ext = new JSONObject();
-		ext.put("msg", "测试扩展数据");
+		ext.put("msg", "测试扩展dfsdfsd数据");
 
 		try {
-			flowService.createProcessLog(400479329214698L, "TestTitle6", 400159724862966L, "测试用户", "测试动作", "测试动作说明",
+			processService.createProcessLog(400654738395523L, "TestTitle6", 400159724862966L, "测试用户", "测试动作", "测试动作说明",
 					ext);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -350,7 +353,7 @@ public class FlowProcessServiceTest {
 	public void testQueryProcessLogLsit() {
 
 		try {
-			List<ProcessLog> plList = flowService.getProcessLogList(400479329214698L, count, offset);
+			List<ProcessLog> plList = processService.getProcessLogList(400479329214698L, count, offset);
 			System.out.println(plList.size());
 			for (ProcessLog pl : plList) {
 				System.out.println(pl.title + "-----" + pl.timestamp);
