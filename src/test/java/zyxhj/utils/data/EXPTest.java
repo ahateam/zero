@@ -1,6 +1,7 @@
 package zyxhj.utils.data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -145,6 +146,7 @@ public class EXPTest {
 			ArrayList<Object> params = new ArrayList<>();
 			expMax.toSQL(sb, params);
 
+			System.out.println(JSON.toJSONString(expMax, true));
 			String str = sb.toString();
 			String pstr = JSON.toJSONString(params);
 			System.out.println("===" + str);
@@ -480,5 +482,18 @@ public class EXPTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	@Test
+	public void testScript() throws ServerException {
+		EXP e = EXP.ins().exp(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), ">", "?", 3)
+				.and(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), "LIKE", "?", "4");
+		StringBuffer sb = new StringBuffer();
+		e.toEXP(sb);
+		
+		System.out.println(e.compute());
+
+		String str = sb.toString();
+		System.out.println("===" + str);
 	}
 }

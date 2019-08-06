@@ -101,7 +101,7 @@ public class EXP implements Cloneable {
 		sb.deleteCharAt(sb.length() - 1);
 		sb.append(")");
 
-		return new EXP(false).exp(sb.toString(), Arrays.asList(args));
+		return new EXP(false).exp(sb.toString(), null, args);
 	}
 
 	/**
@@ -126,7 +126,7 @@ public class EXP implements Cloneable {
 		}
 		sb.append(')');
 
-		return new EXP(false).exp(sb.toString(), Arrays.asList(args));
+		return new EXP(false).exp(sb.toString(), null, args);
 	}
 
 	private static boolean isNumber(Object obj) {
@@ -322,23 +322,6 @@ public class EXP implements Cloneable {
 	 * 函数方法构造
 	 * 
 	 * @param str
-	 *            表达式文本
-	 * @param args
-	 *            表达式参数（选填）</br>
-	 *            如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
-	 */
-	public EXP exp(String str, List<Object> args) {
-		this.t = TYPE_METHOD;
-		this.op = str;
-		this.args = args == null ? null : args.toArray();
-
-		return this;
-	}
-
-	/**
-	 * 函数方法构造
-	 * 
-	 * @param str
 	 *            表达式函数文本
 	 * @param ps
 	 *            表达式操作数</br>
@@ -423,30 +406,13 @@ public class EXP implements Cloneable {
 	/**
 	 * AND 连接表达式
 	 */
-	public EXP and(String str, List<Object> args) throws ServerException {
-		if (StringUtils.isBlank(this.op)) {
-			// empty 相当于创建
-			exp(this.exact, str, args);
-			return this;
-		} else {
-			if (StringUtils.isBlank(str)) {
-				return this;
-			} else {
-				return and(new EXP(this.exact).exp(str, args));
-			}
-		}
-	}
-
-	/**
-	 * AND 连接表达式
-	 */
 	public EXP and(String op, List<Object> ps, Object... args) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
 			exp(op, ps, args);
 			return this;
 		} else {
-			if (StringUtils.isBlank(op) || ps == null) {
+			if (StringUtils.isBlank(op)) {
 				return this;
 			} else {
 				return and(new EXP(this.exact).exp(op, ps, args));
@@ -511,30 +477,13 @@ public class EXP implements Cloneable {
 	/**
 	 * OR 连接表达式
 	 */
-	public EXP or(String str, List<Object> args) throws ServerException {
-		if (StringUtils.isBlank(this.op)) {
-			// empty 相当于创建
-			exp(str, args);
-			return this;
-		} else {
-			if (StringUtils.isBlank(str)) {
-				return this;
-			} else {
-				return or(new EXP(exact).exp(str, args));
-			}
-		}
-	}
-
-	/**
-	 * OR 连接表达式
-	 */
 	public EXP or(String op, List<Object> ps, Object... args) throws ServerException {
 		if (StringUtils.isBlank(this.op)) {
 			// empty 相当于创建
 			exp(op, ps, args);
 			return this;
 		} else {
-			if (StringUtils.isBlank(op) || ps == null) {
+			if (StringUtils.isBlank(op)) {
 				return this;
 			} else {
 				return or(new EXP(this.exact).exp(op, ps, args));
@@ -581,6 +530,24 @@ public class EXP implements Cloneable {
 			return " <> ";
 		} else if (op.equals("==") || op.equals("=")) {
 			return " = ";
+		} else {
+			return StringUtils.join(" ", op, " ");
+		}
+	}
+
+	/**
+	 * 计算表达式，修正
+	 */
+	private static String fixOP(String op) {
+		op = StringUtils.trim(op);
+		if (op.equals("&&") || op.equals("AND") || op.equals("and")) {
+			return " && ";
+		} else if (op.equals("||") || op.equals("OR") || op.equals("or")) {
+			return " || ";
+		} else if (op.equals("!=") || op.equals("<>")) {
+			return " != ";
+		} else if (op.equals("==") || op.equals("=")) {
+			return " == ";
 		} else {
 			return StringUtils.join(" ", op, " ");
 		}
@@ -792,6 +759,202 @@ public class EXP implements Cloneable {
 				return true;
 			}
 		}
+	}
+
+	public void toEXP(StringBuffer sb) throws ServerException {
+		if (t.equals(TYPE_EXP)) {
+			// 二元表达式
+			Object left = ps.get(0);
+			Object right = ps.get(1);
+
+			if (left instanceof EXP) {
+				((EXP) left).toEXP(sb);
+			} else {
+				sb.append(left);
+			}
+
+			sb.append(fixOP(op));
+			if (right instanceof EXP) {
+				EXP er = (EXP) right;
+				boolean isEnd = EXP.isEndEXP(er);// 下一个节点是否最终节点
+				if (!isEnd) {
+					sb.append("(");
+				}
+				er.toEXP(sb);
+				if (!isEnd) {
+					sb.append(")");
+				}
+			} else {
+
+				if (right instanceof String) {
+					if (StringUtils.trim((String) right).equals("?")) {
+						// 替换？，合并参数
+						sb.append(args[0]);
+					} else {
+						sb.append(right);
+					}
+				} else {
+					sb.append(right);
+				}
+			}
+		} else {
+			// 函数或其它
+			sb.append(op);
+			if (ps != null && ps.size() > 0) {
+				sb.append('(');
+				int argIndex = 0;
+				for (int i = 0; i < ps.size(); i++) {
+					Object p = ps.get(i);
+					if (StringUtils.trim((String) p).equals("?")) {
+						// 替换？，合并参数
+						sb.append(args[argIndex++]);
+					} else {
+						sb.append(p);
+					}
+					if (i < ps.size() - 1) {
+						sb.append(',');
+					}
+				}
+				sb.append(')');
+			}
+		}
+	}
+
+	private Object getValue(Object p) {
+		return p;
+	}
+
+	private int comp(Object left, Object right) {
+		int comp = 0;
+		try {
+			if (left instanceof Integer) {
+				comp = ((Integer) left).compareTo((Integer) right);
+			} else if (left instanceof Float) {
+				comp = ((Float) left).compareTo((Float) right);
+			} else if (left instanceof Double) {
+				comp = ((Double) left).compareTo((Double) right);
+			} else if (left instanceof Short) {
+				comp = ((Short) left).compareTo((Short) right);
+			} else if (left instanceof Byte) {
+				comp = ((Byte) left).compareTo((Byte) right);
+			} else if (left instanceof String) {
+				comp = ((String) left).compareTo((String) right);
+			} else {
+				comp = 0;
+			}
+		} catch (Exception e) {
+			return 0;
+		}
+		return comp;
+	}
+
+	private Object shit(Object left, String op, Object right) {
+
+		if (op.equalsIgnoreCase("LIKE")) {
+			// like运算符（字符串匹配）
+			return (left.toString()).contains(right.toString()) ? 1 : 0;
+		} else if (op.equals("<") || op.equals(">") || op.equals("==") || //
+				op.equals("<=") || op.equals(">=")) {
+			// 比较运算符
+			int comp = comp(left, right);
+
+			if (op.equals("<")) {
+				return comp < 0 ? 1 : 0;
+			} else if (op.equals(">")) {
+				return comp > 0 ? 1 : 0;
+			} else if (op.equals("==")) {
+				return comp == 0 ? 1 : 0;
+			} else if (op.equals("<=")) {
+				return comp > 0 ? 0 : 1;
+			} else if (op.equals(">=")) {
+				return comp < 0 ? 0 : 1;
+			} else if (op.equals("!=")) {
+				return comp == 0 ? 0 : 1;
+			} else {
+				return 0;
+			}
+		} else if (op.equals("&&")) {
+			int comp1 = comp(left, 0);
+			int comp2 = comp(right, 0);
+			return (comp1 > 0) && (comp2 > 0) ? 1 : 0;
+		} else if (op.equals("||")) {
+			int comp1 = comp(left, 0);
+			int comp2 = comp(right, 0);
+			return (comp1 > 0) || (comp2 > 0) ? 1 : 0;
+		} else {
+			return 0;
+		}
+	}
+
+	public Object compute() {
+		if (t.equals(TYPE_EXP)) {
+			// 二元表达式
+			Object left = ps.get(0);
+			Object right = ps.get(1);
+
+			Object leftValue;
+			if (left instanceof EXP) {
+				leftValue = ((EXP) left).compute();
+			} else {
+				// 最终左参数，变量表达式
+				leftValue = getValue(left);
+			}
+
+			Object rightValue;
+			if (right instanceof EXP) {
+				rightValue = ((EXP) right).compute();
+			} else {
+				if (StringUtils.trim((String) right).equals("?")) {
+					// 替换？，合并参数
+					rightValue = getValue(args[0]);
+				} else {
+					rightValue = getValue(right);
+				}
+
+			}
+			Object ret = shit(leftValue, op, rightValue);
+			System.out.println(StringUtils.join("--- ", leftValue, op, rightValue, "=", ret));
+			return ret;
+		} else {
+			// 函数或其它
+
+			// 将表达式中的？号替换成参数
+			List<Object> argList = new ArrayList<>();
+			if (ps != null && ps.size() > 0) {
+				int argIndex = 0;
+				for (int i = 0; i < ps.size(); i++) {
+					Object p = ps.get(i);
+					if (StringUtils.trim((String) p).equals("?")) {
+						// 替换？，合并参数
+						argList.add(args[argIndex++]);
+					} else {
+						argList.add(p);
+					}
+				}
+			}
+			Object ret = execMethod(op, argList);
+			System.out.println("--- " + op + "=" + ret);
+			return ret;
+		}
+	}
+
+	private Object execMethod(String method, List<Object> args) {
+		if (method.equals("getTableField")) {
+			String tableName = (String) args.get(0);
+			String fieldName = (String) args.get(1);
+
+			return getTableField(tableName, fieldName);
+		} else {
+			return 0;
+		}
+	}
+
+	private Object getTableField(String tableName, String fieldName) {
+
+		// System.out.println(StringUtils.join("getTableField>", tableName, ">",
+		// fieldName));
+
+		return 123;
 	}
 
 	public void toSQL(StringBuffer sb, List<Object> params) throws ServerException {

@@ -99,8 +99,13 @@ public class ProcessActivity {
 
 		/**
 		 * 规则引擎脚本</br>
+		 * [</br>
+		 * {exp:"expDefault",target:"{{activityId}}"},</br>
+		 * {exp:{{EXP}},target:"{{activityId}}"},</br>
+		 * {exp:{{EXP}},target:"{{activityId}}"},</br>
+		 * ]</br>
 		 */
-		public String rule;// if(form.123.money > 300)goto target1 else goto target2
+		public String rule;
 
 	}
 
