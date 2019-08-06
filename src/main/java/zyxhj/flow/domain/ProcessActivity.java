@@ -57,6 +57,12 @@ public class ProcessActivity {
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte active;
+	
+	/**
+	 * 	是否第一个节点
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte first;
 
 	/**
 	 * 时间，小时为单位

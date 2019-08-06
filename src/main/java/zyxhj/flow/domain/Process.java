@@ -2,6 +2,8 @@ package zyxhj.flow.domain;
 
 import java.util.Date;
 
+import com.alibaba.fastjson.JSONObject;
+
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
@@ -67,4 +69,5 @@ public class Process {
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte active;
+	
 }
