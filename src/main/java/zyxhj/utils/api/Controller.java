@@ -710,8 +710,8 @@ public abstract class Controller {
 				temp = "null";
 			}
 
-			sb.append("\t").append(key).append("\t\t< ").append(temp).append(verify ? " -verify" : "").append(" >")
-					.append("\t").append(des).append(ln);
+			sb.append("\t").append(key).append("\t\t--").append(des).append("\t\t< ").append(temp)
+					.append(verify ? " -verify" : "").append(" >").append(ln);
 		}
 	}
 
