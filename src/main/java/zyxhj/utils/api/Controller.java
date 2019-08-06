@@ -711,7 +711,7 @@ public abstract class Controller {
 			}
 
 			sb.append("\t").append(key).append("\t\t< ").append(temp).append(verify ? " -verify" : "").append(" >")
-					.append(ln);
+					.append("\t").append(des).append(ln);
 		}
 	}
 
