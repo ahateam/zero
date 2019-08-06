@@ -294,7 +294,7 @@ public class FlowProcessServiceTest {
 		String remark = "测试流程实例";
 
 		try {
-			processService.createProcess(400638318999538L, 400638319630067L, title, remark);
+//			processService.createProcess(400638318999538L, 400638319630067L, title, remark);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -414,7 +414,12 @@ public class FlowProcessServiceTest {
 		System.out.println(a);
 		
 	}
-	
+	@Test
+	public void getProcessInfoTest() throws Exception {
+		JSONObject js = processService.getProcessInfo(400654738395523L, 400653991921355L);
+		System.out.println(js.toString());
+		
+	}
 	
 	
 	

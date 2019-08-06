@@ -163,12 +163,22 @@ public class FlowService extends Controller {
 	}
 
 	@POSTAPI(path = "delPD", //
-			des = "删除流程定义", //
+			des = "删除流程定义,将下属流程节点物理删除,将与流程定义、流程节点关联的资产定义数据物理删除", //
 			ret = "更新影响的记录行数")
 	public int delPD(@P(t = "流程定义编号") Long pdId) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-//			return definitionRepository.deleteByKey(conn, "id", pdId);
-			return definitionRepository.delete(conn, EXP.ins().andKey("id", pdId));
+			int status = definitionRepository.delete(conn, EXP.ins().andKey("id", pdId));
+			assetDescRepository.delete(conn, EXP.ins().key("owner_id", pdId));
+			if(status>0) {
+				List<ProcessActivity> palist = activityRepository.getList(conn, EXP.ins().key("pd_id", pdId), null, null, "id");
+				if(palist.size()>0) {
+					for(ProcessActivity pa : palist) {
+						assetDescRepository.delete(conn, EXP.ins().key("owner_id", pa.id));
+					}
+				}
+				activityRepository.delete(conn, EXP.ins().key("pd_id", pdId));
+			}
+			return status;
 		}
 	}
 
@@ -214,11 +224,27 @@ public class FlowService extends Controller {
 		pa.receivers = receivers;
 		pa.actions = actions;
 		pa.active = ProcessActivity.ACTIVE_DELETE_N;
-
+		pa.first = 0;
+		
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			activityRepository.insert(conn, pa);
 		}
 		return pa.id;
+	}
+	
+	@POSTAPI(//
+			path = "setFirstActivity", //
+			des = "设置起始节点" //
+			)//
+	public void setFirstActivity(
+			@P(t = "流程节点编号") Long activityId
+			) throws Exception {
+		ProcessActivity pa = new ProcessActivity();
+		pa.first = 1;
+		
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			activityRepository.update(conn, EXP.ins().key("id", activityId), pa, true);
+		}
 	}
 
 	/**

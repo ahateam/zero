@@ -20,6 +20,7 @@ import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessActivity.Action;
 import zyxhj.flow.domain.ProcessAsset;
+import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
 import zyxhj.flow.repository.DepartmentRepository;
 import zyxhj.flow.repository.ProcessActivityRepository;
@@ -46,7 +47,8 @@ public class ProcessService extends Controller {
 	private ProcessActivityRepository activityRepository;
 	private ProcessLogRepository processLogRepository;
 	private ProcessAssetRepository processAssetRepository;
-
+	private ProcessDefinitionRepository definitionRepository;
+	
 	public ProcessService(String node) {
 		super(node);
 		try {
@@ -56,6 +58,7 @@ public class ProcessService extends Controller {
 			activityRepository = Singleton.ins(ProcessActivityRepository.class);
 			processLogRepository = Singleton.ins(ProcessLogRepository.class);
 			processAssetRepository = Singleton.ins(ProcessAssetRepository.class);
+			definitionRepository = Singleton.ins(ProcessDefinitionRepository.class);
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -72,7 +75,6 @@ public class ProcessService extends Controller {
 			ret = "Process实例")
 	public Process createProcess(//
 			@P(t = "流程定义编号") Long pdId, //
-			@P(t = "流程节点编号") Long activityId, //
 			@P(t = "流程标题") String title, //
 			String remark//
 	) throws Exception {
@@ -80,7 +82,6 @@ public class ProcessService extends Controller {
 		pro.pdId = pdId;
 		pro.id = IDUtils.getSimpleId();
 		pro.title = title;
-		pro.currActivityId = activityId;
 		pro.timestamp = new Date();
 		pro.remark = remark;
 		pro.state = Process.STATE_USING;
@@ -91,7 +92,43 @@ public class ProcessService extends Controller {
 		}
 		return pro;
 	}
-
+	
+	@POSTAPI(//
+			path = "getProcessInfo", //
+			des = "得到流程实例所需数据Process，Activity，definition信息", //
+			ret = "Process实例")
+	public JSONObject getProcessInfo(
+			@P(t = "流程定义编号") Long processId,//
+			@P(t = "流程节点编号,可以传空，当activity编号为空时，节点信息为获取起始节点", r = false) Long activityId
+			) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			
+			Process p = processRepository.get(conn, EXP.ins().key("id", processId));
+			
+			ProcessDefinition pd = definitionRepository.get(conn, EXP.ins().key("id", p.pdId));
+			ProcessActivity pa;
+			JSONObject json = new JSONObject();
+			json.put("process", p);
+			if( pd!=null ) {
+			
+				json.put("Definition", pd);
+				
+				if(activityId == null) {
+					pa = activityRepository.get(conn, EXP.ins().key("pd_id", p.pdId).andKey("first", 1).andKey("active", 0));
+				}else {
+					pa = activityRepository.get(conn, EXP.ins().key("pd_id", p.pdId).andKey("id", activityId).andKey("first", 0).andKey("active", 0));                          
+				}
+				
+				if(pa!=null) {
+					System.out.println("1233465");
+					json.put("Activity", pa);
+				}
+			}
+			return json;
+		}
+	}
+	
+	
 	@POSTAPI(//
 			path = "editProcess", //
 			des = "编辑流程实例（Process）", //
@@ -162,8 +199,22 @@ public class ProcessService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			List<Process> p = processRepository.getList(conn, EXP.ins().key("id", id), 1, 0);
+			List<Process> p = processRepository.getList(conn, EXP.ins().key("id", id).inOrdered(" ORDER BY timestamp DESC ", null), 1, 0);
 			return p.get(0);
+		}
+	}
+	
+	@POSTAPI(//
+			path = "getProcessList", //
+			des = "获取所有流程实例", //
+			ret = "List<Process>"
+			)//
+	public List<Process> getProcessList(
+			Integer count,
+			Integer offset
+			)throws Exception{
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return processRepository.getList(conn, null, count, offset);
 		}
 	}
 
@@ -298,8 +349,8 @@ public class ProcessService extends Controller {
 			@P(t = "流程节点Activity编号") Long activityId, //
 			@P(t = "资产类型") String type, //
 			@P(t = "资产名称") String name, //
-			@P(t = "附件编号，可扩展") Long annexId, //
-			@P(t = "是否必须") Boolean necessary//
+			@P(t = "附件编号，可扩展") Long annexId,//
+			@P(t = "附件编号，可扩展") Long descId//s
 	) throws Exception {
 		return createAsset(ProcessAsset.TYPE_ACTIVITY, activityId, name, annexId);
 	}
