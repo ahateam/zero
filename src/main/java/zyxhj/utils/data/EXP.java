@@ -820,10 +820,6 @@ public class EXP implements Cloneable {
 		}
 	}
 
-	private Object getValue(Object p) {
-		return p;
-	}
-
 	private int comp(Object left, Object right) {
 		int comp = 0;
 		try {
@@ -897,7 +893,7 @@ public class EXP implements Cloneable {
 				leftValue = ((EXP) left).compute();
 			} else {
 				// 最终左参数，变量表达式
-				leftValue = getValue(left);
+				leftValue = left;
 			}
 
 			Object rightValue;
@@ -906,9 +902,9 @@ public class EXP implements Cloneable {
 			} else {
 				if (StringUtils.trim((String) right).equals("?")) {
 					// 替换？，合并参数
-					rightValue = getValue(args[0]);
+					rightValue = args[0];
 				} else {
-					rightValue = getValue(right);
+					rightValue = right;
 				}
 
 			}

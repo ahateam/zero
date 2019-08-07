@@ -464,6 +464,8 @@ public class EXPTest {
 				String pstr = JSON.toJSONString(params);
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(), "JSON_CONTAINS(tags, '\"temp\"','$.group1')");
 			}
 
 			{
@@ -476,6 +478,8 @@ public class EXPTest {
 				String pstr = JSON.toJSONString(params);
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
+
+				Assert.assertEquals(sb.toString(), "JSON_CONTAINS(tags, '234','$.group1')");
 			}
 
 		} catch (ServerException e) {
@@ -486,14 +490,39 @@ public class EXPTest {
 
 	@Test
 	public void testScript() throws ServerException {
-		EXP e = EXP.ins().exp(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), ">", "?", 3)
-				.and(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), "LIKE", "?", "4");
-		StringBuffer sb = new StringBuffer();
-		e.toEXP(sb);
-		
-		System.out.println(e.compute());
 
-		String str = sb.toString();
-		System.out.println("===" + str);
+		{
+			EXP e = EXP.ins().exp(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), ">", "?", 3)
+					.and(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), "LIKE", "?", "4");
+			StringBuffer sb = new StringBuffer();
+			e.toEXP(sb);
+
+			Object ret = e.compute();
+			System.out.println(ret);
+
+			String str = sb.toString();
+			System.out.println("===" + str);
+
+			Assert.assertEquals(sb.toString(),
+					"getTableField(tableId,fieldName) > 3 && (getTableField(tableId,fieldName) LIKE 4)");
+			Assert.assertEquals(0, ret);
+		}
+
+		{
+			EXP e = EXP.ins().exp(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), ">", "?", 3)
+					.and(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), "LIKE", "?", "23");
+			StringBuffer sb = new StringBuffer();
+			e.toEXP(sb);
+
+			Object ret = e.compute();
+			System.out.println(ret);
+
+			String str = sb.toString();
+			System.out.println("===" + str);
+
+			Assert.assertEquals(sb.toString(),
+					"getTableField(tableId,fieldName) > 3 && (getTableField(tableId,fieldName) LIKE 23)");
+			Assert.assertEquals(1, ret);
+		}
 	}
 }
