@@ -60,28 +60,6 @@ public class FlowProcessServiceTest {
 	private static final String moduleKey = "测试平台1";
 
 	/**
-	 * 创建流程定义
-	 */
-	@Test
-	public void testCreatePD() {
-
-		JSONArray tags = new JSONArray();
-		tags.add("测试1");
-		tags.add("测试2");
-
-		JSONArray lanes = new JSONArray();
-		lanes.add("测试泳道名称1");
-		lanes.add("测试泳道名称2");
-
-		try {
-			flowService.createPD(moduleKey, "testTitle", tags, lanes);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		System.out.println("添加流程实例成功");
-	}
-
-	/**
 	 * 查询所有流程定义
 	 */
 	@Test
@@ -91,9 +69,9 @@ public class FlowProcessServiceTest {
 
 			System.out.println("流程实例集合长度：" + jo.size());
 		} catch (Exception e) {
-			
+
 			e.printStackTrace();
-			
+
 		}
 	}
 
@@ -173,39 +151,6 @@ public class FlowProcessServiceTest {
 	/**
 	 * 创建流程节点
 	 */
-	@Test
-	public void testCreatePDActivity() {
-
-		List<Receiver> receivers = new ArrayList<ProcessActivity.Receiver>();
-
-		Receiver r = new Receiver();
-		r.type = Receiver.TYPE_DEPARTMENT;
-		r.id = IDUtils.getSimpleId();
-		r.label = "测试部门";
-		r.remark = "单元测试Receiver数据";
-
-		receivers.add(r);
-
-		List<Action> actions = new ArrayList<ProcessActivity.Action>();
-
-		Action a = new Action();
-		a.label = "测试提交";
-		a.type = Action.TYPE_ACCEPT;
-		a.rule = "if(form.xxx.money > 100000 && form.xxx.money < 1000000) { goto path1 } else { goto path2 }";
-
-		actions.add(a);
-
-		JSONArray jsona = JSONArray.parseArray(JSON.toJSONString(actions));
-
-		System.out.println(jsona);
-		try {
-			Long id = flowService.createPDActivity(pdId, "testActivityTitle2", "part2", "", "");
-
-			System.out.println("添加流程节点成功+" + id);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * 修改流程节点数据
@@ -294,7 +239,8 @@ public class FlowProcessServiceTest {
 		String remark = "测试流程实例";
 
 		try {
-//			processService.createProcess(400638318999538L, 400638319630067L, title, remark);
+			// processService.createProcess(400638318999538L, 400638319630067L, title,
+			// remark);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -306,8 +252,8 @@ public class FlowProcessServiceTest {
 	@Test
 	public void testEditProcess() {
 		try {
-			int state = processService.editProcess(400654738395523L, 400638318999538L, 400638319630067L, "修改流程实例数据", "修改流程实例",
-					new Byte("1"));
+			int state = processService.editProcess(400654738395523L, 400638318999538L, 400638319630067L, "修改流程实例数据",
+					"修改流程实例", new Byte("1"));
 			System.out.println("修改流程实例数据状态：" + state);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -331,22 +277,6 @@ public class FlowProcessServiceTest {
 	}
 
 	/**
-	 * 创建流程实例记录
-	 */
-	@Test
-	public void testCreateProcessLog() {
-		JSONObject ext = new JSONObject();
-		ext.put("msg", "测试扩展dfsdfsd数据");
-
-		try {
-			processService.createProcessLog(400654738395523L, "TestTitle6", 400159724862966L, "测试用户", "测试动作", "测试动作说明",
-					ext);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * 获取所有流程实例记录
 	 */
 	@Test
@@ -365,26 +295,16 @@ public class FlowProcessServiceTest {
 
 	}
 
-	/**
-	 * 	ProcessAssetDesc
-	 * @throws Exception 
-	 */
-	
-	@Test
-	public void testCreateAssetDesc() throws Exception {
-		flowService.createAssetDesc(activityId, "form", "测试资产定义", true, "测试创建资产定义","","");
-	}
-	
 	@Test
 	public void testEditAssetDesc() {
-		
+
 		try {
-			flowService.editAssetDesc(activityId, 400506106929216L, "FILE", "测试资产定义1", false, "测试修改资产定义","","");
+			flowService.editAssetDesc(activityId, 400506106929216L, "FILE", "测试资产定义1", false, "测试修改资产定义", "", "");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	public void testDelAssetDesc() {
 		JSONArray j = new JSONArray();
@@ -393,36 +313,32 @@ public class FlowProcessServiceTest {
 		System.out.println(j);
 		flowService.delAssetDesc(j);
 	}
-	
+
 	@Test
 	public void testQueryAssetDescList() throws Exception {
 		List<ProcessAssetDesc> pad = flowService.getAssetDescList(activityId, 20, 0);
 		System.out.println(pad.size());
 	}
-	
-	
+
 	@Test
 	public void testQueryUserList() throws Exception {
-		
+
 		List<User> ulist = flowService.getUserList(count, offset);
-		
+
 		JSONArray a = new JSONArray();
 		a.add(new ProcessAssetDesc());
 		a.add(new ProcessAssetDesc());
 		a.add(new ProcessAssetDesc());
 		a.add(new ProcessAssetDesc());
 		System.out.println(a);
-		
+
 	}
+
 	@Test
 	public void getProcessInfoTest() throws Exception {
-		JSONObject js = processService.getProcessInfo(400654738395523L, 400653991921355L);
+		JSONObject js = processService.getProcessInfo(400654738395523L);
 		System.out.println(js.toString());
-		
+
 	}
-	
-	
-	
-	
-	
+
 }

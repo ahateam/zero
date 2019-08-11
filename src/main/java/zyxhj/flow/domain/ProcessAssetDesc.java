@@ -1,5 +1,7 @@
 package zyxhj.flow.domain;
 
+import zyxhj.utils.data.AnnDic;
+import zyxhj.utils.data.AnnDicField;
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
@@ -10,10 +12,21 @@ import zyxhj.utils.data.rds.RDSAnnID;
 @RDSAnnEntity(alias = "tb_process_asset_desc")
 public class ProcessAssetDesc {
 
-	// public static final String TYPE_ANNEX = "annex";
-	public static final String TYPE_TABLE = "table";
-	public static final String TYPE_REPORT = "report";
-	public static final String TYPE_FILE = "file";
+	@AnnDic
+	public static final class TYPE {
+
+		@AnnDicField(alias = "表格")
+		public static final String TABLE = "table";
+
+		@AnnDicField(alias = "报表")
+		public static final String REPORT = "report";
+
+		@AnnDicField(alias = "文件")
+		public static final String FILE = "file";
+
+		@AnnDicField(alias = "附件")
+		public static final String ANNEX = "annex";
+	}
 
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)

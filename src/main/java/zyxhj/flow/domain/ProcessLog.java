@@ -80,6 +80,6 @@ public class ProcessLog {
 	 * 例如操作部门或其它信息，存放于此
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public JSONObject ext;
+	public String ext;
 
 }

@@ -1,5 +1,6 @@
 package zyxhj.flow.domain;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.utils.data.rds.RDSAnnEntity;
@@ -9,8 +10,6 @@ import zyxhj.utils.data.rds.RDSAnnID;
 @RDSAnnEntity(alias = "tb_process_activity")
 public class ProcessActivity {
 
-	public static final Byte ACTIVE_DELETE_N = 0;// 使用中
-	public static final Byte ACTIVE_DELETE_Y = 1;// 已删除
 	/**
 	 * 所属PD编号
 	 */
@@ -57,12 +56,6 @@ public class ProcessActivity {
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte active;
-	
-	/**
-	 * 	是否第一个节点
-	 */
-	@RDSAnnField(column = RDSAnnField.BYTE)
-	public Byte first;
 
 	/**
 	 * 时间，小时为单位
@@ -106,12 +99,12 @@ public class ProcessActivity {
 		/**
 		 * 规则引擎脚本</br>
 		 * [</br>
-		 * {exp:"expDefault",target:"{{activityId}}"},</br>
-		 * {exp:{{EXP}},target:"{{activityId}}"},</br>
-		 * {exp:{{EXP}},target:"{{activityId}}"},</br>
+		 * {exp:"expDefault",target:"activityId"},</br>
+		 * {exp:(EXP...),target:"activityId"},</br>
+		 * {exp:(EXP...),target:"activityId"},</br>
 		 * ]</br>
 		 */
-		public String rule;
+		public JSONArray rules;
 
 	}
 

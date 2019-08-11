@@ -89,7 +89,7 @@ public class UserService {
 	 */
 	public User registByNameAndPwd(DruidPooledConnection conn, String name, String pwd) throws Exception {
 		// 判断用户是否存在
-		User existUser = userRepository.get(conn, EXP.ins().key("name", name));
+		User existUser = userRepository.get(conn, EXP.INS().key("name", name));
 		if (null == existUser) {
 			// 用户不存在
 			User newUser = new User();
@@ -112,7 +112,7 @@ public class UserService {
 
 	public LoginBo loginByNameAndPwd(DruidPooledConnection conn, String name, String pwd) throws Exception {
 		// 判断用户是否存在
-		User existUser = userRepository.get(conn, EXP.ins().key("name", name));
+		User existUser = userRepository.get(conn, EXP.INS().key("name", name));
 		if (null == existUser) {
 			// 用户不存在
 			throw new ServerException(BaseRC.USER_NOT_EXIST);
@@ -129,53 +129,53 @@ public class UserService {
 	}
 
 	public User getUserById(DruidPooledConnection conn, Long userId) throws Exception {
-		return userRepository.get(conn, EXP.ins().key("id", userId));
+		return userRepository.get(conn, EXP.INS().key("id", userId));
 	}
 
 	public User getUserByName(DruidPooledConnection conn, String name) throws Exception {
-		return userRepository.get(conn, EXP.ins().key("name", name));
+		return userRepository.get(conn, EXP.INS().key("name", name));
 	}
 
 	public User getUserByMobile(DruidPooledConnection conn, String mobile) throws Exception {
-		return userRepository.get(conn, EXP.ins().key("mobile", mobile));
+		return userRepository.get(conn, EXP.INS().key("mobile", mobile));
 	}
 
 	public User getUserByEmail(DruidPooledConnection conn, String email) throws Exception {
-		return userRepository.get(conn, EXP.ins().key("email", email));
+		return userRepository.get(conn, EXP.INS().key("email", email));
 	}
 
 	public User getUserByQQOpenId(DruidPooledConnection conn, String qqOpenId) throws Exception {
-		return userRepository.get(conn, EXP.ins().key("qq_open_id", qqOpenId));
+		return userRepository.get(conn, EXP.INS().key("qq_open_id", qqOpenId));
 	}
 
 	public User getUserByWxOpenId(DruidPooledConnection conn, String wxOpenId) throws Exception {
-		return userRepository.get(conn, EXP.ins().key("wx_open_id", wxOpenId));
+		return userRepository.get(conn, EXP.INS().key("wx_open_id", wxOpenId));
 	}
 
 	public User getUserByWbOpenId(DruidPooledConnection conn, String wbOpenId) throws Exception {
-		return userRepository.get(conn, EXP.ins().key("wb_open_id", wbOpenId));
+		return userRepository.get(conn, EXP.INS().key("wb_open_id", wbOpenId));
 	}
 
 	public void setUserNickname(DruidPooledConnection conn, Long userId, String nickname) throws Exception {
 		User forUpdate = new User();
 		forUpdate.nickname = nickname;
-		userRepository.update(conn,EXP.ins().key("id", userId), forUpdate, true);
+		userRepository.update(conn,EXP.INS().key("id", userId), forUpdate, true);
 		
 	}
 
 	public void setUserSignature(DruidPooledConnection conn, Long userId, String signature) throws Exception {
 		User forUpdate = new User();
 		forUpdate.signature = signature;
-		userRepository.update(conn,EXP.ins().key("id", userId), forUpdate, true);
+		userRepository.update(conn,EXP.INS().key("id", userId), forUpdate, true);
 	}
 
 	public int deleteUserById(DruidPooledConnection conn, Long userId) throws Exception {
-		return userRepository.delete(conn, EXP.ins().key("id", userId));
+		return userRepository.delete(conn, EXP.INS().key("id", userId));
 	}
 
 	public User auth(DruidPooledConnection conn, Long userId) throws Exception {
 		// 先判断user是否存在
-		User user = userRepository.get(conn, EXP.ins().key("id", userId));
+		User user = userRepository.get(conn, EXP.INS().key("id", userId));
 		if (null == user) {
 			// user不存在
 			throw new ServerException(BaseRC.USER_NOT_EXIST);
@@ -210,14 +210,14 @@ public class UserService {
 		User u = new User();
 		u.id = userId;
 		u.idNumber = newIdNumber;// 身份证已添加唯一索引，无需再判断身份证号码是否重复
-		userRepository.update(conn,EXP.ins().key("id", userId), u, true);
+		userRepository.update(conn,EXP.INS().key("id", userId), u, true);
 		return u;
 	}
 
 	// 微信登录
 	public User loginByWxOpenId(DruidPooledConnection conn, String wxOpenId, String name, String ext) throws Exception {
 
-		User user = userRepository.get(conn, EXP.ins().key("wx_open_id", wxOpenId));
+		User user = userRepository.get(conn, EXP.INS().key("wx_open_id", wxOpenId));
 
 		if (user == null) {
 			// 创建用户
@@ -247,7 +247,7 @@ public class UserService {
 		u.name = name;
 		u.mobile = mobile;
 		u.email = email;
-		return userRepository.update(conn,EXP.ins().key("id", userId), u, true);
+		return userRepository.update(conn,EXP.INS().key("id", userId), u, true);
 	}
 
 }

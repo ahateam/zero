@@ -7,29 +7,26 @@ import zyxhj.utils.data.rds.RDSAnnID;
 @RDSAnnEntity(alias = "tb_process_asset")
 public class ProcessAsset {
 
-	public static final Byte TYPE_DEFINITON = 0;
-	public static final Byte TYPE_ACTIVITY = 1;
-	
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
-	
-	@RDSAnnField(column = RDSAnnField.BYTE)
-	public Byte type;
 
-	@RDSAnnField(column = RDSAnnField.ID)
-	public Long ownerId;
-	
+	/**
+	 * 所属流程编号
+	 */
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long processId;
 
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String name;
 
-	@RDSAnnField(column = RDSAnnField.ID)
-	public Long annexId;
-	
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String descType;
+
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long descId;
+
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public String src;
 
 }

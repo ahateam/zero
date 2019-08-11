@@ -45,7 +45,7 @@ public class SimpleQuery extends Controller {
 		if (key == null || value == null) {
 			return new ArrayList<>();
 		} else {
-			EXP exp = EXP.ins().exp(StringUtils.join("{{", key, "}}"), "=", value);
+			EXP exp = EXP.INS().exp(StringUtils.join("{{", key, "}}"), "=", value);
 			return getListByQuery(className, exp, count, offset, selections);
 		}
 	}
@@ -56,7 +56,7 @@ public class SimpleQuery extends Controller {
 			return new ArrayList<>();
 		} else {
 			int size = keys.size();
-			EXP exp = EXP.ins();
+			EXP exp = EXP.INS();
 			for (int i = 0; i < size; i++) {
 				String key = keys.getString(i);
 				String value = values.getString(i);

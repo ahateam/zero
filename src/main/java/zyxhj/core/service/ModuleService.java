@@ -71,7 +71,7 @@ public class ModuleService extends Controller {
 		renew.name = name;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return moduleRepository.update(conn,EXP.ins().key("key", key), renew, true);
+			return moduleRepository.update(conn,EXP.INS().key("key", key), renew, true);
 			
 		}
 	}

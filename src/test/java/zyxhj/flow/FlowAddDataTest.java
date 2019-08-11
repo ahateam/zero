@@ -1,7 +1,6 @@
 package zyxhj.flow;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.AfterClass;
@@ -9,18 +8,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.service.UserRoleService;
 import zyxhj.core.service.UserService;
-import zyxhj.flow.domain.Annex;
 import zyxhj.flow.domain.ProcessAssetDesc;
-import zyxhj.flow.domain.TableSchema;
-import zyxhj.flow.domain.TableSchema.Column;
 import zyxhj.flow.service.AnnexService;
-import zyxhj.flow.service.DepartmentService;
 import zyxhj.flow.service.FlowService;
 import zyxhj.flow.service.TableService;
 import zyxhj.utils.Singleton;
@@ -194,38 +187,6 @@ public class FlowAddDataTest {
 		// annexService.createAnnex(400522524221882L, "预算申请表", Annex.TYPE_FILE, data,
 		// tags);
 
-	}
-
-	@Test
-	public void testAddTableSchemaData() throws Exception {
-
-		JSONArray columns = new JSONArray();
-		Column c = new Column();
-		c.name = "applicant";
-		c.alias = "申请人";
-		c.columnType = Column.COLUMN_TYPE_DATA;
-		c.dataType = Column.DATA_TYPE_STRING;
-		c.necessary = true;
-
-		Column c1 = new Column();
-		c1.name = "reviewer";
-		c1.alias = "审核人";
-		c1.columnType = Column.COLUMN_TYPE_DATA;
-		c1.dataType = Column.DATA_TYPE_STRING;
-		c1.necessary = true;
-
-		Column c2 = new Column();
-		c2.name = "applicantTime";
-		c2.alias = "申请时间";
-		c2.columnType = Column.COLUMN_TYPE_DATA;
-		c2.dataType = Column.DATA_TYPE_TIME;
-		c2.necessary = true;
-
-		columns.add(c);
-		columns.add(c1);
-		columns.add(c2);
-
-		tableService.createTableSchema("外勤申请表", TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v(), columns, null);
 	}
 
 	@Test

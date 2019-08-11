@@ -125,50 +125,7 @@ public class FlowTableServiceTest {
 
 	private static final Long queryId = 400281182414740L;
 
-	@Test
-	public void testCreateTableSchema() {
-		Byte type = 1;
-
-		JSONArray columns = new JSONArray();
-
-		for (int i = 0; i < 5; i++) {
-			TableSchema.Column tsc = new TableSchema.Column();
-			tsc.name = "COL" + i;
-			tsc.alias = "第" + i + "列";
-			tsc.columnType = TableSchema.Column.COLUMN_TYPE_DATA;
-			tsc.dataType = TableSchema.Column.DATA_TYPE_INTEGER;
-			tsc.necessary = true;
-
-			JSONObject jo = new JSONObject();
-			jo.put(tsc.name, tsc);
-			columns.add(jo);
-		}
-
-		TableSchema.Column tscTotal = new TableSchema.Column();
-		tscTotal.name = "TOTAL1";
-		tscTotal.alias = "合计1";
-		tscTotal.columnType = TableSchema.Column.COLUMN_TYPE_COMPUTE;
-		tscTotal.dataType = TableSchema.Column.DATA_TYPE_INTEGER;
-		tscTotal.computeFormula = "{{COL1}} + {{COL2}} + {{COL3}} + {{COL4}} + {{COL5}}";
-
-		JSONObject jo = new JSONObject();
-		jo.put(tscTotal.name, tscTotal);
-		columns.add(jo);
-
-		// 为表定义添加标签
-
-		JSONArray tag = new JSONArray();
-
-		tag.add(Tag.SYS_TABLE_SCHEMA_DATA);
-		tag.add(Tag.SYS_TABLE_SCHEMA_APPLICATION);
-
-		try {
-			tableService.createTableSchema("表的别名", type, columns, tag);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+	
 
 	@Test
 	public void testInsertTableData() {
@@ -211,7 +168,7 @@ public class FlowTableServiceTest {
 	@Test
 	public void testCreateTableQuery() throws ServerException {
 
-		EXP exp = EXP.ins().exp("{{COL5}}", "=", 2).and("{{TOTAL1}}", ">", 100);
+		EXP exp = EXP.INS().exp("{{COL5}}", "=", 2).and("{{TOTAL1}}", ">", 100);
 
 		System.out.println(JSON.toJSONString(exp));
 		JSONObject jo = JSON.parseObject(JSON.toJSONString(exp));
@@ -244,12 +201,12 @@ public class FlowTableServiceTest {
 //					EXP.ins().key("alias", "表的别名"), 10, 0);
 
 			List<String> tags = Arrays.asList("sysTag1", "sysTag2", "sysTag3");
-			EXP et = EXP.ins();
+			EXP et = EXP.INS();
 			for (String tag : tags) {
-				et.or(EXP.jsonContains("tags", "$", tag));
+				et.or(EXP.JSON_CONTAINS("tags", "$", tag));
 			}
 
-			List<TableSchema> ts = t.getList(conn, EXP.ins().key("alias", "表的别名").and(et), 10, 0);
+			List<TableSchema> ts = t.getList(conn, EXP.INS().key("alias", "表的别名").and(et), 10, 0);
 
 			for (TableSchema tbs : ts) {
 				System.out.println(tbs.alias);

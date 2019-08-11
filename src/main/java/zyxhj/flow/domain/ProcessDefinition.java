@@ -63,5 +63,15 @@ public class ProcessDefinition {
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public JSONObject visual;
 
+	/**
+	 * 起点Activity编号
+	 */
+	@RDSAnnField(column = RDSAnnField.LONG)
+	public Long startActivityId;
 
+	/**
+	 * 终点Activity编号
+	 */
+	@RDSAnnField(column = RDSAnnField.LONG)
+	public Long endActivityId;
 }

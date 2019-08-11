@@ -2,7 +2,6 @@ package zyxhj.flow.service;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.script.ScriptEngine;
@@ -37,7 +36,6 @@ import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
-import zyxhj.utils.data.rds.RDSUtils;
 
 public class TableService extends Controller {
 
@@ -124,7 +122,7 @@ public class TableService extends Controller {
 			path = "createTableSchema", //
 			des = "创建表结构表TableSchema" //
 	)
-	public void createTableSchema(@P(t = "表名") String alias, //
+	public TableSchema createTableSchema(@P(t = "表名") String alias, //
 			@P(t = "表类型") Byte type, //
 			@P(t = "数据列") JSONArray columns, //
 			@P(t = "标签名称列表") JSONArray tags//
@@ -134,13 +132,14 @@ public class TableService extends Controller {
 		TableSchema ts = new TableSchema();
 		ts.id = IDUtils.getSimpleId();
 		ts.alias = alias;
-		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v();
+		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE;
 
 		ts.columns = columns;
 		ts.tags = tags;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			tableSchemaRepository.insert(conn, ts);
+			return ts;
 		}
 	}
 
@@ -158,30 +157,27 @@ public class TableService extends Controller {
 		ts.alias = alias;
 
 		// TODO 变更类型涉及到数据迁移，目前不做
-		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE.v();
+		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE;
 
 		ts.columns = columns;
 		ts.tags = tags;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableSchemaRepository.update(conn, EXP.ins().key("id", id), ts, true);
+			return tableSchemaRepository.update(conn, EXP.INS().key("id", id), ts, true);
 		}
 
 	}
-	
+
 	@POSTAPI(//
 			path = "delTableSchema", //
 			des = "删除表结构" //
 	)
-	public void delTableSchema(
-			@P(t = "表结构编号") Long id
-			)throws Exception{
+	public void delTableSchema(@P(t = "表结构编号") Long id) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			tableSchemaRepository.delete(conn, EXP.ins().key("id", id));
+			tableSchemaRepository.delete(conn, EXP.INS().key("id", id));
 		}
-		
+
 	}
-	
 
 	@POSTAPI(//
 			path = "getTableSchemaByTags", //
@@ -209,7 +205,7 @@ public class TableService extends Controller {
 	)
 	public TableSchema getTableSchemaById(@P(t = "表结构编号") Long id) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableSchemaRepository.get(conn, EXP.ins().key("id", id));
+			return tableSchemaRepository.get(conn, EXP.INS().key("id", id));
 		}
 	}
 
@@ -230,7 +226,7 @@ public class TableService extends Controller {
 			path = "insertTableData", //
 			des = "添加表数据" //
 	)
-	public void insertTableData(//
+	public TableData insertTableData(//
 			@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "运算表数据") JSONObject data//
 	) throws Exception {
@@ -242,7 +238,7 @@ public class TableService extends Controller {
 
 		// 取出计算列，进行计算
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			TableSchema ts = tableSchemaRepository.getList(conn, EXP.ins().key("id", tableSchemaId), 1, 0).get(0);
+			TableSchema ts = tableSchemaRepository.get(conn, EXP.INS().key("id", tableSchemaId));
 
 			if (ts == null || ts.columns == null || ts.columns.size() <= 0) {
 				// 表结构不存在，抛异常
@@ -252,7 +248,7 @@ public class TableService extends Controller {
 				for (int i = 0; i < ts.columns.size(); i++) {
 					JSONObject jo = ts.columns.getJSONObject(i);
 					String key = jo.keySet().iterator().next();
-					Column c = jo.toJavaObject(Column.class);
+					Column c = jo.getObject(key, Column.class);
 
 					if (c.columnType.equals(TableSchema.Column.COLUMN_TYPE_COMPUTE)) {
 						// 计算列,开始计算
@@ -265,6 +261,7 @@ public class TableService extends Controller {
 				}
 
 				tableDataRepository.insert(conn, td);
+				return td;
 			}
 		}
 	}
@@ -278,7 +275,7 @@ public class TableService extends Controller {
 			@P(t = "表数据") JSONObject data) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			TableData td = tableDataRepository
-					.getList(conn, EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", dataId), 1, 0).get(0);
+					.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId).andKey("id", dataId), 1, 0).get(0);
 			if (td == null) {
 				throw new ServerException(BaseRC.FLOW_FORM_TABLE_DATA_NOT_FOUND);
 			} else {
@@ -286,7 +283,7 @@ public class TableService extends Controller {
 				td.data = data;
 
 				// 取出计算列，进行计算
-				TableSchema ts = tableSchemaRepository.getList(conn, EXP.ins().key("id", tableSchemaId), 1, 0).get(0);
+				TableSchema ts = tableSchemaRepository.getList(conn, EXP.INS().key("id", tableSchemaId), 1, 0).get(0);
 				if (ts == null || ts.columns == null || ts.columns.size() <= 0) {
 					// 表结构不存在，抛异常
 					throw new ServerException(BaseRC.FLOW_FORM_TABLE_SCHEMA_NOT_FOUND);
@@ -307,7 +304,7 @@ public class TableService extends Controller {
 					}
 
 					return tableDataRepository.update(conn,
-							EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", dataId), td, true);
+							EXP.INS().key("table_schema_id", tableSchemaId).andKey("id", dataId), td, true);
 				}
 			}
 		}
@@ -323,7 +320,7 @@ public class TableService extends Controller {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableDataRepository.delete(conn,
-					EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", dataId));
+					EXP.INS().key("table_schema_id", tableSchemaId).andKey("id", dataId));
 		}
 
 	}
@@ -339,7 +336,7 @@ public class TableService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableDataRepository.getList(conn, EXP.ins().key("table_schema_id", tableSchemaId), count, offset);
+			return tableDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId), count, offset);
 		}
 
 	}
@@ -375,7 +372,7 @@ public class TableService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableQueryRepository.getList(conn, EXP.ins().key("table_schema_id", tableSchemaId), count, offset);
+			return tableQueryRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId), count, offset);
 		}
 
 	}
@@ -391,7 +388,7 @@ public class TableService extends Controller {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableQueryRepository.delete(conn,
-					EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", queryId));
+					EXP.INS().key("table_schema_id", tableSchemaId).andKey("id", queryId));
 		}
 
 	}
@@ -410,7 +407,7 @@ public class TableService extends Controller {
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			TableQuery tq = tableQueryRepository
-					.getList(conn, EXP.ins().key("table_schema_id", tableSchemaId).andKey("id", queryId), 1, 0).get(0);
+					.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId).andKey("id", queryId), 1, 0).get(0);
 
 			if (tq == null || tq.queryFormula == null) {
 				throw new ServerException(BaseRC.FLOW_FORM_TABLE_QUERY_NOT_FOUND);
@@ -465,7 +462,7 @@ public class TableService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableVirtualRepository.getList(conn, EXP.ins().key("table_schema_id", tableSchemaId), count, offset);
+			return tableVirtualRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId), count, offset);
 
 		}
 
@@ -484,7 +481,7 @@ public class TableService extends Controller {
 		tv.virtual = virtual;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableVirtualRepository.update(conn, EXP.ins().key("tableSchema_id", tableSchemaId).andKey("id", id),
+			return tableVirtualRepository.update(conn, EXP.INS().key("tableSchema_id", tableSchemaId).andKey("id", id),
 					tv, true);
 
 		}
@@ -501,7 +498,7 @@ public class TableService extends Controller {
 	public int delTableVirtual(@P(t = "表结构编号") Long tableSchemaId, @P(t = "表可视化样式编号") Long id//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableVirtualRepository.delete(conn, EXP.ins().key("tableSchema_id", tableSchemaId).andKey("id", id));
+			return tableVirtualRepository.delete(conn, EXP.INS().key("tableSchema_id", tableSchemaId).andKey("id", id));
 		}
 
 	}

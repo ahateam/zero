@@ -19,15 +19,15 @@ public class EXPTest {
 
 		EXP e1;
 		try {
-			e1 = EXP.ins().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and("t5", "LIKE", "%abc%");
+			e1 = EXP.INS().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and("t5", "LIKE", "%abc%");
 
-			EXP e2 = EXP.ins().exp("tt1", "<>", "?", "a").or("tt2", "=", "?", "b");
+			EXP e2 = EXP.INS().exp("tt1", "<>", "?", "a").or("tt2", "=", "?", "b");
 
-			EXP e3 = EXP.ins().exp("t3", "=", "?", 3).and("t4", "=", "?", 4);
+			EXP e3 = EXP.INS().exp("t3", "=", "?", 3).and("t4", "=", "?", 4);
 
-			EXP exp = EXP.ins().exp(e1, "AND", e3).and(e2);
+			EXP exp = EXP.INS().exp(e1, "AND", e3).and(e2);
 
-			StringBuffer sb = new StringBuffer("WHERE ");
+			StringBuffer sb = new StringBuffer();
 			ArrayList<Object> params = new ArrayList<>();
 			exp.toSQL(sb, params);
 
@@ -54,14 +54,14 @@ public class EXPTest {
 		Object obj = null;
 
 		try {
-			EXP e1 = EXP.ins().exp("t1", "=", "?", 1).and("t2", "=", "?", obj).or("t3", "=", "?", obj);
+			EXP e1 = EXP.INS().exp("t1", "=", "?", 1).and("t2", "=", "?", obj).or("t3", "=", "?", obj);
 		} catch (ServerException e) {
 			// e.printStackTrace();
 			Assert.assertTrue(true);
 		}
 
 		try {
-			EXP e2 = EXP.ins(false).exp("t1", "=", "?", obj).and("t2", "=", "?", "t2").or("t3", "=", "?", obj);
+			EXP e2 = EXP.INS(false).exp("t1", "=", "?", obj).and("t2", "=", "?", "t2").or("t3", "=", "?", obj);
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList<Object> params = new ArrayList<>();
@@ -81,7 +81,7 @@ public class EXPTest {
 	public void testLike() {
 
 		try {
-			EXP e = EXP.ins().exp("t1", "=", "?", 1).and(EXP.like("name", "namestr"));
+			EXP e = EXP.INS().exp("t1", "=", "?", 1).and(EXP.LIKE("name", "namestr"));
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList params = new ArrayList<>();
@@ -98,7 +98,7 @@ public class EXPTest {
 	@Test
 	public void testIn() {
 		try {
-			EXP e = EXP.ins().exp("t1", "=", "?", 1).and(EXP.in("name", 123, 234, "sdf", 3534, 3453, 334));
+			EXP e = EXP.INS().exp("t1", "=", "?", 1).and(EXP.IN("name", 123, 234, "sdf", 3534, 3453, 334));
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList params = new ArrayList<>();
@@ -115,7 +115,7 @@ public class EXPTest {
 	@Test
 	public void testInOrdered() {
 		try {
-			EXP e = EXP.ins().exp("t1", "=", "?", 1).and(EXP.inOrdered("name", 123, 234, "sdf", 3534, 3453, 334));
+			EXP e = EXP.INS().exp("t1", "=", "?", 1).and(EXP.IN_ORDERED("name", 123, 234, "sdf", 3534, 3453, 334));
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList params = new ArrayList<>();
@@ -134,13 +134,13 @@ public class EXPTest {
 	public void testRemove() {
 
 		try {
-			EXP tt = EXP.ins().exp("this is shit", null).or("this is fuck", null);
+			EXP tt = EXP.INS().exp("this is shit", null).or("this is fuck", null);
 
-			EXP exp = EXP.ins().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
+			EXP exp = EXP.INS().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
 
-			EXP exp2 = EXP.ins().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
+			EXP exp2 = EXP.INS().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and(tt);
 
-			EXP expMax = EXP.ins().exp(exp).and(exp2);
+			EXP expMax = EXP.INS().exp(exp).and(exp2);
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList<Object> params = new ArrayList<>();
@@ -164,7 +164,7 @@ public class EXPTest {
 	public void testANDKey() {
 		try {
 			{
-				EXP e = EXP.ins().key("id", 123).andKey("name", "小四");
+				EXP e = EXP.INS().key("id", 123).andKey("name", "小四");
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -179,7 +179,7 @@ public class EXPTest {
 			}
 
 			{
-				EXP e = EXP.ins(false).key("id", null).andKey("name", "小四").andKey("sex", null);
+				EXP e = EXP.INS(false).key("id", null).andKey("name", "小四").andKey("sex", null);
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
 				e.toSQL(sb, params);
@@ -202,7 +202,7 @@ public class EXPTest {
 	public void testORKey() {
 		try {
 			{
-				EXP e = EXP.ins().key("id", 123).orKey("name", "小四");
+				EXP e = EXP.INS().key("id", 123).orKey("name", "小四");
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -217,7 +217,7 @@ public class EXPTest {
 			}
 
 			{
-				EXP e = EXP.ins(false).key("id", null).orKey("name", "小四").orKey("sex", null);
+				EXP e = EXP.INS(false).key("id", null).orKey("name", "小四").orKey("sex", null);
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
 				e.toSQL(sb, params);
@@ -241,7 +241,7 @@ public class EXPTest {
 		try {
 			{
 				// 字符 可重复
-				EXP e = EXP.jsonArrayAppend("arrays", "tag4", true);
+				EXP e = EXP.JSON_ARRAY_APPEND("arrays", "tag4", true);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -258,7 +258,7 @@ public class EXPTest {
 
 			{
 				// 字符 不可重复
-				EXP e = EXP.jsonArrayAppend("arrays", "tag4", false);
+				EXP e = EXP.JSON_ARRAY_APPEND("arrays", "tag4", false);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -275,7 +275,7 @@ public class EXPTest {
 
 			{
 				// 数字 可重复
-				EXP e = EXP.jsonArrayAppend("arrays", 123, true);
+				EXP e = EXP.JSON_ARRAY_APPEND("arrays", 123, true);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -292,7 +292,7 @@ public class EXPTest {
 
 			{
 				// 数字 不可重复
-				EXP e = EXP.jsonArrayAppend("arrays", 123, false);
+				EXP e = EXP.JSON_ARRAY_APPEND("arrays", 123, false);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -317,7 +317,7 @@ public class EXPTest {
 		try {
 			{
 				// 字符 可重复
-				EXP e = EXP.jsonArrayAppendOnKey("tags", "type", "tag4", true);
+				EXP e = EXP.JSON_ARRAY_APPEND_ONKEY("tags", "type", "tag4", true);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -334,7 +334,7 @@ public class EXPTest {
 
 			{
 				// 字符 不可重复
-				EXP e = EXP.jsonArrayAppendOnKey("tags", "type", "tag4", false);
+				EXP e = EXP.JSON_ARRAY_APPEND_ONKEY("tags", "type", "tag4", false);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -351,7 +351,7 @@ public class EXPTest {
 
 			{
 				// 数字 可重复
-				EXP e = EXP.jsonArrayAppendOnKey("tags", "type", 123, true);
+				EXP e = EXP.JSON_ARRAY_APPEND_ONKEY("tags", "type", 123, true);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -368,7 +368,7 @@ public class EXPTest {
 
 			{
 				// 数字 不可重复
-				EXP e = EXP.jsonArrayAppendOnKey("tags", "type", 123, false);
+				EXP e = EXP.JSON_ARRAY_APPEND_ONKEY("tags", "type", 123, false);
 
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
@@ -392,7 +392,7 @@ public class EXPTest {
 	@Test
 	public void testJsonArrayRemove() {
 		try {
-			EXP e = EXP.jsonArrayRemove("arrays", "$", 1);
+			EXP e = EXP.JSON_ARRAY_REMOVE("arrays", "$", 1);
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList<Object> params = new ArrayList<>();
@@ -414,7 +414,7 @@ public class EXPTest {
 	@Test
 	public void testTest() {
 		try {
-			EXP e = EXP.ins().key("id", 123).and(EXP.ins().key("name", "xs").or("age", "<", 18));
+			EXP e = EXP.INS().key("id", 123).and(EXP.INS().key("name", "xs").or("age", "<", 18));
 
 			StringBuffer sb = new StringBuffer();
 			ArrayList<Object> params = new ArrayList<>();
@@ -436,7 +436,7 @@ public class EXPTest {
 	@Test
 	public void tsa() {
 		try {
-			EXP e1 = EXP.ins().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and("t5", ">", 456456);
+			EXP e1 = EXP.INS().exp("t1", "=", "?", 1).and("t2", "=", "?", 2).and("t5", ">", 456456);
 			StringBuffer sb = new StringBuffer();
 			ArrayList<Object> args = new ArrayList<Object>();
 			e1.toSQL(sb, args);
@@ -455,7 +455,7 @@ public class EXPTest {
 	public void testJsonContains() {
 		try {
 			{
-				EXP e = EXP.ins().jsonContains("tags", "$.group1", "temp");
+				EXP e = EXP.INS().JSON_CONTAINS("tags", "$.group1", "temp");
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
 				e.toSQL(sb, params);
@@ -469,7 +469,7 @@ public class EXPTest {
 			}
 
 			{
-				EXP e = EXP.ins().jsonContains("tags", "$.group1", 234);
+				EXP e = EXP.INS().JSON_CONTAINS("tags", "$.group1", 234);
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
 				e.toSQL(sb, params);
@@ -492,8 +492,8 @@ public class EXPTest {
 	public void testScript() throws ServerException {
 
 		{
-			EXP e = EXP.ins().exp(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), ">", "?", 3)
-					.and(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), "LIKE", "?", "4");
+			EXP e = EXP.INS().exp(EXP.INS().exp("getTableField", Arrays.asList("tableId", "fieldName")), ">", "?", 3)
+					.and(EXP.INS().exp("getTableField", Arrays.asList("tableId", "fieldName")), "LIKE", "?", "4");
 			StringBuffer sb = new StringBuffer();
 			e.toEXP(sb);
 
@@ -509,8 +509,8 @@ public class EXPTest {
 		}
 
 		{
-			EXP e = EXP.ins().exp(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), ">", "?", 3)
-					.and(EXP.ins().exp("getTableField", Arrays.asList("tableId", "fieldName")), "LIKE", "?", "23");
+			EXP e = EXP.INS().exp(EXP.INS().exp("getTableField", Arrays.asList("tableId", "fieldName")), ">", "?", 3)
+					.and(EXP.INS().exp("getTableField", Arrays.asList("tableId", "fieldName")), "LIKE", "?", "23");
 			StringBuffer sb = new StringBuffer();
 			e.toEXP(sb);
 
@@ -524,5 +524,20 @@ public class EXPTest {
 					"getTableField(tableId,fieldName) > 3 && (getTableField(tableId,fieldName) LIKE 23)");
 			Assert.assertEquals(1, ret);
 		}
+	}
+
+	@Test
+	public void testAppend() throws ServerException {
+		EXP e = EXP.INS().key("id", 123).append("ORDER BY timestamp DESC");
+		StringBuffer sb = new StringBuffer();
+		ArrayList<Object> params = new ArrayList<>();
+		e.toSQL(sb, params);
+
+		String str = sb.toString();
+		String pstr = JSON.toJSONString(params);
+		System.out.println("===" + str);
+		System.out.println(">>>" + pstr);
+
+		Assert.assertEquals(sb.toString(), "id = ? ORDER BY timestamp DESC");
 	}
 }

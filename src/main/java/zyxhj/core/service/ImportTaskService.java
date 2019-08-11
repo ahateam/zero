@@ -82,7 +82,7 @@ public class ImportTaskService {
 			renew.status = ImportTask.STATUS.FILE_READY.v();
 			renew.fileUrls = JSON.toJSONString(fileUrls);
 
-			return taskRepository.update(conn,EXP.ins().key("origin", origin).andKey("task_id", taskId), renew, true);
+			return taskRepository.update(conn,EXP.INS().key("origin", origin).andKey("task_id", taskId), renew, true);
 			
 		} else {
 			return 0;

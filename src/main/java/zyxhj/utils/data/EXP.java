@@ -59,6 +59,11 @@ public class EXP implements Cloneable {
 	 */
 	private Object[] args;
 
+	/**
+	 * 表达式后的扩展信息
+	 */
+	private String ext;
+
 	private EXP(boolean exact) {
 		this.exact = exact;
 	}
@@ -70,21 +75,21 @@ public class EXP implements Cloneable {
 	 *            是否严谨，true则表达式右参不允许null，false则右参null时自动不添加该表达式</br>
 	 *            (常用于多条件查询，右参null时该表达式无效)
 	 */
-	public static EXP ins(boolean exact) {
+	public static EXP INS(boolean exact) {
 		return new EXP(exact);
 	}
 
 	/**
 	 * 构造EXP实例，默认为严谨表达式
 	 */
-	public static EXP ins() {
+	public static EXP INS() {
 		return new EXP(true);
 	}
 
 	/**
 	 * SQL的 LIKE 语句
 	 */
-	public static EXP like(String key, String str) {
+	public static EXP LIKE(String key, String str) {
 		// LIKE语句中，不支持?号参数
 		return new EXP(false).exp(StringUtils.join(key, " LIKE '%", str, "%'"), null);
 	}
@@ -92,7 +97,7 @@ public class EXP implements Cloneable {
 	/**
 	 * SQL的 IN 语句，例如 where id IN(1,2,3)
 	 */
-	public static EXP in(String key, Object... args) {
+	public static EXP IN(String key, Object... args) {
 		StringBuffer sb = new StringBuffer(key);
 		sb.append(" IN(");
 		for (Object arg : args) {
@@ -107,14 +112,14 @@ public class EXP implements Cloneable {
 	/**
 	 * SQL的 IN 语句（带排序）</br>
 	 */
-	public static EXP inOrdered(String key, Object... args) {
+	public static EXP IN_ORDERED(String key, Object... args) {
 		StringBuffer sb = new StringBuffer(key);
 		sb.append(" IN(");
 		for (Object arg : args) {
 			sb.append("?,");
 		}
 		sb.deleteCharAt(sb.length() - 1);
-		sb.append(") ORDER BY FIND_IN_SET(").append(key).append(",");
+		sb.append(") ORDER BY FIND_IN_SET(").append(key).append(",'");
 
 		for (int i = 0; i < args.length; i++) {
 			Object o = args[i];
@@ -124,7 +129,7 @@ public class EXP implements Cloneable {
 				sb.append(o);
 			}
 		}
-		sb.append(')');
+		sb.append("')");
 
 		return new EXP(false).exp(sb.toString(), null, args);
 	}
@@ -152,7 +157,7 @@ public class EXP implements Cloneable {
 	 * @param duplicate
 	 *            数组是否允许重复
 	 */
-	public static EXP jsonArrayAppend(String column, Object value, boolean duplicate) {
+	public static EXP JSON_ARRAY_APPEND(String column, Object value, boolean duplicate) {
 		String temp = null;
 
 		if (isNumber(value)) {
@@ -206,7 +211,7 @@ public class EXP implements Cloneable {
 	 * @param duplicate
 	 *            数组是否允许重复
 	 */
-	public static EXP jsonArrayAppendOnKey(String column, String key, Object value, boolean duplicate) {
+	public static EXP JSON_ARRAY_APPEND_ONKEY(String column, String key, Object value, boolean duplicate) {
 		String temp = null;
 		if (isNumber(value)) {
 			// 数字，语句中不加引号，但是JSON_CONTAINS中仍然需要单引号
@@ -266,7 +271,7 @@ public class EXP implements Cloneable {
 	 * @param index
 	 *            数组索引编号，从0开始
 	 */
-	public static EXP jsonArrayRemove(String column, String path, int index) {
+	public static EXP JSON_ARRAY_REMOVE(String column, String path, int index) {
 		String temp = StringUtils.join(column, " = JSON_REMOVE(", column, ",'", path, "[", index, "]')");
 		return new EXP(false).exp(temp, null);
 	}
@@ -281,7 +286,7 @@ public class EXP implements Cloneable {
 	 * @param value
 	 *            需要查找的值
 	 */
-	public static EXP jsonContains(String column, String path, Object value) {
+	public static EXP JSON_CONTAINS(String column, String path, Object value) {
 		String temp = null;
 		if (isNumber(value)) {
 			// 数字，语句中不加引号，但是JSON_CONTAINS中仍然需要单引号
@@ -366,6 +371,11 @@ public class EXP implements Cloneable {
 
 			return this;
 		}
+	}
+
+	public EXP append(String ext) {
+		this.ext = ext;
+		return this;
 	}
 
 	protected EXP clone() {
@@ -796,6 +806,10 @@ public class EXP implements Cloneable {
 				} else {
 					sb.append(right);
 				}
+
+				if (StringUtils.isNotBlank(ext)) {
+					sb.append(" ").append(ext);
+				}
 			}
 		} else {
 			// 函数或其它
@@ -816,6 +830,10 @@ public class EXP implements Cloneable {
 					}
 				}
 				sb.append(')');
+
+				if (StringUtils.isNotBlank(ext)) {
+					sb.append(" ").append(ext);
+				}
 			}
 		}
 	}
@@ -988,6 +1006,10 @@ public class EXP implements Cloneable {
 				} else {
 					sb.append(right);
 				}
+
+				if (StringUtils.isNotBlank(ext)) {
+					sb.append(" ").append(ext);
+				}
 			}
 
 			// 添加到参数列表
@@ -1011,6 +1033,11 @@ public class EXP implements Cloneable {
 				}
 				sb.append(')');
 			}
+
+			if (StringUtils.isNotBlank(ext)) {
+				sb.append(" ").append(ext);
+			}
+
 			// 添加到参数列表
 			if (args != null && args.length > 0) {
 				for (Object a : args) {

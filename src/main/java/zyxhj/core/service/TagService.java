@@ -79,7 +79,7 @@ public class TagService extends Controller {
 		renew.remark = remark;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return groupRepository.update(conn,EXP.ins().key("id", id), renew, true);
+			return groupRepository.update(conn,EXP.INS().key("id", id), renew, true);
 			
 		}
 	}
@@ -109,7 +109,7 @@ public class TagService extends Controller {
 			@P(t = "偏移") Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return groupRepository.getList(conn, EXP.ins(false).key("module_key", moduleKey).andKey("type", typeKey),
+			return groupRepository.getList(conn, EXP.INS(false).key("module_key", moduleKey).andKey("type", typeKey),
 					count, offset);
 		}
 	}
@@ -142,7 +142,7 @@ public class TagService extends Controller {
 	)
 	public List<Tag> getTagList(Long groupId, Byte status) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tagRepository.getList(conn, EXP.ins().key("group_id", groupId).andKey("status", status), 512, 0);
+			return tagRepository.getList(conn, EXP.INS().key("group_id", groupId).andKey("status", status), 512, 0);
 		}
 	}
 
@@ -156,7 +156,7 @@ public class TagService extends Controller {
 		renew.status = status;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tagRepository.update(conn,EXP.ins().key("group_id", groupId).andKey("name", name), renew, true);
+			return tagRepository.update(conn,EXP.INS().key("group_id", groupId).andKey("name", name), renew, true);
 			
 		}
 	}

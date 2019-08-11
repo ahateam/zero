@@ -3,7 +3,8 @@ package zyxhj.flow.domain;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import zyxhj.utils.api.Controller.ENUMVALUE;
+import zyxhj.utils.data.AnnDic;
+import zyxhj.utils.data.AnnDicField;
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
@@ -13,30 +14,17 @@ import zyxhj.utils.data.rds.RDSAnnID;
  */
 @RDSAnnEntity(alias = "tb_table_schema")
 public class TableSchema {
-	
-	public static enum TYPE implements ENUMVALUE {
-		QUERY_TABLE((byte) 0, "独立建表模式，可以查询"), //
-		VIRTUAL_QUERY_TABLE((byte) 1, "RDS的JSON内嵌虚拟表模式，可以查询"), //
-		VIRTUAL_TABLE((byte) 2, "TableStore存储，不能查询"), //
-		;
 
-		private byte v;
-		private String txt;
+	@AnnDic
+	public static final class TYPE {
+		@AnnDicField(alias = "独立建表模式，可以查询")
+		public static final Byte QUERY_TABLE = 0;
 
-		private TYPE(Byte v, String txt) {
-			this.v = v;
-			this.txt = txt;
-		}
+		@AnnDicField(alias = "RDS的JSON内嵌虚拟表模式，可以查询")
+		public static final Byte VIRTUAL_QUERY_TABLE = 1;
 
-		@Override
-		public byte v() {
-			return v;
-		}
-
-		@Override
-		public String txt() {
-			return txt;
-		}
+		@AnnDicField(alias = "TableStore存储，不能查询")
+		public static final Byte VIRTUAL_TABLE = 2;
 	}
 
 	@RDSAnnID

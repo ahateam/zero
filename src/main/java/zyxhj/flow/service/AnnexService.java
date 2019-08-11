@@ -76,7 +76,7 @@ public class AnnexService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return annexRepository.delete(conn, EXP.ins().key("owner_id", ownerId).andKey("id", id));
+			return annexRepository.delete(conn, EXP.INS().key("owner_id", ownerId).andKey("id", id));
 		}
 
 	}
@@ -103,7 +103,7 @@ public class AnnexService extends Controller {
 		a.tags = tags;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return annexRepository.update(conn, EXP.ins().key("owner_id", ownerId).andKey("id", id), a, true);
+			return annexRepository.update(conn, EXP.INS().key("owner_id", ownerId).andKey("id", id), a, true);
 		}
 
 	}
@@ -120,7 +120,7 @@ public class AnnexService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return annexRepository.getList(conn, EXP.ins().key("owner_id", ownerId), count, offset);
+			return annexRepository.getList(conn, EXP.INS().key("owner_id", ownerId), count, offset);
 		}
 	}
 
@@ -135,7 +135,7 @@ public class AnnexService extends Controller {
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			List<Annex> a = annexRepository.getList(conn, EXP.ins().key("owner_id", ownerId).andKey("id", id), 1, 0);
+			List<Annex> a = annexRepository.getList(conn, EXP.INS().key("owner_id", ownerId).andKey("id", id), 1, 0);
 			return a.get(0);
 		}
 

@@ -3,11 +3,14 @@ package zyxhj.utils.data.rds;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.test.domain.TestDomain;
 import zyxhj.utils.IDUtils;
@@ -17,6 +20,14 @@ import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
 
 public class RDSRepositoryServiceTest {
+
+	public static class RDSRepositoryTest extends RDSRepository<TestDomain> {
+
+		public RDSRepositoryTest() {
+			super(TestDomain.class);
+		}
+
+	}
 
 	private static DruidPooledConnection conn;
 
@@ -39,152 +50,186 @@ public class RDSRepositoryServiceTest {
 		conn.close();
 	}
 
-	private static final Integer count = 20;
-	private static final Integer offset = 0;
+	@Test
+	public void testTest() throws Exception {
 
-	// @Test
-	public void testInsert() throws Exception {
+		// 插入
+		TestDomain td = testInsert();
+		TestDomain td2 = testInsert();
+
+		try {
+
+			testUpdateByKey(td.id);
+			testUpdateByANDKey(td.id);
+
+			testGetList();
+			testGetListByKey(td.id);
+			testGetListByANDKeys();
+			testGetListByKeyIN(td.id, td2.id);
+
+			testGetListByKeyORDERBY();
+
+			testJsonAppendInArrayAndRemove(td.id);
+			testJsonAppendInArrayOnKeyAndRemove(td.id);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// 删除，避免垃圾数据
+		testDelByKey(td.id);
+		testDelByANDKeys(td2.id);
+
+	}
+
+	private TestDomain testInsert() throws Exception {
 
 		TestDomain t = new TestDomain();
 
 		t.id = IDUtils.getSimpleId();
 		t.name = "123sdaf";
-		t.status = 0;
 		t.year = "45641456asdfasd";
+		t.status = 0;
+
+		JSONArray arr1 = new JSONArray();
+		arr1.add("tag1");
+		arr1.add("tag2");
+		arr1.add("tag3");
+		JSONArray arr2 = new JSONArray();
+		arr2.add("tag7");
+		arr2.add("tag8");
+		arr2.add("tag9");
+		JSONObject jo = new JSONObject();
+		jo.put("group1", arr1);
+		jo.put("group2", arr2);
+
+		t.tags = jo;
+
+		JSONArray array = new JSONArray();
+		array.add("a1");
+		array.add("a2");
+		array.add("a3");
+		array.add("a4");
+
+		t.arrays = array;
 
 		testRepository.insert(conn, t);
 
+		return t;
 	}
 
 	// 完成
-	@Test
-	public void testDelByKey() {
-		try {
-			testRepository.delete(conn, EXP.ins().key("id", 400570032762505L));
-		} catch (ServerException e) {
-			e.printStackTrace();
-		}
-
+	private void testDelByKey(Long id) throws ServerException {
+		int ret = testRepository.delete(conn, EXP.INS().key("id", id));
+		System.out.println(StringUtils.join(">>>>>testDelByKey>", ret));
 	}
 
-	// 完成
-	@Test
-	public void testDelByANDKeys() {
-
-		try {
-			testRepository.delete(conn, EXP.ins().key("id", 400570030610691L).andKey("status", 0));
-		} catch (ServerException e) {
-			e.printStackTrace();
-		}
+	private void testDelByANDKeys(Long id) throws ServerException {
+		int ret = testRepository.delete(conn, EXP.INS().key("id", id).andKey("status", 0));
+		System.out.println(StringUtils.join(">>>>>testDelByANDKeys>", ret));
 	}
 
-	@Test
-	public void testUpdateByKey() throws ServerException {
-
+	private void testUpdateByKey(Long id) throws ServerException {
 		TestDomain t = new TestDomain();
 		t.name = "123sdaf";
 		t.status = 0;
 		t.year = "45641456asdfasd";
 
-		testRepository.update(conn, EXP.ins().key("id", 400570027736826L), t, true);
+		int ret = testRepository.update(conn, EXP.INS().key("id", id), t, true);
+
+		System.out.println(StringUtils.join(">>>>>testUpdateByKey>", ret));
 	}
 
-	@Test
-	public void testUpdateByANDKey() throws ServerException {
+	private void testUpdateByANDKey(Long id) throws ServerException {
 
 		TestDomain t = new TestDomain();
 		t.status = 10;
 		t.year = "测试";
 
-		testRepository.update(conn, EXP.ins().key("id", 400570027736826L).andKey("name", "123sdaf"), t, true);
+		int ret = testRepository.update(conn, EXP.INS().key("id", id).andKey("name", "123sdaf"), t, true);
+		System.out.println(StringUtils.join(">>>>>testUpdateByANDKey>", ret));
 	}
 
-	@Test
-	public void testGetList() {
+	private void testGetList() {
 		try {
-			List<TestDomain> t = testRepository.getList(conn, null, count, offset);
-			System.out.println(t.size());
+			List<TestDomain> t = testRepository.getList(conn, null, 10, 0);
+			System.out.println(StringUtils.join(">>>>>testGetList>", t.size()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	@Test
-	public void testGetListByKey() {
+	private void testGetListByKey(Long id) {
 		try {
-			List<TestDomain> t = testRepository.getList(conn, EXP.ins().exp("id", "<>", 400570027736826L), count,
-					offset);
-			System.out.println(t.size());
+			List<TestDomain> t = testRepository.getList(conn, EXP.INS().exp("id", "<>", id), 10, 0);
+			System.out.println(StringUtils.join(">>>>>testGetListByKey>", t.size()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	@Test
-	public void testGetListByANDKeys() {
+	private void testGetListByANDKeys() {
 		try {
 			List<TestDomain> t = testRepository.getList(conn,
-					EXP.ins().exp("name", "=", "123sdaf").and("status", "=", 0), count, offset);
-			System.out.println(t.size());
+					EXP.INS().exp("name", "=", "123sdaf").and("status", "=", 0), 10, 0);
+			System.out.println(StringUtils.join(">>>>>testGetListByANDKeys>", t.size()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	@Test
-	public void testGetListByKeyIN() {
+	private void testGetListByKeyIN(Long id1, Long id2) {
 		try {
-			List<TestDomain> t = testRepository.getList(conn, EXP.ins().in("status", new Object[] { 1, 3, 5 }), null,
-					null);
-			System.out.println(t.size());
+			List<TestDomain> t = testRepository.getList(conn, EXP.IN_ORDERED("id", new Object[] { id1, id2 }), 10, 0);
+			System.out.println(StringUtils.join(">>>>>testGetListByKeyIN>", t.size()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	@Test
-	public void testGetListByKeyORDERBY() throws ServerException {
+	private void testGetListByKeyORDERBY() throws ServerException {
 		ArrayList<Object> a = new ArrayList<Object>();
 		a.add("123sdaf");
-		List<TestDomain> t = testRepository.getList(conn, "name = ? ORDER BY id desc", a, count, offset);
+		List<TestDomain> t = testRepository.getList(conn, "name = ? ORDER BY id desc", a, 10, 0);
 
 		for (TestDomain t1 : t) {
 			System.out.println(t1.id);
 		}
+		System.out.println(StringUtils.join(">>>>>testGetListByKeyORDERBY>", t.size()));
 	}
 
-	@Test
-	public void testJsonAppendInArrayAndRemove() throws ServerException {
+	private void testJsonAppendInArrayAndRemove(Long id) throws ServerException {
 		{
-			EXP set = EXP.jsonArrayAppend("arrays", "tag1", false);
-			EXP where = EXP.ins().key("id", 400570031730692L);
+			EXP set = EXP.JSON_ARRAY_APPEND("arrays", "tag1", false);
+			EXP where = EXP.INS().key("id", id);
 			int ret = testRepository.update(conn, set, where);
 			System.out.println(ret);
 		}
 
 		{
-			EXP set = EXP.jsonArrayRemove("arrays", "$", 0);
-			EXP where = EXP.ins().key("id", 400570031730692L);
+			EXP set = EXP.JSON_ARRAY_REMOVE("arrays", "$", 0);
+			EXP where = EXP.INS().key("id", id);
 			int ret = testRepository.update(conn, set, where);
 			System.out.println(ret);
 		}
+		System.out.println(StringUtils.join(">>>>>testJsonAppendInArrayAndRemove>"));
 	}
 
-	@Test
-	public void testJsonAppendInArrayOnKeyAndRemove() throws ServerException {
+	private void testJsonAppendInArrayOnKeyAndRemove(Long id) throws ServerException {
 		{
-			EXP set = EXP.jsonArrayAppendOnKey("tags", "type", "tag1", false);
-			EXP where = EXP.ins().key("id", 400570031730692L);
+			EXP set = EXP.JSON_ARRAY_APPEND_ONKEY("tags", "type", "tag1", false);
+			EXP where = EXP.INS().key("id", id);
 			int ret = testRepository.update(conn, set, where);
 			System.out.println(ret);
 		}
 
 		{
-			EXP set = EXP.jsonArrayRemove("tags", "$.type", 0);
-			EXP where = EXP.ins().key("id", 400570031730692L);
+			EXP set = EXP.JSON_ARRAY_REMOVE("tags", "$.type", 0);
+			EXP where = EXP.INS().key("id", id);
 			int ret = testRepository.update(conn, set, where);
 			System.out.println(ret);
 		}
+		System.out.println(StringUtils.join(">>>>>testJsonAppendInArrayOnKeyAndRemove>"));
 	}
 
 }

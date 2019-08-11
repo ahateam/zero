@@ -143,7 +143,6 @@ public abstract class RDSRepository<T> {
 	protected int delete(DruidPooledConnection conn, String where, List<Object> whereParams) throws ServerException {
 		StringBuffer sb = new StringBuffer("DELETE ");
 		buildFROM(sb, mapper.getTableName());
-		sb.append("WHERE ");
 		buildWHERE(sb, where);
 		return executeUpdateSQL(conn, sb.toString(), whereParams);
 	}
@@ -234,7 +233,6 @@ public abstract class RDSRepository<T> {
 			buildCountAndOffset(sb, count, offset);
 			return executeQuerySQL(conn, sb.toString(), null);
 		} else {
-			sb.append("WHERE ");
 			buildWHERE(sb, where);
 			buildCountAndOffset(sb, count, offset);
 
@@ -263,7 +261,7 @@ public abstract class RDSRepository<T> {
 			ArrayList<Object> args = new ArrayList<>();
 			exp.toSQL(sb, args);
 			System.out.println(sb.toString());
-			
+
 			return getList(conn, sb.toString(), args, count, offset);
 		}
 	}
@@ -360,7 +358,6 @@ public abstract class RDSRepository<T> {
 		StringBuffer sbWhere = new StringBuffer();
 		ArrayList<Object> argsWhere = new ArrayList<>();
 
-		sbWhere.append("WHERE ");
 		where.toSQL(sbWhere, argsWhere);
 
 		return update(conn, sbSet.toString(), argsSet, sbWhere.toString(), argsWhere);
@@ -369,7 +366,6 @@ public abstract class RDSRepository<T> {
 	public int update(DruidPooledConnection conn, EXP exp, T t, boolean skipNull) throws ServerException {
 		StringBuffer sb = new StringBuffer();
 		ArrayList<Object> args = new ArrayList<>();
-		sb.append("WHERE ");
 		exp.toSQL(sb, args);
 		System.out.println(sb.toString());
 
@@ -779,7 +775,7 @@ public abstract class RDSRepository<T> {
 
 	private static void buildWHERE(StringBuffer sb, String where) throws ServerException {
 		if (StringUtils.isNotBlank(where)) {
-			sb.append(BLANK).append(where);
+			sb.append("WHERE").append(BLANK).append(where);
 		} else {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, "where not null");
 		}

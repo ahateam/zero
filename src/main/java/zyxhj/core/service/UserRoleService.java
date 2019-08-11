@@ -53,7 +53,7 @@ public class UserRoleService {
 		renew.name = name;
 		renew.remark = remark;
 
-		return roleRepository.update(conn,EXP.ins().key("id", roleId), renew, true);
+		return roleRepository.update(conn,EXP.INS().key("id", roleId), renew, true);
 		
 	}
 
@@ -61,7 +61,7 @@ public class UserRoleService {
 	 * 删除自定义角色
 	 */
 	public int delUserRole(DruidPooledConnection conn, Long roleId) throws Exception {
-		return roleRepository.delete(conn, EXP.ins().key("id", roleId));
+		return roleRepository.delete(conn, EXP.INS().key("id", roleId));
 	}
 
 	/**
