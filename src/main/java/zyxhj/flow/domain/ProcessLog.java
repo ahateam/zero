@@ -2,8 +2,6 @@ package zyxhj.flow.domain;
 
 import java.util.Date;
 
-import com.alibaba.fastjson.JSONObject;
-
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
@@ -13,6 +11,8 @@ import zyxhj.utils.data.rds.RDSAnnID;
  */
 @RDSAnnEntity(alias = "tb_process_log")
 public class ProcessLog {
+
+	// TODO 增加activity信息
 
 	public static final Byte TYPE_ERROR = 0;
 	public static final Byte TYPE_WARNING = 1;

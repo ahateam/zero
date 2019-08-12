@@ -20,6 +20,13 @@ import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
 
 public class RDSRepositoryServiceTest {
+	
+	//TODO 为ProcessLog增加Activity信息
+	//Repository关键方法的单元测试覆盖
+	//FlowTest流程，复盘，仔细阅读，进一步根据业务流程需求，继续串流程
+	//insertProcessTableData方法调试
+	
+	
 
 	public static class RDSRepositoryTest extends RDSRepository<TestDomain> {
 
@@ -50,6 +57,8 @@ public class RDSRepositoryServiceTest {
 		conn.close();
 	}
 
+	
+	
 	@Test
 	public void testTest() throws Exception {
 
