@@ -2,28 +2,24 @@ package zyxhj.kkqt.domain;
 
 import java.util.Date;
 
-import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
-import com.alicloud.openservices.tablestore.model.search.FieldType;
-
 import zyxhj.utils.api.Controller.ENUMVALUE;
-import zyxhj.utils.data.ts.TSAnnEntity;
-import zyxhj.utils.data.ts.TSAnnField;
-import zyxhj.utils.data.ts.TSAnnID;
-import zyxhj.utils.data.ts.TSAnnIndex;
-import zyxhj.utils.data.ts.TSEntity;
+import zyxhj.utils.data.rds.RDSAnnEntity;
+import zyxhj.utils.data.rds.RDSAnnField;
+import zyxhj.utils.data.rds.RDSAnnID;
 
 /**
  * 接单列表
- * 
- *
  */
-@TSAnnEntity(alias = "TaskList", indexName = "TaskListIndex")
-public class TaskList extends TSEntity {
+@RDSAnnEntity(alias = "tb_task_list")
+public class TaskList {
 
 	public static enum TYPE implements ENUMVALUE {
-		MAKETASK((byte) 0, "制作任务"), //
-		SHARETASK((byte) 1, "分享任务"), //
-		NEARBYTASK((byte) 2, "附近任务"), //
+		MAKETASK((byte) 0, "视频"), //
+		SHARETASK((byte) 1, "图文"), //
+		NEARBYTASK((byte) 2, "音频"), //
+		GROUPPRAISE((byte) 3, "万众瞩目"), //
+		LOCAL((byte) 4, "本地"), //
+		SHARE((byte) 5, "分享"), //
 		;
 
 		public String txt;
@@ -46,10 +42,13 @@ public class TaskList extends TSEntity {
 	}
 
 	public static enum STATUS implements ENUMVALUE {
+		EXAMINE((byte) 0, "已领取 待审核"), //
+		EXAMINESUCCESS((byte) 1, "已通过审核 待完成"), //
+		SUCCESSEXAMINE((byte) 2, "已完成 待审核"), //
+		SUCCESS((byte) 3, "已完成"), //
+		REDO((byte) 4, "未通过 待重新提交"), //
+		FAIL((byte) 5, "未通过"),
 
-		NOTCOMPLETED((byte) 0, "未完成"), //
-		COMPLETED((byte) 1, "已完成"), //
-		FAIL((byte) 2, "失败"), //
 		;
 
 		public String txt;
@@ -72,90 +71,84 @@ public class TaskList extends TSEntity {
 	}
 
 	/**
-	 * 分片编号，MD5(id)，避免数据热点
-	 */
-	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.STRING)
-	public String _id;
-
-	/**
 	 * 消息编号
 	 */
-	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
-	
+
 	/**
 	 * 所属模块
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String module;
 
 	/**
 	 * 接单用户编号
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.LONG)
 	public Long accUserId;
 
 	/**
 	 * 任务类型
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long type;
-	
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte type;
+
 	/**
 	 * 任务标题
 	 */
-	@TSAnnIndex(type = FieldType.TEXT, enableSortAndAgg = false, store = false)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String taskTitle;
 
 	/**
 	 * 任务分片编号
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String task_id;
 
 	/**
 	 * 任务id
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.LONG)
 	public Long taskId;
 
 	/**
 	 * 上传者用户编号
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.LONG)
 	public Long upUserId;
-	
+
 	/**
 	 * 私密信息
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String proviteData;
 
 	/**
 	 * 完成状态
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long status;
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte status;
 
 	/**
 	 * 创建时间
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.TIME)
 	public Date createTime;
+
+	/**
+	 * 发布者给出的完成时间
+	 */
+	@RDSAnnField(column = RDSAnnField.TIME)
+	public Date time;
 
 	/**
 	 * 修改时间
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.TIME)
 	public Date updateTime;
+
+	@RDSAnnField(column = RDSAnnField.JSON)
+	public String taskData;
 }

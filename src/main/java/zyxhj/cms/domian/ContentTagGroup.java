@@ -16,12 +16,37 @@ public class ContentTagGroup {
 		HOME((byte) 0, "首页"), //
 		VIP((byte) 1, "VIP"), //
 		TASK((byte) 2, "任务墙"), //
+		TEMPLATE((byte) 3, "模板"), //
 		;
 
 		private byte v;
 		private String txt;
 
 		private TAGGROUPTYPE(byte v, String txt) {
+			this.v = v;
+			this.txt = txt;
+		}
+
+		@Override
+		public byte v() {
+			return v;
+		}
+
+		@Override
+		public String txt() {
+			return txt;
+		}
+	}
+
+	public static enum STATUS implements ENUMVALUE {
+		OPEN((byte) 0, "打开"), //
+		CLOSE((byte) 1, "关闭"), //
+		;
+
+		private byte v;
+		private String txt;
+
+		private STATUS(byte v, String txt) {
 			this.v = v;
 			this.txt = txt;
 		}
@@ -67,6 +92,12 @@ public class ContentTagGroup {
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte tagGroupType;
+
+	/**
+	 * 标签分组状态
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte status;
 
 	/**
 	 * 备注

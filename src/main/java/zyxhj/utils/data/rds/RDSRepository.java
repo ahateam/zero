@@ -260,8 +260,6 @@ public abstract class RDSRepository<T> {
 			StringBuffer sb = new StringBuffer();
 			ArrayList<Object> args = new ArrayList<>();
 			exp.toSQL(sb, args);
-			System.out.println(sb.toString());
-
 			return getList(conn, sb.toString(), args, count, offset);
 		}
 	}
