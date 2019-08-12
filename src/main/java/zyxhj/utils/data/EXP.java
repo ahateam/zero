@@ -456,6 +456,9 @@ public class EXP implements Cloneable {
 	 * AND 连接key表达式（很常用，相当于key = value表达式）
 	 */
 	public EXP andKey(String key, Object value) throws ServerException {
+		if(value == null) {
+			return this;
+		}
 		return and(key, "=", "?", value);
 	}
 

@@ -145,4 +145,8 @@ public interface BaseRC {
 
 	static final RC ECM_ORG_USER_SHARECERNO = new RC("ecm-0024", "股权证号已存在");
 
+	static final RC UP_VOTE_ERROR = new RC("ecm-0025", "已经点过赞");
+	
+	static final RC ACC_TASK_LIST = new RC("ecm-0026", "请勿重复领取任务");
+
 }
