@@ -74,7 +74,13 @@ public class ProcessLog {
 	 */
 	@RDSAnnField(column = RDSAnnField.TIME)
 	public Date timestamp;
-
+	
+	/**
+	 * 	流程节点编号
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long activityId;
+	
 	/**
 	 * 记录扩展数据</br>
 	 * 例如操作部门或其它信息，存放于此

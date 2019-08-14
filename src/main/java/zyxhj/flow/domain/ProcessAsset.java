@@ -10,12 +10,14 @@ public class ProcessAsset {
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
-
 	/**
 	 * 所属流程编号
 	 */
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long processId;
+	
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long userId;
 
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String name;

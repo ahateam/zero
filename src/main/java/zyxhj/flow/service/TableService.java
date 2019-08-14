@@ -248,18 +248,16 @@ public class TableService extends Controller {
 				for (int i = 0; i < ts.columns.size(); i++) {
 					JSONObject jo = ts.columns.getJSONObject(i);
 					String key = jo.keySet().iterator().next();
-					Column c = jo.getObject(key, Column.class);
-
+					
+					Column c = jo.toJavaObject(Column.class);
 					if (c.columnType.equals(TableSchema.Column.COLUMN_TYPE_COMPUTE)) {
 						// 计算列,开始计算
 						System.out.println("开始计算");
 						Object ret = compute(c.computeFormula, data);
 						System.out.println(JSON.toJSONString(ret));
-
 						td.data.put(key, ret);
 					}
 				}
-
 				tableDataRepository.insert(conn, td);
 				return td;
 			}
@@ -338,8 +336,20 @@ public class TableService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId), count, offset);
 		}
-
 	}
+	// 获取数据
+		@POSTAPI(path = "getTableDatasById", //
+				des = "获取表数据", //
+				ret = "TableData"//
+		)
+		public TableData getTableDatasById(
+				@P(t = "表结构编号") Long tableDataId //
+		) throws Exception {
+
+			try (DruidPooledConnection conn = ds.getConnection()) {
+				return tableDataRepository.get(conn, EXP.INS().key("id", tableDataId));
+			}
+		}
 
 	/**
 	 * 创建表查询

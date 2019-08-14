@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.domain.Module;
 import zyxhj.core.domain.Tag;
+import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessActivity.Action;
 import zyxhj.flow.domain.ProcessActivity.Receiver;
@@ -22,12 +23,16 @@ import zyxhj.flow.domain.ProcessAsset;
 import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.TableSchema;
+import zyxhj.flow.repository.ProcessAssetDescRepository;
+import zyxhj.flow.repository.ProcessAssetRepository;
 import zyxhj.flow.service.FlowService;
 import zyxhj.flow.service.ProcessService;
 import zyxhj.flow.service.TableService;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.EXP;
 
 public class FlowTest {
 
@@ -56,11 +61,6 @@ public class FlowTest {
 		conn.close();
 	}
 
-	@Test
-	public void flowTest() throws Exception {
-
-	}
-
 	private static Long tableSchemaId = 400705582427294L;
 	private static Long pdId = 400705633248957L;
 
@@ -71,6 +71,11 @@ public class FlowTest {
 	private static Long activityDescId = 400719819841094L;
 
 	private static Long processId = 400722561559259L;
+
+	@Test
+	public void flowTest() throws Exception {
+		testCreateTableSchema();
+	}
 
 	/**
 	 * 创建TableSchema
@@ -161,7 +166,7 @@ public class FlowTest {
 		System.out.println("--- create Activity ok ---");
 
 		flowService.setPDStartActivity(pdId, activitys.get(0).id);
-		flowService.setPDEndActivity(pdId, activitys.get(2).id);
+		flowService.setPDEndActivity(pdId, activitys.get(activitys.size() - 1).id);
 		System.out.println("--- set start end Activity ok ---");
 
 		ProcessDefinition pd = flowService.getPDById(pdId);
@@ -207,13 +212,13 @@ public class FlowTest {
 	@Test
 	public void testCreatProcess() throws Exception {
 
-		zyxhj.flow.domain.Process p = processService.createProcess(pdId, "这事一个测试", "我要测试");
+		Process p = processService.createProcess(pdId, "这事一个测试", "我要测试");
 		System.out.println("--- set Set Action ok ---");
 
 	}
 
 	@Test
-	public void testInsertData() throws Exception {
+	public void testInsertTableData() throws Exception {
 		JSONObject jo = new JSONObject();
 		// 根据table的schema来填写数据
 		jo.put("COL1", 10);
@@ -242,8 +247,16 @@ public class FlowTest {
 		ja.add(400719819841234L);
 		ja.add(400719823441234L);
 
-		JSONArray paList = processService.getProcessAssetByDescIds(processId, ja, 10, 0);
+		List<ProcessAsset> paList = processService.getProcessAssetByDescIds(processId, ja, 10, 0);
 
 		System.out.println(JSON.toJSONString(paList));
+	}
+
+	@Test
+	public void testGetAssetByProcessIdAndUserId() throws Exception {
+
+		JSONObject processAsset = processService.getProcessAssetByIdANDUserId(222L, 400792320906344L);
+
+		System.out.println(processAsset);
 	}
 }

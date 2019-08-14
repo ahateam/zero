@@ -97,11 +97,11 @@ public class ProcessActivity {
 		public String label;
 
 		/**
-		 * 规则引擎脚本</br>
-		 * [</br>
-		 * {exp:"expDefault",target:"activityId"},</br>
-		 * {exp:(EXP...),target:"activityId"},</br>
-		 * {exp:(EXP...),target:"activityId"},</br>
+		 * 规则引擎脚本 </br>
+		 * [ </br>
+		 * {exp:"expDefault",target:"activityId"}, </br>
+		 * {exp:(EXP...),target:"activityId"}, </br>
+		 * {exp:(EXP...),target:"activityId"}, </br>
 		 * ]</br>
 		 */
 		public JSONArray rules;

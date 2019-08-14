@@ -196,7 +196,7 @@ public class FlowService extends Controller {
 	)
 	public ProcessActivity createPDActivity(//
 			@P(t = "流程定义编号") Long pdId, //
-			@P(t = "活动标题") String title, //
+			@P(t = "节点标题") String title, //
 			@P(t = "所属泳道") String part, //
 			@P(t = "接收者（departments部门，roles角色，users用户）") String receivers, //
 			@P(t = "行为动作", r = false) String actions//

@@ -21,10 +21,10 @@ import zyxhj.utils.data.EXP;
 
 public class RDSRepositoryServiceTest {
 	
-	//TODO 为ProcessLog增加Activity信息
+	//TODO 为ProcessLog增加Activity信息 --- 完成
 	//Repository关键方法的单元测试覆盖
 	//FlowTest流程，复盘，仔细阅读，进一步根据业务流程需求，继续串流程
-	//insertProcessTableData方法调试
+	//insertProcessTableData方法调试 -------完成
 	
 	
 
@@ -78,8 +78,11 @@ public class RDSRepositoryServiceTest {
 
 			testGetListByKeyORDERBY();
 
-			testJsonAppendInArrayAndRemove(td.id);
-			testJsonAppendInArrayOnKeyAndRemove(td.id);
+			testJsonArrayAppend(td2.id);
+			testJsonArrayAppendOnkey(td2.id);
+			testJsonContains();
+			testJsonAppendInArrayAndRemove(td2.id);
+			testJsonAppendInArrayOnKeyAndRemove(td2.id);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -90,6 +93,8 @@ public class RDSRepositoryServiceTest {
 		testDelByANDKeys(td2.id);
 
 	}
+
+	
 
 	private TestDomain testInsert() throws Exception {
 
@@ -156,13 +161,13 @@ public class RDSRepositoryServiceTest {
 		t.year = "测试";
 
 		int ret = testRepository.update(conn, EXP.INS().key("id", id).andKey("name", "123sdaf"), t, true);
-		System.out.println(StringUtils.join(">>>>>testUpdateByANDKey>", ret));
+		System.out.println("----------testUpdateByANDKey==>>"+ret);
 	}
 
 	private void testGetList() {
 		try {
 			List<TestDomain> t = testRepository.getList(conn, null, 10, 0);
-			System.out.println(StringUtils.join(">>>>>testGetList>", t.size()));
+			System.out.println("----------testGetList==>>"+t.size());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -171,7 +176,7 @@ public class RDSRepositoryServiceTest {
 	private void testGetListByKey(Long id) {
 		try {
 			List<TestDomain> t = testRepository.getList(conn, EXP.INS().exp("id", "<>", id), 10, 0);
-			System.out.println(StringUtils.join(">>>>>testGetListByKey>", t.size()));
+			System.out.println("----------testGetListByKey==>>"+t.size());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -181,7 +186,7 @@ public class RDSRepositoryServiceTest {
 		try {
 			List<TestDomain> t = testRepository.getList(conn,
 					EXP.INS().exp("name", "=", "123sdaf").and("status", "=", 0), 10, 0);
-			System.out.println(StringUtils.join(">>>>>testGetListByANDKeys>", t.size()));
+			System.out.println("----------testGetListByANDKeys==>>"+t.size());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -190,7 +195,7 @@ public class RDSRepositoryServiceTest {
 	private void testGetListByKeyIN(Long id1, Long id2) {
 		try {
 			List<TestDomain> t = testRepository.getList(conn, EXP.IN_ORDERED("id", new Object[] { id1, id2 }), 10, 0);
-			System.out.println(StringUtils.join(">>>>>testGetListByKeyIN>", t.size()));
+			System.out.println("----------testGetListByKeyIN==>>"+t.size());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -204,41 +209,92 @@ public class RDSRepositoryServiceTest {
 		for (TestDomain t1 : t) {
 			System.out.println(t1.id);
 		}
-		System.out.println(StringUtils.join(">>>>>testGetListByKeyORDERBY>", t.size()));
+		System.out.println("----------testGetListByKeyORDERBY==>>"+t.size());
 	}
 
 	private void testJsonAppendInArrayAndRemove(Long id) throws ServerException {
+		int ret = 0;
 		{
 			EXP set = EXP.JSON_ARRAY_APPEND("arrays", "tag1", false);
 			EXP where = EXP.INS().key("id", id);
-			int ret = testRepository.update(conn, set, where);
+			ret = testRepository.update(conn, set, where);
 			System.out.println(ret);
 		}
 
 		{
 			EXP set = EXP.JSON_ARRAY_REMOVE("arrays", "$", 0);
 			EXP where = EXP.INS().key("id", id);
-			int ret = testRepository.update(conn, set, where);
+			ret = testRepository.update(conn, set, where);
 			System.out.println(ret);
 		}
-		System.out.println(StringUtils.join(">>>>>testJsonAppendInArrayAndRemove>"));
+		System.out.println("----------testJsonAppendInArrayAndRemove==>>"+ret);
 	}
 
 	private void testJsonAppendInArrayOnKeyAndRemove(Long id) throws ServerException {
+		int ret = 0;
 		{
 			EXP set = EXP.JSON_ARRAY_APPEND_ONKEY("tags", "type", "tag1", false);
 			EXP where = EXP.INS().key("id", id);
-			int ret = testRepository.update(conn, set, where);
+			ret = testRepository.update(conn, set, where);
 			System.out.println(ret);
 		}
 
 		{
 			EXP set = EXP.JSON_ARRAY_REMOVE("tags", "$.type", 0);
 			EXP where = EXP.INS().key("id", id);
-			int ret = testRepository.update(conn, set, where);
+			ret = testRepository.update(conn, set, where);
 			System.out.println(ret);
 		}
-		System.out.println(StringUtils.join(">>>>>testJsonAppendInArrayOnKeyAndRemove>"));
+		System.out.println("----------testJsonAppendInArrayOnKeyAndRemove==>>"+ret);
+	}
+	
+	private void testJsonArrayAppendOnkey(Long id) throws ServerException {
+		EXP where = EXP.INS().key("id", id);
+		EXP tagAppendOnKey = EXP.JSON_ARRAY_APPEND_ONKEY("tags", "tagGroup2", "tag1", true);
+		int ret = testRepository.update(conn, tagAppendOnKey, where);		
+		System.out.println("----------testJsonArrayAppendOnkey==>>"+ret);
 	}
 
+	private void testJsonArrayAppend(Long id) throws ServerException {
+		EXP where = EXP.INS().key("id", id);
+		EXP tagAppend = EXP.JSON_ARRAY_APPEND("arrays", "tag1", true);
+		int ret = testRepository.update(conn, tagAppend, where);
+		System.out.println("----------testJsonArrayAppend==>>"+ret);
+	}
+
+	private void testJsonContains() throws ServerException {
+		
+		EXP tagC = EXP.JSON_CONTAINS("arrays", "$", "tag1");
+		List<TestDomain> dlist = testRepository.getList(conn, tagC, 100, 0);
+		System.out.println("------------testJsonContains------------");
+		for(TestDomain d : dlist) {
+			System.out.println(d.name);
+		}		
+		System.out.println("-------------------------------------");
+	}
+	
+	@Test
+	public void testORDERBY() throws ServerException {
+		
+		EXP inOrderBy = EXP.INS().and(EXP.IN_ORDERED("year", "45641456asdfasd657dvz"));
+		List<TestDomain> tlist = testRepository.getList(conn, inOrderBy, 500, 0);
+		System.out.println("IN ORDER BY");
+		System.out.println("=================================");
+		for(TestDomain t : tlist) {
+			System.out.println(t.name+"----"+t.year);
+		}
+		System.out.println("=================================");
+		System.out.println();
+		
+		//必须添加条件才能进行排序，否则无法通过toSQL()方法
+//		EXP orderBy = EXP.INS().exp("TRUE",null,null),append("ORDER BY status ASC");
+		EXP orderBy = EXP.INS().key("name", "123sdaf").append("ORDER BY status DESC");
+		List<TestDomain> tlist1 = testRepository.getList(conn, orderBy, 500, 0);
+		System.out.println("ORDER BY");
+		System.out.println("=================================");
+		for(TestDomain t : tlist1) {
+			System.out.println(t.name+"----"+t.status);
+		}
+		System.out.println("=================================");
+	}
 }

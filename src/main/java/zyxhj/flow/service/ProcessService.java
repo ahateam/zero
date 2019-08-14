@@ -225,6 +225,7 @@ public class ProcessService extends Controller {
 			@P(t = "使用者名称") String userName, //
 			@P(t = "行为或活动") String action, //
 			@P(t = "行为或活动说明") String actionDesc, //
+			@P(t = "流程节点编号") Long activityId, //
 			@P(t = "记录扩展数据") String ext//
 	) throws Exception {
 		// 最好做成异步
@@ -238,6 +239,7 @@ public class ProcessService extends Controller {
 		pl.userName = userName;
 		pl.action = action;
 		pl.actionDesc = actionDesc;
+		pl.activityId = activityId;
 		pl.ext = ext;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -265,12 +267,55 @@ public class ProcessService extends Controller {
 
 			// 再关联创建流程资产
 			return createProcessAsset(processId, tableSchemaName, ProcessAssetDesc.TYPE.TABLE, descId,
-					td.id.toString());
+					td.id.toString(), userId);
 		}
 	}
 
+	@POSTAPI(//
+			path = "editProcessTableData", //
+			des = "更改表数据", //
+			ret = "受影响行数"//
+	)
+	public int editProcessTableData(
+			@P(t = "表结构编号") Long tableSchemaId,//
+			@P(t = "表数据编号") Long tableDataId,//
+			@P(t = "数据") JSONObject data//
+			) throws Exception {
+		TableService tsService = Singleton.ins(TableService.class, "table");
+		return tsService.updateTableData(tableSchemaId, tableDataId, data);
+	}
+	
+	
+	@POSTAPI(//
+			path = "getProcessAssetByIdANDUserId", //
+			des = "根据用戶编号和流程实例编号，获取对应的资产", //
+			ret = "ProcessAsset"//
+	)
+	public JSONObject getProcessAssetByIdANDUserId(
+			@P(t = "用户编号") Long userId, //
+			@P(t = "资源编号") Long assetId //
+			) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			
+			ProcessAsset pa = processAssetRepository.get(conn, EXP.INS().key("user_id", userId).andKey("id", assetId));
+			if(pa==null) {
+				return null;
+			}
+			TableService tsService = Singleton.ins(TableService.class, "table");
+
+			JSONObject jo = new JSONObject();
+			
+			TableData td = tsService.getTableDatasById(new Long(pa.src));
+			
+			jo.put("processAsset", pa);
+			jo.put("tableData", td);
+			return jo;
+		}
+	}
+	
+
 	private void execAction(DruidPooledConnection conn, User user, Process p, ProcessActivity pa,
-			ProcessActivity.Action action) throws Exception {
+			ProcessActivity.Action action, Long activityId) throws Exception {
 
 		// 判断type
 		if (action.type.equals(ProcessActivity.Action.TYPE_REJECT)) {
@@ -306,8 +351,9 @@ public class ProcessService extends Controller {
 			// @P(t = "使用者名称") String userName, //
 			// @P(t = "行为或活动") String action, //
 			// @P(t = "行为或活动说明") String actionDesc, //
+			// @P(t = "流程节点编号") Long activityId, //
 			// @P(t = "记录扩展数据") JSONObject ext//
-			createProcessLog(p.id, "", user.id, user.name, action.type, action.label, "");
+			createProcessLog(p.id, "", user.id, user.name, action.type, action.label, activityId, "");
 
 			Process renew = new Process();
 			renew.currActivityId = Long.decode(defaultTarget);
@@ -366,7 +412,7 @@ public class ProcessService extends Controller {
 									throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
 								} else {
 									// 终于找到节点，要开始执行了。
-									execAction(conn, user, process, pa, act);
+									execAction(conn, user, process, pa, act, activityId);
 								}
 							} else {
 								throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
@@ -407,7 +453,8 @@ public class ProcessService extends Controller {
 			@P(t = "资产名称") String name, //
 			@P(t = "资产名称") String descType, //
 			@P(t = "资源描述编号") Long descId, //
-			@P(t = "资源内容（编号或url）") String src//
+			@P(t = "资源内容（编号或url）") String src,//
+			@P(t = "用户编号") Long userId//
 	) throws Exception {
 		ProcessAsset pa = new ProcessAsset();
 		pa.id = IDUtils.getSimpleId();
@@ -416,6 +463,7 @@ public class ProcessService extends Controller {
 		pa.descType = descType;
 
 		pa.descId = descId;
+		pa.userId = userId;
 		pa.src = src;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			processAssetRepository.insert(conn, pa);
@@ -456,34 +504,68 @@ public class ProcessService extends Controller {
 		}
 	}
 
+//	@POSTAPI(//
+//			path = "getProcessAssetByDescIds", //
+//			des = "根据流程资产描述编号，获取对应的资产列表", //
+//			ret = "ProcessAsset列表"//
+//	)
+//	public JSONArray getProcessAssetByDescIds(//
+//			@P(t = "资产编号") Long processId, //
+//			@P(t = "资产描述编号列表") JSONArray descIds, //
+//			Integer count, //
+//			Integer offset//
+//	) throws Exception {
+////TODO 换成 where in 语句，试一试
+//		try (DruidPooledConnection conn = ds.getConnection()) {
+//
+//			JSONArray ret = new JSONArray();
+//			for (int i = 0; i < descIds.size(); i++) {
+//				Long id = descIds.getLong(i);
+//
+//				ProcessAsset pa = processAssetRepository.get(conn,
+//						EXP.INS().key("process_id", processId).andKey("desc_id", id));
+//
+//				JSONObject jo = new JSONObject();
+//				jo.put("descId", id);
+//				jo.put("asset", pa);
+//				ret.add(jo);
+//			}
+//
+//			return ret;
+//		}
+//	}
+
 	@POSTAPI(//
 			path = "getProcessAssetByDescIds", //
 			des = "根据流程资产描述编号，获取对应的资产列表", //
 			ret = "ProcessAsset列表"//
 	)
-	public JSONArray getProcessAssetByDescIds(//
+	public List<ProcessAsset> getProcessAssetByDescIds(//
 			@P(t = "资产编号") Long processId, //
 			@P(t = "资产描述编号列表") JSONArray descIds, //
 			Integer count, //
 			Integer offset//
 	) throws Exception {
-
+		//TODO 换成 where in 语句，试一试
 		try (DruidPooledConnection conn = ds.getConnection()) {
-
-			JSONArray ret = new JSONArray();
-			for (int i = 0; i < descIds.size(); i++) {
-				Long id = descIds.getLong(i);
-
-				ProcessAsset pa = processAssetRepository.get(conn,
-						EXP.INS().key("process_id", processId).andKey("desc_id", id));
-
-				JSONObject jo = new JSONObject();
-				jo.put("descId", id);
-				jo.put("asset", pa);
-				ret.add(jo);
-			}
-
-			return ret;
+			return processAssetRepository.getProcessAssetByDescIds(conn, processId, descIds, count, offset);
+		}
+	}
+	
+	@POSTAPI(//
+			path = "getProcessAssetList", //
+			des = "根据用户编号以及流程编号，获取对应的资产列表", //
+			ret = "ProcessAsset列表"//
+	)
+	public List<ProcessAsset> getProcessAssetList(
+			@P(t = "用户编号") Long userId,
+			@P(t = "资产编号") Long processId,
+			Integer count,
+			Integer offset
+			) throws Exception{
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			
+			return processAssetRepository.getList(conn, EXP.INS().key("user_id", userId).andKey("process_id", processId), count, offset, "id", "name");
 		}
 	}
 }

@@ -23,7 +23,7 @@ public class TableData {
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
-
+	
 	/**
 	 * 运算表数据
 	 */

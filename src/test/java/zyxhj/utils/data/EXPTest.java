@@ -455,7 +455,7 @@ public class EXPTest {
 	public void testJsonContains() {
 		try {
 			{
-				EXP e = EXP.INS().JSON_CONTAINS("tags", "$.group1", "temp");
+				EXP e = EXP.JSON_CONTAINS("tags", "$.group1", "temp");
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
 				e.toSQL(sb, params);
@@ -469,7 +469,7 @@ public class EXPTest {
 			}
 
 			{
-				EXP e = EXP.INS().JSON_CONTAINS("tags", "$.group1", 234);
+				EXP e = EXP.JSON_CONTAINS("tags", "$.group1", 234);
 				StringBuffer sb = new StringBuffer();
 				ArrayList<Object> params = new ArrayList<>();
 				e.toSQL(sb, params);

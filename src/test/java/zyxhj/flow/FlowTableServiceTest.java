@@ -2,6 +2,7 @@ package zyxhj.flow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -132,14 +133,18 @@ public class FlowTableServiceTest {
 
 		JSONObject jo = new JSONObject();
 		// 根据table的schema来填写数据
-		jo.put("COL1", 10);
-		jo.put("COL2", 20);
-		jo.put("COL3", 34);
-		jo.put("COL4", 234);
-		jo.put("COL5", 123);
+//		jo.put("COL1", 10);
+//		jo.put("COL2", 20);
+//		jo.put("COL3", 34);
+//		jo.put("COL4", 234);
+//		jo.put("COL5", 123);
 
+		jo.put("name", "ssssssss");
+		jo.put("star", new Date());
+		jo.put("end", new Date());
+		
 		try {
-			tableService.insertTableData(schemaId, jo);
+			tableService.insertTableData(400792274247519L, jo);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

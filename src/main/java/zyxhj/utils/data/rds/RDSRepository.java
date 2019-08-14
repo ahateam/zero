@@ -237,7 +237,7 @@ public abstract class RDSRepository<T> {
 			buildCountAndOffset(sb, count, offset);
 
 			log.debug(sb.toString());
-			// System.out.println(sb.toString());
+			 System.out.println(sb.toString());
 			return executeQuerySQL(conn, sb.toString(), whereParams);
 		}
 	}
@@ -300,7 +300,7 @@ public abstract class RDSRepository<T> {
 
 		String sql = sb.toString();
 		log.debug(sql);
-		System.out.println(sb.toString());
+//		System.out.println(sb.toString());
 		return executeUpdateSQL(conn, sb.toString(), total);
 	}
 
@@ -365,7 +365,6 @@ public abstract class RDSRepository<T> {
 		StringBuffer sb = new StringBuffer();
 		ArrayList<Object> args = new ArrayList<>();
 		exp.toSQL(sb, args);
-		System.out.println(sb.toString());
 
 		return update(conn, sb.toString(), args, t, skipNull);
 	}
