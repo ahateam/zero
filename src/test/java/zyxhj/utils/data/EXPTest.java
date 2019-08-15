@@ -123,7 +123,7 @@ public class EXPTest {
 			e.toSQL(sb, params);
 			System.out.println(">>>" + sb.toString());
 			Assert.assertEquals(sb.toString(),
-					"t1 = ? AND name IN(?,?,?,?,?,?) ORDER BY FIND_IN_SET(name,123,234,sdf,3534,3453,334)");
+					"t1 = ? AND name IN(?,?,?,?,?,?) ORDER BY FIND_IN_SET(name,'123,234,sdf,3534,3453,334')");
 		} catch (ServerException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

@@ -548,7 +548,9 @@ public class ProcessService extends Controller {
 	) throws Exception {
 		//TODO 换成 where in 语句，试一试
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processAssetRepository.getProcessAssetByDescIds(conn, processId, descIds, count, offset);
+			EXP exp = EXP.INS().key("process_id", processId).and(EXP.IN_ORDERED("desc_id", descIds.toArray()));
+			return processAssetRepository.getList(conn, exp, count, offset);
+		
 		}
 	}
 	

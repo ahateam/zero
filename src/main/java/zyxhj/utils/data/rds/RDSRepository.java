@@ -237,7 +237,7 @@ public abstract class RDSRepository<T> {
 			buildCountAndOffset(sb, count, offset);
 
 			log.debug(sb.toString());
-			 System.out.println(sb.toString());
+//			System.out.println(sb.toString());
 			return executeQuerySQL(conn, sb.toString(), whereParams);
 		}
 	}

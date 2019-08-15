@@ -71,6 +71,7 @@ public class RDSRepositoryServiceTest {
 			testUpdateByKey(td.id);
 			testUpdateByANDKey(td.id);
 
+			testGet(td.id);
 			testGetList();
 			testGetListByKey(td.id);
 			testGetListByANDKeys();
@@ -94,7 +95,14 @@ public class RDSRepositoryServiceTest {
 
 	}
 
-	
+	/**
+	 *	查询一条数据 
+	 */
+
+	private void testGet(Long id) {
+		
+		
+	}
 
 	private TestDomain testInsert() throws Exception {
 
@@ -135,12 +143,13 @@ public class RDSRepositoryServiceTest {
 	// 完成
 	private void testDelByKey(Long id) throws ServerException {
 		int ret = testRepository.delete(conn, EXP.INS().key("id", id));
-		System.out.println(StringUtils.join(">>>>>testDelByKey>", ret));
+		System.out.println("----------testDelByKey==>>"+ret);
 	}
 
 	private void testDelByANDKeys(Long id) throws ServerException {
 		int ret = testRepository.delete(conn, EXP.INS().key("id", id).andKey("status", 0));
-		System.out.println(StringUtils.join(">>>>>testDelByANDKeys>", ret));
+		System.out.println("----------testDelByANDKeys==>>"+ret);
+		
 	}
 
 	private void testUpdateByKey(Long id) throws ServerException {
@@ -150,8 +159,7 @@ public class RDSRepositoryServiceTest {
 		t.year = "45641456asdfasd";
 
 		int ret = testRepository.update(conn, EXP.INS().key("id", id), t, true);
-
-		System.out.println(StringUtils.join(">>>>>testUpdateByKey>", ret));
+		System.out.println("----------testUpdateByKey==>>"+ret);
 	}
 
 	private void testUpdateByANDKey(Long id) throws ServerException {
@@ -236,14 +244,12 @@ public class RDSRepositoryServiceTest {
 			EXP set = EXP.JSON_ARRAY_APPEND_ONKEY("tags", "type", "tag1", false);
 			EXP where = EXP.INS().key("id", id);
 			ret = testRepository.update(conn, set, where);
-			System.out.println(ret);
 		}
 
 		{
 			EXP set = EXP.JSON_ARRAY_REMOVE("tags", "$.type", 0);
 			EXP where = EXP.INS().key("id", id);
 			ret = testRepository.update(conn, set, where);
-			System.out.println(ret);
 		}
 		System.out.println("----------testJsonAppendInArrayOnKeyAndRemove==>>"+ret);
 	}
