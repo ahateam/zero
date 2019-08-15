@@ -259,4 +259,11 @@ public class FlowTest {
 
 		System.out.println(processAsset);
 	}
+	
+	@Test
+	public void editProcessTableData() throws Exception {
+		JSONObject data = JSONObject.parseObject("{star: 1565625600000, name: \"啦啦啦啦111\", end: 1565712000000}");
+		processService.editProcessTableData(400792274247519L, 400809850254116L, data);
+		
+	}
 }

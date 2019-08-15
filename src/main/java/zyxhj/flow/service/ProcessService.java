@@ -565,7 +565,7 @@ public class ProcessService extends Controller {
 			) throws Exception{
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			
-			return processAssetRepository.getList(conn, EXP.INS().key("user_id", userId).andKey("process_id", processId), count, offset, "id", "name");
+			return processAssetRepository.getList(conn, EXP.INS().key("user_id", userId).andKey("process_id", processId), count, offset);
 		}
 	}
 }

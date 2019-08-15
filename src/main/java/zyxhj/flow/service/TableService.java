@@ -268,12 +268,13 @@ public class TableService extends Controller {
 			path = "updateTableData", //
 			des = "修改表数据", //
 			ret = "state --- int")
-	public int updateTableData(@P(t = "表结构编号") Long tableSchemaId, //
+	public int updateTableData(
+			@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "表数据编号") Long dataId, //
 			@P(t = "表数据") JSONObject data) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			TableData td = tableDataRepository
-					.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId).andKey("id", dataId), 1, 0).get(0);
+					.get(conn, EXP.INS().key("table_schema_id", tableSchemaId).andKey("id", dataId));
 			if (td == null) {
 				throw new ServerException(BaseRC.FLOW_FORM_TABLE_DATA_NOT_FOUND);
 			} else {
@@ -289,7 +290,7 @@ public class TableService extends Controller {
 					for (int i = 0; i < ts.columns.size(); i++) {
 						JSONObject jo = ts.columns.getJSONObject(i);
 						String key = jo.keySet().iterator().next();
-						TableSchema.Column c = jo.getObject(key, TableSchema.Column.class);
+						TableSchema.Column c = jo.toJavaObject(TableSchema.Column.class);
 
 						if (c.columnType.equals(TableSchema.Column.COLUMN_TYPE_COMPUTE)) {
 							// 计算列,开始计算
