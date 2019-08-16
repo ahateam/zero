@@ -21,7 +21,7 @@ public class MainVerticle extends ZeroVerticle {
 	}
 
 	public int port() {
-		return 8093;
+		return 8053;
 	}
 
 	protected void init() throws Exception {

@@ -23,6 +23,8 @@ public class Channel extends  TSEntity{
 		NORMAL((byte) 0, "正常"), //
 		CLOSED((byte) 1, "已关闭"), //
 		DELETED((byte) 2, "已删除"), //
+		PUBLISHED((byte) 3, "已发布"), //
+		PUBLISHEDFAIL((byte) 4, "发布失败"), //
 		;
 
 		private byte v;

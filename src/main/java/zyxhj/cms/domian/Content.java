@@ -55,12 +55,37 @@ public class Content extends TSEntity {
 		CLOSED((byte) 2, "已关闭"), //
 		DELETED((byte) 3, "已删除"), //
 		PUBLISHED((byte) 4, "已发布"), //
+		PUBLISHEDFAIL((byte) 5, "发布失败"), //
 		;
 
 		private byte v;
 		private String txt;
 
 		private STATUS(byte v, String txt) {
+			this.v = v;
+			this.txt = txt;
+		}
+
+		@Override
+		public byte v() {
+			return v;
+		}
+
+		@Override
+		public String txt() {
+			return txt;
+		}
+	}
+
+	public static enum PAID implements ENUMVALUE {
+		Free((byte) 0, "免费"), //
+		PAY((byte) 1, "付费"), //
+		;
+
+		private byte v;
+		private String txt;
+
+		private PAID(byte v, String txt) {
 			this.v = v;
 			this.txt = txt;
 		}
@@ -147,7 +172,7 @@ public class Content extends TSEntity {
 	/**
 	 * 标签
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true,isArray = true)
+	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true, isArray = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String tags;
 
@@ -156,13 +181,13 @@ public class Content extends TSEntity {
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String data;
-	
+
 	/**
 	 * 私密信息
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String proviteData;
-	
+
 	/**
 	 * 是否付费
 	 */
