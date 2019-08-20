@@ -36,9 +36,16 @@ public class ImportTaskRepository extends RDSRepository<ImportTask> {
 	}
 
 	// 组织查询任务列表
-	public List<ImportTask> getListImportTask(DruidPooledConnection conn, Long orgId, Integer count, Integer offset)
-			throws Exception {
-		StringBuffer sb = new StringBuffer("org_id = ? ORDER BY create_time DESC");
+	public List<ImportTask> getListImportTask(DruidPooledConnection conn, Long orgId, Byte type, Integer count,
+			Integer offset) throws Exception {
+		StringBuffer sb = new StringBuffer("org_id = ? ");
+		if (type == 0) {
+			sb.append(" AND origin = 'user'");
+		} else if (type == 1) {
+			sb.append(" AND origin = 'asset'");
+		}
+		sb.append(" ORDER BY create_time DESC");
+		System.out.println(sb.toString());
 		return getList(conn, sb.toString(), Arrays.asList(orgId), count, offset);
 	}
 

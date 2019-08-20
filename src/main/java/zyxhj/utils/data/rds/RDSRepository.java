@@ -68,11 +68,11 @@ public abstract class RDSRepository<T> {
 			v.deleteCharAt(v.length() - 1);
 			v.append(") ");
 			sb.append(k).append("VALUES").append(v);
-			// System.err.println(sql);
+			System.out.println(sb.toString());
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, e.getMessage());
 		}
-
+		
 		int count = executeUpdateSQL(conn, sb.toString(), values);
 		if (count != 1) {
 			throw new ServerException(BaseRC.REPOSITORY_INSERT_ERROR);
@@ -123,7 +123,7 @@ public abstract class RDSRepository<T> {
 			}
 
 			sb.append(k).append("VALUES").append(v);
-
+			System.out.println(sb.toString());
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, e.getMessage());
 		}
@@ -237,9 +237,7 @@ public abstract class RDSRepository<T> {
 			buildCountAndOffset(sb, count, offset);
 
 			log.debug(sb.toString());
-			
 			System.out.println(sb.toString());
-			
 			return executeQuerySQL(conn, sb.toString(), whereParams);
 		}
 	}
@@ -611,15 +609,11 @@ public abstract class RDSRepository<T> {
 			}
 
 			// 前面的where语句可能为空
-			if (checkWHEREContaineEx(where)) {
-				// 前面有表达式
+			if (sql != null) {
 				sb.append(" AND (");
 				sql.fillSQL(sb);
 				sb.append(')');
-			} else {
-				// 前面没有表达式
-				sql.fillSQL(sb);
-			}
+			} 
 		}
 		 System.out.println(sb.toString());
 		return this.getList(conn, sb.toString(), whereParams, count, offset, selections);
