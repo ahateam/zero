@@ -8,4 +8,5 @@ public class ProcessAssetRepository extends RDSRepository<ProcessAsset> {
 	public ProcessAssetRepository() {
 		super(ProcessAsset.class);
 	}
+	
 }

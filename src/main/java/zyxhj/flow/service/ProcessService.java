@@ -550,9 +550,9 @@ public class ProcessService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			EXP exp = EXP.INS().key("process_id", processId).and(EXP.IN_ORDERED("desc_id", descIds.toArray()));
 			return processAssetRepository.getList(conn, exp, count, offset);
-		
 		}
 	}
+	
 	
 	@POSTAPI(//
 			path = "getProcessAssetList", //

@@ -237,7 +237,9 @@ public abstract class RDSRepository<T> {
 			buildCountAndOffset(sb, count, offset);
 
 			log.debug(sb.toString());
-//			System.out.println(sb.toString());
+			
+			System.out.println(sb.toString());
+			
 			return executeQuerySQL(conn, sb.toString(), whereParams);
 		}
 	}
@@ -595,7 +597,6 @@ public abstract class RDSRepository<T> {
 		// WHERE org_id=? AND (JSON_CONTAINS(roles, '"101"', '$') OR
 		// JSON_CONTAINS(roles,
 		// '"102"', '$') OR JSON_CONTAINS(roles, '"103"', '$') )
-
 		StringBuffer sb = new StringBuffer(where);
 		if (tags != null && tags.length > 0) {
 			SQL sql = new SQL();
@@ -620,7 +621,7 @@ public abstract class RDSRepository<T> {
 				sql.fillSQL(sb);
 			}
 		}
-		// System.out.println(sb.toString());
+		 System.out.println(sb.toString());
 		return this.getList(conn, sb.toString(), whereParams, count, offset, selections);
 	}
 

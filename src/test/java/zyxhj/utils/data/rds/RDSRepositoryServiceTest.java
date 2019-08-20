@@ -3,7 +3,6 @@ package zyxhj.utils.data.rds;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -81,7 +80,12 @@ public class RDSRepositoryServiceTest {
 
 			testJsonArrayAppend(td2.id);
 			testJsonArrayAppendOnkey(td2.id);
-			testJsonContains();
+			
+			JSONArray tag = new JSONArray();
+			String column = "tags";
+			String tagGroup = "tagGroup1";
+			testJsonContainsORKey(tag, column, tagGroup);
+
 			testJsonAppendInArrayAndRemove(td2.id);
 			testJsonAppendInArrayOnKeyAndRemove(td2.id);
 
@@ -257,7 +261,7 @@ public class RDSRepositoryServiceTest {
 	private void testJsonArrayAppendOnkey(Long id) throws ServerException {
 		EXP where = EXP.INS().key("id", id);
 		EXP tagAppendOnKey = EXP.JSON_ARRAY_APPEND_ONKEY("tags", "tagGroup2", "tag1", true);
-		int ret = testRepository.update(conn, tagAppendOnKey, where);		
+		int ret = testRepository.update(conn, tagAppendOnKey, where);	
 		System.out.println("----------testJsonArrayAppendOnkey==>>"+ret);
 	}
 
@@ -268,16 +272,65 @@ public class RDSRepositoryServiceTest {
 		System.out.println("----------testJsonArrayAppend==>>"+ret);
 	}
 
-	private void testJsonContains() throws ServerException {
+	/**
+	 * 
+	 *	单分组的 多标签查询
+	 */
+	@Test
+	public List<TestDomain> testJsonContainsORKey(JSONArray tags, String column, String tagGroup) throws ServerException {
+		if(tags==null && tags.size()==0) {
+			return null;
+		}
+		String path;
+		if(tagGroup == null) {
+			path = "$";
+		}else {
+			path = "$."+tagGroup;
+		}
+		EXP tag = EXP.INS();
+		for(int i = 0; i < tags.size(); i++) {
+			System.out.println(tags.get(i));
+			tag.or(EXP.JSON_CONTAINS(column, path, tags.get(i)));
+		}
 		
-		EXP tagC = EXP.JSON_CONTAINS("arrays", "$", "tag1");
-		List<TestDomain> dlist = testRepository.getList(conn, tagC, 100, 0);
+		List<TestDomain> dlist = testRepository.getList(conn, tag, 100, 0);
 		System.out.println("------------testJsonContains------------");
 		for(TestDomain d : dlist) {
 			System.out.println(d.name);
 		}		
 		System.out.println("-------------------------------------");
+		return dlist;
+		
 	}
+	
+	/**
+	 *	 多分组的多标签查询
+	 * 
+	 */
+	
+	@Test
+	public void testJsonContainsANDKeys() {
+		
+		JSONObject jo = new JSONObject();
+		
+		JSONArray ja = new JSONArray();
+		ja.add("tag1");
+		ja.add("tag2");
+		ja.add("tag3");
+		
+		JSONArray ja1 = new JSONArray();
+		ja1.add("tag4");
+		ja1.add("tag5");
+		ja1.add("tag6");
+		
+		jo.put("tagGroup1", ja);
+		jo.put("tagGroup2", ja1);
+		
+		System.out.println(jo.toJSONString());
+		
+	}
+	
+	
 	
 	@Test
 	public void testORDERBY() throws ServerException {
