@@ -45,7 +45,6 @@ public class ImportTaskRepository extends RDSRepository<ImportTask> {
 			sb.append(" AND origin = 'asset'");
 		}
 		sb.append(" ORDER BY create_time DESC");
-		System.out.println(sb.toString());
 		return getList(conn, sb.toString(), Arrays.asList(orgId), count, offset);
 	}
 

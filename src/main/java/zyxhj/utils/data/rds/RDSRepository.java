@@ -68,7 +68,6 @@ public abstract class RDSRepository<T> {
 			v.deleteCharAt(v.length() - 1);
 			v.append(") ");
 			sb.append(k).append("VALUES").append(v);
-			System.out.println(sb.toString());
 		} catch (Exception e) {
 			throw new ServerException(BaseRC.REPOSITORY_SQL_PREPARE_ERROR, e.getMessage());
 		}
@@ -91,7 +90,6 @@ public abstract class RDSRepository<T> {
 		StringBuffer sb = new StringBuffer("INSERT INTO ").append(mapper.getTableName());
 		Map<String, Object> map = null;
 		List<Object> values = new ArrayList<>();
-
 		try {
 			StringBuffer k = new StringBuffer(" (");
 			StringBuffer v = new StringBuffer(" (");
@@ -237,7 +235,9 @@ public abstract class RDSRepository<T> {
 			buildCountAndOffset(sb, count, offset);
 
 			log.debug(sb.toString());
+			
 			System.out.println(sb.toString());
+			
 			return executeQuerySQL(conn, sb.toString(), whereParams);
 		}
 	}
@@ -296,11 +296,9 @@ public abstract class RDSRepository<T> {
 
 		List<Object> total = mergeArray(setParams, whereParams);
 
-		// System.out.println(total.size());
-
 		String sql = sb.toString();
 		log.debug(sql);
-//		System.out.println(sb.toString());
+		
 		return executeUpdateSQL(conn, sb.toString(), total);
 	}
 
@@ -376,7 +374,6 @@ public abstract class RDSRepository<T> {
 	 */
 	protected static JSONArray sqlGetJSONArray(DruidPooledConnection conn, String sql, List<Object> params,
 			Integer count, Integer offset) throws ServerException {
-		// System.out.println(sql);
 		StringBuffer sb = new StringBuffer(sql);
 		buildCountAndOffset(sb, count, offset);
 
@@ -418,7 +415,6 @@ public abstract class RDSRepository<T> {
 	@SuppressWarnings("unchecked")
 	protected static <X> List<X> sqlGetOtherList(DruidPooledConnection conn, RDSRepository<X> repository, String sql,
 			List<Object> whereParams) throws ServerException {
-		// System.out.println(sql.toString());
 
 		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
 		try {
@@ -615,7 +611,6 @@ public abstract class RDSRepository<T> {
 				sb.append(')');
 			} 
 		}
-		 System.out.println(sb.toString());
 		return this.getList(conn, sb.toString(), whereParams, count, offset, selections);
 	}
 
@@ -684,6 +679,24 @@ public abstract class RDSRepository<T> {
 		return this.getList(conn, sb.toString(), whereParams, count, offset, selections);
 	}
 
+	public EXP JsonContainsORKey(JSONArray tags, String column, String tagGroup) throws ServerException {
+		
+		if(tags==null && tags.size()==0) {
+			return null;
+		}
+		String path;
+		if(tagGroup == null) {
+			path = "$";
+		}else {
+			path = "$."+tagGroup;
+		}
+		EXP tag = EXP.INS();
+		for(int i = 0; i < tags.size(); i++) {
+			tag.or(EXP.JSON_CONTAINS(column, path, tags.get(i)));
+		}
+		return tag;
+	}
+	
 	/**
 	 * 原生SQL方法，根据某个类的repository实例，获取对应对象</br>
 	 * 方便跨对象操作的原生SQL模版方法</br>
