@@ -2,10 +2,13 @@ package zyxhj.utils.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.model.search.query.BoolQuery;
 import com.alicloud.openservices.tablestore.model.search.query.Query;
@@ -297,7 +300,94 @@ public class EXP implements Cloneable {
 		}
 		return new EXP(false).exp(temp, null);
 	}
+	
+	/**
+	 * 判断JSON中是否包含指定元素的语句
+	 * 
+	 * @param keys
+	  *            需要查找的多个值
+	 * @param column
+	  *            字段名
+	 * @param path
+	 *      JSON Path，例如$.tags或$
+	 */
+	public static EXP JSON_CONTAINS_KEYS(JSONArray keys, String column, String path) throws ServerException {
+		if (keys != null && keys.size() > 0) {
+			String tempPath;
+			if (path == null || path.length() == 0) {
+				tempPath = "$";
+			} else {
+				tempPath = "$." + path;
+			}
+			EXP ret = EXP.INS();
+			for (int i = 0; i < keys.size(); i++) {
+				ret.or(EXP.JSON_CONTAINS(column, tempPath, keys.get(i)));
+			}
+			return ret;
+		}
+		return EXP.INS().exp("FALSE", null);
+	}
+	
+	/**
+	 * 判断JSON中是否包含指定元素的语句
+	 * 
+	 * @param keys
+	  *            需要查找的分组，和分组中需要查询的值
+	 * @param column
+	  *            字段名
+	 */
+	public static EXP JSON_CONTAINS_JSONOBJECT(JSONObject keys, String column) throws ServerException {
+		if (keys.size() > 0 && keys != null) {
+			Set<String> kset = keys.keySet();
+			Iterator<String> it = kset.iterator();
+			EXP tagEXP = EXP.INS();
+			while (it.hasNext()) {
+				String tempPath = it.next();
+				JSONArray tags = keys.getJSONArray(tempPath);
+				if (tags != null && tags.size() > 0) {
+					String path;
+					path = "$." + tempPath;
+					for (int i = 0; i < tags.size(); i++) {
+						tagEXP.or(EXP.JSON_CONTAINS(column, path, tags.get(i)));
+					}
+				}
+			}
+			return tagEXP;
+		}
+		return EXP.INS().exp("FALSE", null);
+	}
+	
+	/**
+	 * 	替换数组对象中的单个值
+	 * 
+	 * @param column
+	  *            字段名
+	 * @param index
+	  *            需要替换的值的下标
+	 * @param value
+	  *            替换后的值
+	 */
+	public static EXP JSONSET(String column, int index, Object value) {
 
+		if (value != null) {
+			String JSONSET = StringUtils.join(column, " = JSON_SET(", column, ", ' $[", index);
+			String val = null;
+
+			if (value instanceof Integer) {
+				Integer va = (Integer) value;
+				val = StringUtils.join("]', ", va, ")");
+			} else {
+				String va = (String) value;
+				val = StringUtils.join("]', '", va, "')");
+			}
+			JSONSET = StringUtils.join(JSONSET, val);
+			
+			return EXP.INS(false).exp(JSONSET, null);
+		}
+		return EXP.INS().exp("FALSE", null);
+	}
+	
+	
 	/**
 	 * SQL的 key = value 语句（很常用）</br>
 	 * 
