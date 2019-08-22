@@ -145,8 +145,13 @@ public interface BaseRC {
 
 	static final RC ECM_ORG_USER_SHARECERNO = new RC("ecm-0024", "股权证号已存在");
 
+	/**
+	 * kkqt小程序项目报错
+	 */
 	static final RC UP_VOTE_ERROR = new RC("ecm-0025", "已经点过赞");
-	
+
 	static final RC ACC_TASK_LIST = new RC("ecm-0026", "请勿重复领取任务");
+
+	static final RC CONTENT_BY_ERROR = new RC("ecm-0027", "您已购买,请勿重复购买");
 
 }

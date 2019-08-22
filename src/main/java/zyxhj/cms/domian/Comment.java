@@ -67,7 +67,6 @@ public class Comment extends TSEntity {
 	/**
 	 * 其他数据 比如-用户名 用户头像
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.STRING)
 	public String data;
 
