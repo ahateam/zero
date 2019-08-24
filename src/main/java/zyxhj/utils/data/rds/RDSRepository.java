@@ -229,7 +229,10 @@ public abstract class RDSRepository<T> {
 
 		if (StringUtils.isBlank(where)) {
 			buildCountAndOffset(sb, count, offset);
+
+			System.out.println(sb.toString());
 			return executeQuerySQL(conn, sb.toString(), null);
+			
 		} else {
 			buildWHERE(sb, where);
 			buildCountAndOffset(sb, count, offset);
@@ -299,6 +302,7 @@ public abstract class RDSRepository<T> {
 		String sql = sb.toString();
 		log.debug(sql);
 		
+		System.out.println(sql);
 		return executeUpdateSQL(conn, sb.toString(), total);
 	}
 
@@ -396,7 +400,7 @@ public abstract class RDSRepository<T> {
 
 		StringBuffer sb = new StringBuffer(sql);
 		buildCountAndOffset(sb, count, offset);
-		return executeQuerySQL2Objects(conn, sql.toString(), params);
+		return executeQuerySQL2Objects(conn, sb.toString(), params);
 	}
 
 	/**
