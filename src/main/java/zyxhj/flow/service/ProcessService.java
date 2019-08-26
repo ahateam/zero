@@ -529,8 +529,6 @@ public class ProcessService extends Controller {
 		pa.id = IDUtils.getSimpleId();
 		pa.type = type;
 		pa.rules = rules;
-		pa.transfers = transfers;
-		pa.circulations = circulations;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			processActionRepository.insert(conn, pa);
@@ -589,8 +587,6 @@ public class ProcessService extends Controller {
 		ProcessAction renew = new ProcessAction();
 		renew.type = type;
 		renew.rules = rules;
-		renew.transfers = transfers;
-		renew.circulations = circulations;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return processActionRepository.update(conn, EXP.INS().key("id", actionId), renew, true);
