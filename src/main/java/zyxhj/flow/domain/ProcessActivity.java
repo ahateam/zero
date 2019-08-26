@@ -86,9 +86,11 @@ public class ProcessActivity {
 		 * 4，时间超时</br>
 		 */
 
-		public static final String TYPE_ACCEPT = "accept";
-		public static final String TYPE_REJECT = "reject";
-		public static final String TYPE_TERMINATE = "terminate";
+		public static final String TYPE_ACCEPT = "accept";// 同意，有多重rule case
+		public static final String TYPE_REJECT = "reject";// 驳回
+		public static final String TYPE_TERMINATE = "terminate";// 终结，废除
+		public static final String TYPE_TRANSFER = "transfer";// 转办
+		public static final String TYPE_CIRCULATION = "circulation";// 传阅
 
 		public String id;
 
@@ -106,6 +108,17 @@ public class ProcessActivity {
 		 */
 		public JSONArray rules;
 
+		/**
+		 * 转办人信息</br>
+		 * TODO 目前不支持
+		 */
+		public JSONArray transfers;
+
+		/**
+		 * 传阅人信息</br>
+		 * TODO 目前不支持
+		 */
+		public JSONArray circulations;
 	}
 
 }

@@ -1,6 +1,5 @@
 package zyxhj.core.domain;
 
-import zyxhj.utils.data.AnnDic;
 import zyxhj.utils.data.AnnDicField;
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
@@ -12,16 +11,6 @@ import zyxhj.utils.data.rds.RDSAnnID;
  */
 @RDSAnnEntity(alias = "tb_tag")
 public class Tag {
-
-	@AnnDic
-	public static final class STATUS {
-
-		@AnnDicField(alias = "禁用")
-		public static final Byte DISABLED = 0;
-
-		@AnnDicField(alias = "启用")
-		public static final Byte ENABLED = 1;
-	}
 
 	/**
 	 * 分组编号
@@ -42,18 +31,29 @@ public class Tag {
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte status;
-	
-	
-	private static Tag buildSysTag(Long groupId, String name,Byte status) {
+
+	/////////////////////////////////////////////
+	/////////////////////////////////////////////
+	/////////////////////////////////////////////
+
+	@AnnDicField(alias = "禁用")
+	public static final Byte STATUS_DISABLED = 0;
+
+	@AnnDicField(alias = "启用")
+	public static final Byte STATUS_ENABLED = 1;
+
+	private static Tag buildSysTag(Long groupId, String name, Byte status) {
 		Tag t = new Tag();
 		t.groupId = groupId;
 		t.name = name;
 		t.status = status;
 		return t;
 	}
-	
-	public static final Tag SYS_TABLE_SCHEMA_APPLICATION = buildSysTag(TagGroup.flow_undefinition.id, "申请", Tag.STATUS.ENABLED);
-	
-	public static final Tag SYS_TABLE_SCHEMA_DATA = buildSysTag(TagGroup.flow_undefinition.id, "数据", Tag.STATUS.ENABLED);
-	
+
+	public static final Tag SYS_TABLE_SCHEMA_APPLICATION = buildSysTag(TagGroup.flow_undefinition.id, "申请",
+			Tag.STATUS_ENABLED);
+
+	public static final Tag SYS_TABLE_SCHEMA_DATA = buildSysTag(TagGroup.flow_undefinition.id, "数据",
+			Tag.STATUS_ENABLED);
+
 }

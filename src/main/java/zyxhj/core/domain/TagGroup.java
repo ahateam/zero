@@ -2,8 +2,6 @@ package zyxhj.core.domain;
 
 import java.util.TreeMap;
 
-import zyxhj.utils.data.AnnDic;
-import zyxhj.utils.data.AnnDicField;
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
@@ -66,8 +64,8 @@ public class TagGroup {
 			"流程资产描述——表格", null);
 	public static final TagGroup flow_asset_desc_report = buildSysTagGroup(Module.FLOW.key, "report", temp++,
 			"流程资产描述——报告", null);
-	public static final TagGroup flow_undefinition = buildSysTagGroup(Module.FLOW.key, "undefinition", temp++,
-			"未定义分组", null);
+	public static final TagGroup flow_undefinition = buildSysTagGroup(Module.FLOW.key, "undefinition", temp++, "未定义分组",
+			null);
 
 	public static TreeMap<String, TagGroup> SYS_TAG_GROUP_MAP = new TreeMap<>();
 

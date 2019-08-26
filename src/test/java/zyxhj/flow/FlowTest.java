@@ -23,16 +23,12 @@ import zyxhj.flow.domain.ProcessAsset;
 import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.TableSchema;
-import zyxhj.flow.repository.ProcessAssetDescRepository;
-import zyxhj.flow.repository.ProcessAssetRepository;
 import zyxhj.flow.service.FlowService;
 import zyxhj.flow.service.ProcessService;
 import zyxhj.flow.service.TableService;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
-import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
-import zyxhj.utils.data.EXP;
 
 public class FlowTest {
 
@@ -116,7 +112,7 @@ public class FlowTest {
 		tag.add(Tag.SYS_TABLE_SCHEMA_DATA);
 		tag.add(Tag.SYS_TABLE_SCHEMA_APPLICATION);
 
-		TableSchema ts = tableService.createTableSchema("表的别名", TableSchema.TYPE.VIRTUAL_QUERY_TABLE, columns, tag);
+		TableSchema ts = tableService.createTableSchema("表的别名", TableSchema.TYPE_VIRTUAL_QUERY_TABLE, columns, tag);
 		System.out.println(JSON.toJSONString(ts));
 		System.out.println("--- TableSchema ok ---");
 
@@ -170,7 +166,7 @@ public class FlowTest {
 		System.out.println("--- set start end Activity ok ---");
 
 		ProcessDefinition pd = flowService.getPDById(pdId);
-		flowService.createAssetDesc(pd.startActivityId, ProcessAssetDesc.TYPE.TABLE, "测试审批", true, "", "",
+		flowService.createAssetDesc(pd.startActivityId, ProcessAssetDesc.TYPE_TABLE, "测试审批", true, "", "",
 				activityIdStart.toString());
 		System.out.println("--- set AssetDesc ok ---");
 	}
@@ -259,11 +255,11 @@ public class FlowTest {
 
 		System.out.println(processAsset);
 	}
-	
+
 	@Test
 	public void editProcessTableData() throws Exception {
 		JSONObject data = JSONObject.parseObject("{star: 1565625600000, name: \"啦啦啦啦111\", end: 1565712000000}");
 		processService.editProcessTableData(400792274247519L, 400809850254116L, data);
-		
+
 	}
 }

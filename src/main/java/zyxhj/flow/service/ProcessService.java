@@ -17,6 +17,7 @@ import com.alibaba.fastjson.JSONObject;
 import zyxhj.core.domain.User;
 import zyxhj.core.repository.UserRepository;
 import zyxhj.flow.domain.Process;
+import zyxhj.flow.domain.ProcessAction;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessActivity.Action;
 import zyxhj.flow.domain.ProcessAsset;
@@ -24,6 +25,7 @@ import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
 import zyxhj.flow.domain.TableData;
+import zyxhj.flow.repository.ProcessActionRepository;
 import zyxhj.flow.repository.ProcessActivityRepository;
 import zyxhj.flow.repository.ProcessAssetRepository;
 import zyxhj.flow.repository.ProcessDefinitionRepository;
@@ -34,7 +36,7 @@ import zyxhj.utils.Singleton;
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
-import zyxhj.utils.data.ACTIVE;
+import zyxhj.utils.data.DataConst;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
 
@@ -49,6 +51,7 @@ public class ProcessService extends Controller {
 	private ProcessLogRepository processLogRepository;
 	private ProcessAssetRepository processAssetRepository;
 	private ProcessDefinitionRepository definitionRepository;
+	private ProcessActionRepository processActionRepository;
 
 	private UserRepository userRepository;
 
@@ -62,6 +65,8 @@ public class ProcessService extends Controller {
 			processLogRepository = Singleton.ins(ProcessLogRepository.class);
 			processAssetRepository = Singleton.ins(ProcessAssetRepository.class);
 			definitionRepository = Singleton.ins(ProcessDefinitionRepository.class);
+
+			processActionRepository = Singleton.ins(ProcessActionRepository.class);
 
 			userRepository = Singleton.ins(UserRepository.class);
 		} catch (Exception e) {
@@ -88,8 +93,8 @@ public class ProcessService extends Controller {
 		pro.title = title;
 		pro.timestamp = new Date();
 		pro.remark = remark;
-		pro.state = Process.STATE.USING;
-		pro.active = ACTIVE.NORMAL;
+		pro.state = Process.STATE_USING;
+		pro.active = DataConst.ACTIVE_NORMAL;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 
@@ -118,7 +123,7 @@ public class ProcessService extends Controller {
 
 			// 获取当前Activity的信息
 			ProcessActivity pa = activityRepository.get(conn, EXP.INS().key("pd_id", p.pdId)
-					.andKey("id", p.currActivityId).andKey("first", 0).andKey("active", ACTIVE.NORMAL));
+					.andKey("id", p.currActivityId).andKey("first", 0).andKey("active", DataConst.ACTIVE_NORMAL));
 
 			JSONObject json = new JSONObject();
 			json.put("process", p);
@@ -162,7 +167,7 @@ public class ProcessService extends Controller {
 			@P(t = "processId ") Long id//
 	) throws Exception {
 		Process pro = new Process();
-		pro.active = ACTIVE.DELETED;
+		pro.active = DataConst.ACTIVE_DELETED;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return processRepository.update(conn, EXP.INS().key("id", id), pro, true);
@@ -180,9 +185,8 @@ public class ProcessService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processRepository.getList(conn,
-					EXP.INS().key("pd_id", pdId).andKey("active", ACTIVE.NORMAL).append("ORDER BY timestamp DESC"),
-					count, offset);
+			return processRepository.getList(conn, EXP.INS().key("pd_id", pdId)
+					.andKey("active", DataConst.ACTIVE_NORMAL).append("ORDER BY timestamp DESC"), count, offset);
 		}
 	}
 
@@ -211,7 +215,7 @@ public class ProcessService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			// TODO 临时策略 ，需要集成用户
 			return processRepository.getList(conn,
-					EXP.INS().key("active", ACTIVE.NORMAL).append("ORDER BY timestamp DESC"), count, offset);
+					EXP.INS().key("active", DataConst.ACTIVE_NORMAL).append("ORDER BY timestamp DESC"), count, offset);
 		}
 	}
 
@@ -266,8 +270,8 @@ public class ProcessService extends Controller {
 			TableData td = tsService.insertTableData(tableSchemaId, data);
 
 			// 再关联创建流程资产
-			return createProcessAsset(processId, tableSchemaName, ProcessAssetDesc.TYPE.TABLE, descId,
-					td.id.toString(), userId);
+			return createProcessAsset(processId, tableSchemaName, ProcessAssetDesc.TYPE_TABLE, descId, td.id.toString(),
+					userId);
 		}
 	}
 
@@ -276,43 +280,39 @@ public class ProcessService extends Controller {
 			des = "更改表数据", //
 			ret = "受影响行数"//
 	)
-	public int editProcessTableData(
-			@P(t = "表结构编号") Long tableSchemaId,//
-			@P(t = "表数据编号") Long tableDataId,//
+	public int editProcessTableData(@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "表数据编号") Long tableDataId, //
 			@P(t = "数据") JSONObject data//
-			) throws Exception {
+	) throws Exception {
 		TableService tsService = Singleton.ins(TableService.class, "table");
 		return tsService.updateTableData(tableSchemaId, tableDataId, data);
 	}
-	
-	
+
 	@POSTAPI(//
 			path = "getProcessAssetByIdANDUserId", //
 			des = "根据用戶编号和流程实例编号，获取对应的资产", //
 			ret = "ProcessAsset"//
 	)
-	public JSONObject getProcessAssetByIdANDUserId(
-			@P(t = "用户编号") Long userId, //
+	public JSONObject getProcessAssetByIdANDUserId(@P(t = "用户编号") Long userId, //
 			@P(t = "资源编号") Long assetId //
-			) throws Exception {
+	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			
+
 			ProcessAsset pa = processAssetRepository.get(conn, EXP.INS().key("user_id", userId).andKey("id", assetId));
-			if(pa==null) {
+			if (pa == null) {
 				return null;
 			}
 			TableService tsService = Singleton.ins(TableService.class, "table");
 
 			JSONObject jo = new JSONObject();
-			
+
 			TableData td = tsService.getTableDatasById(new Long(pa.src));
-			
+
 			jo.put("processAsset", pa);
 			jo.put("tableData", td);
 			return jo;
 		}
 	}
-	
 
 	private void execAction(DruidPooledConnection conn, User user, Process p, ProcessActivity pa,
 			ProcessActivity.Action action, Long activityId) throws Exception {
@@ -359,6 +359,89 @@ public class ProcessService extends Controller {
 			renew.currActivityId = Long.decode(defaultTarget);
 			processRepository.update(conn, EXP.INS().key("id", p.id), renew, true);
 
+		}
+
+	}
+
+	public void processActionAccept() {
+
+	}
+
+	public void processActionReject() {
+
+	}
+
+	public void processActionTerminate() {
+
+	}
+
+	public void processActionTransfer() {
+
+	}
+
+	public void processActionCirculation() {
+
+	}
+
+	public void execProcessAction(//
+			@P(t = "流程实例编号") Long processId, //
+			@P(t = "流程节点编号") Long activityId, //
+			@P(t = "执行的行为编号") String actionId, //
+			@P(t = "执行的行为编号") String actionType, //
+			@P(t = "用户编号") Long userId//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			Process process = processRepository.get(conn, EXP.INS().key("id", processId));
+			if (process == null) {
+				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程实例");
+			} else {
+				if (process.currActivityId.equals(activityId)) {
+					ProcessActivity pa = activityRepository.get(conn, EXP.INS().key("id", activityId));
+					if (pa == null) {
+						throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点Activity");
+					} else {
+
+						if (StringUtils.isBlank(pa.actions)) {
+							throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
+						} else {
+
+							User user = userRepository.get(conn, EXP.INS().key("id", userId));
+							// if (user == null) {
+							// throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的用户");
+							// } else {
+
+							// 暂时没有鉴权
+							// TODO 做鉴权
+
+							user = new User();
+							user.id = userId;
+							user.name = "临时用户";
+
+							List<ProcessActivity.Action> list = JSON.parseArray(pa.actions,
+									ProcessActivity.Action.class);
+							if (list.size() > 0) {
+								HashMap<String, Action> actions = new HashMap<>();
+								list.forEach(item -> {
+									actions.put(item.id, item);
+								});
+								ProcessActivity.Action act = actions.get(actionId);
+								if (act == null) {
+									throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
+								} else {
+									// 终于找到节点，要开始执行了。
+									execAction(conn, user, process, pa, act, pa.id);
+								}
+							} else {
+								throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
+							}
+							// }
+						}
+
+					}
+				} else {
+					throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "业务进度（当前流程节点）与提交的activityId不符");
+				}
+			}
 		}
 
 	}
@@ -429,6 +512,92 @@ public class ProcessService extends Controller {
 	}
 
 	@POSTAPI(//
+			path = "createProcessAction", //
+			des = "创建流程Action", //
+			ret = "ProcessAction")
+	public ProcessAction createProcessAction(//
+			@P(t = "流程实例编号") Long pdId, //
+			@P(t = "流程节点编号") Long activityId, //
+			@P(t = "Action类型") String type, //
+			@P(t = "规则引擎脚本", r = false) JSONArray rules, //
+			@P(t = "转办人信息", r = false) JSONArray transfers, //
+			@P(t = "传阅信息", r = false) JSONArray circulations //
+	) throws Exception {
+		ProcessAction pa = new ProcessAction();
+		pa.pdId = pdId;
+		pa.activityId = activityId;
+		pa.id = IDUtils.getSimpleId();
+		pa.type = type;
+		pa.rules = rules;
+		pa.transfers = transfers;
+		pa.circulations = circulations;
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			processActionRepository.insert(conn, pa);
+		}
+		return pa;
+	}
+
+	@POSTAPI(//
+			path = "delProcessAction", //
+			des = "删除流程Action", //
+			ret = "所影响记录行数")
+	public int delProcessAction(//
+			@P(t = "Action编号") Long actionId //
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return processActionRepository.delete(conn, EXP.INS().key("id", actionId));
+		}
+	}
+
+	@POSTAPI(//
+			path = "getProcessActionsInActivity", //
+			des = "获取流程节点Activity中流程Action列表", //
+			ret = "List<ProcessAction>")
+	public List<ProcessAction> getProcessActionsInActivity(//
+			@P(t = "Action编号") Long activityId //
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return processActionRepository.getList(conn, EXP.INS().key("activity_id", activityId), 512, 0);
+		}
+	}
+
+	@POSTAPI(//
+			path = "getProcessActionsInPD", //
+			des = "获取流程定义PD中流程Action列表", //
+			ret = "List<ProcessAction>")
+	public List<ProcessAction> getProcessActionsInPD(//
+			@P(t = "流程定义编号") Long pdId //
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return processActionRepository.getList(conn, EXP.INS().key("pd_id", pdId), 512, 0);
+		}
+	}
+
+	@POSTAPI(//
+			path = "editProcessAction", //
+			des = "编辑流程Action", //
+			ret = "所影响记录行数")
+	public int editProcessAction(//
+			@P(t = "Action编号") Long actionId, //
+			@P(t = "Action类型") String type, //
+			@P(t = "规则引擎脚本", r = false) JSONArray rules, //
+			@P(t = "转办人信息", r = false) JSONArray transfers, //
+			@P(t = "传阅信息", r = false) JSONArray circulations //
+	) throws Exception {
+
+		ProcessAction renew = new ProcessAction();
+		renew.type = type;
+		renew.rules = rules;
+		renew.transfers = transfers;
+		renew.circulations = circulations;
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return processActionRepository.update(conn, EXP.INS().key("id", actionId), renew, true);
+		}
+	}
+
+	@POSTAPI(//
 			path = "getProcessLogList", //
 			des = "根据processId查询流程抄作日志", //
 			ret = "List<ProcessLog>")
@@ -453,7 +622,7 @@ public class ProcessService extends Controller {
 			@P(t = "资产名称") String name, //
 			@P(t = "资产名称") String descType, //
 			@P(t = "资源描述编号") Long descId, //
-			@P(t = "资源内容（编号或url）") String src,//
+			@P(t = "资源内容（编号或url）") String src, //
 			@P(t = "用户编号") Long userId//
 	) throws Exception {
 		ProcessAsset pa = new ProcessAsset();
@@ -504,36 +673,36 @@ public class ProcessService extends Controller {
 		}
 	}
 
-//	@POSTAPI(//
-//			path = "getProcessAssetByDescIds", //
-//			des = "根据流程资产描述编号，获取对应的资产列表", //
-//			ret = "ProcessAsset列表"//
-//	)
-//	public JSONArray getProcessAssetByDescIds(//
-//			@P(t = "资产编号") Long processId, //
-//			@P(t = "资产描述编号列表") JSONArray descIds, //
-//			Integer count, //
-//			Integer offset//
-//	) throws Exception {
-////TODO 换成 where in 语句，试一试
-//		try (DruidPooledConnection conn = ds.getConnection()) {
-//
-//			JSONArray ret = new JSONArray();
-//			for (int i = 0; i < descIds.size(); i++) {
-//				Long id = descIds.getLong(i);
-//
-//				ProcessAsset pa = processAssetRepository.get(conn,
-//						EXP.INS().key("process_id", processId).andKey("desc_id", id));
-//
-//				JSONObject jo = new JSONObject();
-//				jo.put("descId", id);
-//				jo.put("asset", pa);
-//				ret.add(jo);
-//			}
-//
-//			return ret;
-//		}
-//	}
+	// @POSTAPI(//
+	// path = "getProcessAssetByDescIds", //
+	// des = "根据流程资产描述编号，获取对应的资产列表", //
+	// ret = "ProcessAsset列表"//
+	// )
+	// public JSONArray getProcessAssetByDescIds(//
+	// @P(t = "资产编号") Long processId, //
+	// @P(t = "资产描述编号列表") JSONArray descIds, //
+	// Integer count, //
+	// Integer offset//
+	// ) throws Exception {
+	//// TODO 换成 where in 语句，试一试
+	// try (DruidPooledConnection conn = ds.getConnection()) {
+	//
+	// JSONArray ret = new JSONArray();
+	// for (int i = 0; i < descIds.size(); i++) {
+	// Long id = descIds.getLong(i);
+	//
+	// ProcessAsset pa = processAssetRepository.get(conn,
+	// EXP.INS().key("process_id", processId).andKey("desc_id", id));
+	//
+	// JSONObject jo = new JSONObject();
+	// jo.put("descId", id);
+	// jo.put("asset", pa);
+	// ret.add(jo);
+	// }
+	//
+	// return ret;
+	// }
+	// }
 
 	@POSTAPI(//
 			path = "getProcessAssetByDescIds", //
@@ -546,28 +715,24 @@ public class ProcessService extends Controller {
 			Integer count, //
 			Integer offset//
 	) throws Exception {
-		//TODO 换成 where in 语句，试一试
+		// TODO 换成 where in 语句，试一试
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			EXP exp = EXP.INS().key("process_id", processId).and(EXP.IN_ORDERED("desc_id", descIds.toArray()));
 			return processAssetRepository.getList(conn, exp, count, offset);
 		}
 	}
-	
-	
+
 	@POSTAPI(//
 			path = "getProcessAssetList", //
 			des = "根据用户编号以及流程编号，获取对应的资产列表", //
 			ret = "ProcessAsset列表"//
 	)
-	public List<ProcessAsset> getProcessAssetList(
-			@P(t = "用户编号") Long userId,
-			@P(t = "资产编号") Long processId,
-			Integer count,
-			Integer offset
-			) throws Exception{
+	public List<ProcessAsset> getProcessAssetList(@P(t = "用户编号") Long userId, @P(t = "资产编号") Long processId,
+			Integer count, Integer offset) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			
-			return processAssetRepository.getList(conn, EXP.INS().key("user_id", userId).andKey("process_id", processId), count, offset);
+
+			return processAssetRepository.getList(conn,
+					EXP.INS().key("user_id", userId).andKey("process_id", processId), count, offset);
 		}
 	}
 }

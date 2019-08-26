@@ -3,7 +3,6 @@ package zyxhj.flow.domain;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import zyxhj.utils.data.AnnDic;
 import zyxhj.utils.data.AnnDicField;
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
@@ -14,18 +13,6 @@ import zyxhj.utils.data.rds.RDSAnnID;
  */
 @RDSAnnEntity(alias = "tb_table_schema")
 public class TableSchema {
-
-	@AnnDic
-	public static final class TYPE {
-		@AnnDicField(alias = "独立建表模式，可以查询")
-		public static final Byte QUERY_TABLE = 0;
-
-		@AnnDicField(alias = "RDS的JSON内嵌虚拟表模式，可以查询")
-		public static final Byte VIRTUAL_QUERY_TABLE = 1;
-
-		@AnnDicField(alias = "TableStore存储，不能查询")
-		public static final Byte VIRTUAL_TABLE = 2;
-	}
 
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
@@ -54,6 +41,19 @@ public class TableSchema {
 	 */
 	@RDSAnnField(column = RDSAnnField.TEXT_TITLE)
 	public JSONArray tags;
+
+	/////////////////////////////////////////////
+	/////////////////////////////////////////////
+	/////////////////////////////////////////////
+
+	@AnnDicField(alias = "独立建表模式，可以查询")
+	public static final Byte TYPE_QUERY_TABLE = 0;
+
+	@AnnDicField(alias = "RDS的JSON内嵌虚拟表模式，可以查询")
+	public static final Byte TYPE_VIRTUAL_QUERY_TABLE = 1;
+
+	@AnnDicField(alias = "TableStore存储，不能查询")
+	public static final Byte TYPE_VIRTUAL_TABLE = 2;
 
 	public static class Column {
 

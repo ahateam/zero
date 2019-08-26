@@ -29,7 +29,7 @@ import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
-import zyxhj.utils.data.ACTIVE;
+import zyxhj.utils.data.DataConst;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
 
@@ -210,7 +210,7 @@ public class FlowService extends Controller {
 		pa.part = part;
 		pa.receivers = receivers;
 		pa.actions = actions;
-		pa.active = ACTIVE.NORMAL;
+		pa.active = DataConst.ACTIVE_NORMAL;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			activityRepository.insert(conn, pa);
@@ -263,7 +263,7 @@ public class FlowService extends Controller {
 			@P(t = "流程节点编号") Long activityId//
 	) throws Exception {
 		ProcessActivity renew = new ProcessActivity();
-		renew.active = ACTIVE.DELETED;
+		renew.active = DataConst.ACTIVE_DELETED;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return activityRepository.update(conn, EXP.INS().key("pd_id", pdId).andKey("id", activityId), renew, true);
@@ -308,8 +308,8 @@ public class FlowService extends Controller {
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return activityRepository.getList(conn, EXP.INS().key("pd_id", pdId).andKey("active", ACTIVE.NORMAL), count,
-					offset);
+			return activityRepository.getList(conn,
+					EXP.INS().key("pd_id", pdId).andKey("active", DataConst.ACTIVE_NORMAL), count, offset);
 		}
 	}
 

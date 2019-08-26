@@ -1,7 +1,5 @@
 package zyxhj.flow.domain;
 
-import java.util.List;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 

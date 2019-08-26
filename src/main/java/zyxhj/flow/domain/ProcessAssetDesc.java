@@ -1,6 +1,5 @@
 package zyxhj.flow.domain;
 
-import zyxhj.utils.data.AnnDic;
 import zyxhj.utils.data.AnnDicField;
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
@@ -11,22 +10,6 @@ import zyxhj.utils.data.rds.RDSAnnID;
  */
 @RDSAnnEntity(alias = "tb_process_asset_desc")
 public class ProcessAssetDesc {
-
-	@AnnDic
-	public static final class TYPE {
-
-		@AnnDicField(alias = "表格")
-		public static final String TABLE = "table";
-
-		@AnnDicField(alias = "报表")
-		public static final String REPORT = "report";
-
-		@AnnDicField(alias = "文件")
-		public static final String FILE = "file";
-
-		@AnnDicField(alias = "附件")
-		public static final String ANNEX = "annex";
-	}
 
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
@@ -54,4 +37,22 @@ public class ProcessAssetDesc {
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String uri;// 模版文件地址
 
+	/////////////////////////////////////////////
+	/////////////////////////////////////////////
+	/////////////////////////////////////////////
+
+	@AnnDicField(alias = "表格")
+	public static final String TYPE_TABLE = "table";
+
+	@AnnDicField(alias = "报表")
+	public static final String TYPE_REPORT = "report";
+
+	@AnnDicField(alias = "文件")
+	public static final String TYPE_FILE = "file";
+
+	@AnnDicField(alias = "附件")
+	public static final String TYPE_ANNEX = "annex";
+
+	@AnnDicField(alias = "投票")
+	public static final String TYPE_VOTE = "vote";
 }

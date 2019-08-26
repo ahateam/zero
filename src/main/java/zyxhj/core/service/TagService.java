@@ -1,6 +1,5 @@
 package zyxhj.core.service;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -79,8 +78,8 @@ public class TagService extends Controller {
 		renew.remark = remark;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return groupRepository.update(conn,EXP.INS().key("id", id), renew, true);
-			
+			return groupRepository.update(conn, EXP.INS().key("id", id), renew, true);
+
 		}
 	}
 
@@ -127,7 +126,7 @@ public class TagService extends Controller {
 
 		ct.groupId = groupId;
 		ct.name = name;
-		ct.status = Tag.STATUS.ENABLED;
+		ct.status = Tag.STATUS_ENABLED;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			tagRepository.insert(conn, ct);
@@ -156,8 +155,8 @@ public class TagService extends Controller {
 		renew.status = status;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tagRepository.update(conn,EXP.INS().key("group_id", groupId).andKey("name", name), renew, true);
-			
+			return tagRepository.update(conn, EXP.INS().key("group_id", groupId).andKey("name", name), renew, true);
+
 		}
 	}
 

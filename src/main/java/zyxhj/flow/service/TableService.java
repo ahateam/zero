@@ -49,6 +49,16 @@ public class TableService extends Controller {
 	private TableVirtualRepository tableVirtualRepository;
 	private ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
 
+	public static void main(String[] args) throws Exception {
+		ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+
+		engine.eval("print(Java.type('zyxhj.flow.service.TableService').testFunc(123,'testName'))");
+	}
+
+	public static String testFunc(int num, String name) {
+		return ">>>" + num + " & " + name;
+	}
+
 	public TableService(String node) {
 		super(node);
 		try {
@@ -132,7 +142,7 @@ public class TableService extends Controller {
 		TableSchema ts = new TableSchema();
 		ts.id = IDUtils.getSimpleId();
 		ts.alias = alias;
-		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE;
+		ts.type = TableSchema.TYPE_VIRTUAL_QUERY_TABLE;
 
 		ts.columns = columns;
 		ts.tags = tags;
@@ -157,7 +167,7 @@ public class TableService extends Controller {
 		ts.alias = alias;
 
 		// TODO 变更类型涉及到数据迁移，目前不做
-		ts.type = TableSchema.TYPE.VIRTUAL_QUERY_TABLE;
+		ts.type = TableSchema.TYPE_VIRTUAL_QUERY_TABLE;
 
 		ts.columns = columns;
 		ts.tags = tags;
@@ -248,7 +258,7 @@ public class TableService extends Controller {
 				for (int i = 0; i < ts.columns.size(); i++) {
 					JSONObject jo = ts.columns.getJSONObject(i);
 					String key = jo.keySet().iterator().next();
-					
+
 					Column c = jo.toJavaObject(Column.class);
 					if (c.columnType.equals(TableSchema.Column.COLUMN_TYPE_COMPUTE)) {
 						// 计算列,开始计算
@@ -268,13 +278,12 @@ public class TableService extends Controller {
 			path = "updateTableData", //
 			des = "修改表数据", //
 			ret = "state --- int")
-	public int updateTableData(
-			@P(t = "表结构编号") Long tableSchemaId, //
+	public int updateTableData(@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "表数据编号") Long dataId, //
 			@P(t = "表数据") JSONObject data) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			TableData td = tableDataRepository
-					.get(conn, EXP.INS().key("table_schema_id", tableSchemaId).andKey("id", dataId));
+			TableData td = tableDataRepository.get(conn,
+					EXP.INS().key("table_schema_id", tableSchemaId).andKey("id", dataId));
 			if (td == null) {
 				throw new ServerException(BaseRC.FLOW_FORM_TABLE_DATA_NOT_FOUND);
 			} else {
@@ -338,19 +347,19 @@ public class TableService extends Controller {
 			return tableDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId), count, offset);
 		}
 	}
-	// 获取数据
-		@POSTAPI(path = "getTableDatasById", //
-				des = "获取表数据", //
-				ret = "TableData"//
-		)
-		public TableData getTableDatasById(
-				@P(t = "表结构编号") Long tableDataId //
-		) throws Exception {
 
-			try (DruidPooledConnection conn = ds.getConnection()) {
-				return tableDataRepository.get(conn, EXP.INS().key("id", tableDataId));
-			}
+	// 获取数据
+	@POSTAPI(path = "getTableDatasById", //
+			des = "获取表数据", //
+			ret = "TableData"//
+	)
+	public TableData getTableDatasById(@P(t = "表结构编号") Long tableDataId //
+	) throws Exception {
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableDataRepository.get(conn, EXP.INS().key("id", tableDataId));
 		}
+	}
 
 	/**
 	 * 创建表查询
