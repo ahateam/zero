@@ -343,12 +343,22 @@ public class EXP implements Cloneable {
 			EXP tagEXP = EXP.INS();
 			while (it.hasNext()) {
 				String tempPath = it.next();
-				JSONArray tags = keys.getJSONArray(tempPath);
-				if (tags != null && tags.size() > 0) {
-					String path;
-					path = "$." + tempPath;
-					for (int i = 0; i < tags.size(); i++) {
-						tagEXP.or(EXP.JSON_CONTAINS(column, path, tags.get(i)));
+				Object obj = keys.getObject(tempPath, Object.class);
+				if(obj instanceof JSONArray) {
+					JSONArray tags = keys.getJSONArray(tempPath);
+					if (tags != null && tags.size() > 0) {
+						String path;
+						path = "$." + tempPath;
+						for (int i = 0; i < tags.size(); i++) {
+							tagEXP.or(EXP.JSON_CONTAINS(column, path, tags.get(i)));
+						}
+					}
+				}else {
+					String objStr = (String)obj;
+					if (objStr.length()>0&&objStr!=null) {
+						String path;
+						path = "$." + tempPath;
+						tagEXP.or(EXP.JSON_CONTAINS(column, path, objStr));
 					}
 				}
 			}
@@ -358,7 +368,7 @@ public class EXP implements Cloneable {
 	}
 	
 	/**
-	 * 	替换数组对象中的单个值
+	 * 	替换数组中的单个值
 	 * 
 	 * @param column
 	  *            字段名
@@ -367,7 +377,7 @@ public class EXP implements Cloneable {
 	 * @param value
 	  *            替换后的值
 	 */
-	public static EXP JSONSET(String column, int index, Object value) {
+	public static EXP JSON_SET(String column, int index, Object value) {
 
 		if (value != null) {
 			String JSONSET = StringUtils.join(column, " = JSON_SET(", column, ", ' $[", index);
