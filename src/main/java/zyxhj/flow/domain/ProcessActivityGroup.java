@@ -1,6 +1,7 @@
 package zyxhj.flow.domain;
 
-import com.alibaba.fastjson.JSONArray;
+import java.util.List;
+
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.utils.data.rds.RDSAnnEntity;
@@ -52,6 +53,13 @@ public class ProcessActivityGroup {
 	 * 分组的子Activity编号列表
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public JSONArray subActivityIds;
+	public List<SubActivity> subActivities;
+
+	public static class SubActivity {
+
+		public Long subActivityId;
+		public Boolean necessary;// 是否必须
+//		public String actionStatus;// 子activity的执行情况，与ProcessActivity中的对应值相同(accept,reject...)
+	}
 
 }
