@@ -51,8 +51,7 @@ public class ProcessService extends Controller {
 
 	private ProcessRepository processRepository;
 	private ProcessActivityRepository activityRepository;
-	private ProcessActivityGroupRepository activityGroupRepository;
-	private ProcessLogRepository processLogRepository;
+	private ProcessLogRepository processLogRepository;	
 	private ProcessAssetRepository processAssetRepository;
 	private ProcessDefinitionRepository definitionRepository;
 	private ProcessActionRepository processActionRepository;
@@ -66,7 +65,6 @@ public class ProcessService extends Controller {
 
 			processRepository = Singleton.ins(ProcessRepository.class);
 			activityRepository = Singleton.ins(ProcessActivityRepository.class);
-			activityGroupRepository = Singleton.ins(ProcessActivityGroupRepository.class);
 			processLogRepository = Singleton.ins(ProcessLogRepository.class);
 			processAssetRepository = Singleton.ins(ProcessAssetRepository.class);
 			definitionRepository = Singleton.ins(ProcessDefinitionRepository.class);
@@ -113,33 +111,6 @@ public class ProcessService extends Controller {
 	}
 
 	@POSTAPI(//
-			path = "getProcessInfo", //
-			des = "得到流程实例所需数据Process，Activity，definition信息", //
-			ret = "Process实例")
-	public JSONObject getProcessInfo(//
-			@P(t = "流程定义编号") Long processId //
-	) throws Exception {
-		try (DruidPooledConnection conn = ds.getConnection()) {
-
-			Process p = processRepository.get(conn, EXP.INS().key("id", processId));
-
-			// 获取对应Definition的信息
-			ProcessDefinition pd = definitionRepository.get(conn, EXP.INS().key("id", p.pdId));
-
-			// 获取当前Activity的信息
-			ProcessActivity pa = activityRepository.get(conn, EXP.INS().key("pd_id", p.pdId)
-					.andKey("id", p.currActivityId).andKey("first", 0).andKey("active", DataConst.ACTIVE_NORMAL));
-
-			JSONObject json = new JSONObject();
-			json.put("process", p);
-			json.put("definition", pd);
-			json.put("activity", pa);
-
-			return json;
-		}
-	}
-
-	@POSTAPI(//
 			path = "editProcess", //
 			des = "编辑流程实例（Process）", //
 			ret = "state ---- int")
@@ -176,6 +147,34 @@ public class ProcessService extends Controller {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return processRepository.update(conn, EXP.INS().key("id", id), pro, true);
+		}
+	}
+	
+
+	@POSTAPI(//
+			path = "getProcessInfo", //
+			des = "得到流程实例所需数据Process，Activity，definition信息", //
+			ret = "Process实例")
+	public JSONObject getProcessInfo(//
+			@P(t = "流程定义编号") Long processId //
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+
+			Process p = processRepository.get(conn, EXP.INS().key("id", processId));
+
+			// 获取对应Definition的信息
+			ProcessDefinition pd = definitionRepository.get(conn, EXP.INS().key("id", p.pdId));
+
+			// 获取当前Activity的信息
+			ProcessActivity pa = activityRepository.get(conn, EXP.INS().key("pd_id", p.pdId)
+					.andKey("id", p.currActivityId).andKey("first", 0).andKey("active", DataConst.ACTIVE_NORMAL));
+
+			JSONObject json = new JSONObject();
+			json.put("process", p);
+			json.put("definition", pd);
+			json.put("activity", pa);
+
+			return json;
 		}
 	}
 
@@ -223,39 +222,10 @@ public class ProcessService extends Controller {
 					EXP.INS().key("active", DataConst.ACTIVE_NORMAL).append("ORDER BY timestamp DESC"), count, offset);
 		}
 	}
-
-	/**
-	 * 添加流程操作日志（不开放的接口）
-	 */
-	protected void createProcessLog(//
-			@P(t = "流程编号") Long processId, //
-			@P(t = "标题") String title, //
-			@P(t = "使用者编号") Long userid, //
-			@P(t = "使用者名称") String userName, //
-			@P(t = "行为或活动") String action, //
-			@P(t = "行为或活动说明") String actionDesc, //
-			@P(t = "流程节点编号") Long activityId, //
-			@P(t = "记录扩展数据") String ext//
-	) throws Exception {
-		// 最好做成异步
-
-		ProcessLog pl = new ProcessLog();
-		pl.processId = processId;
-		pl.id = IDUtils.getSimpleId();
-		pl.title = title;
-		pl.type = ProcessLog.TYPE_INFO;
-		pl.userId = userid;
-		pl.userName = userName;
-		pl.action = action;
-		pl.actionDesc = actionDesc;
-		pl.activityId = activityId;
-		pl.ext = ext;
-
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			processLogRepository.insert(conn, pl);
-		}
-
-	}
+	
+	///////////////////////////////
+	//////TableData
+	///////////////////////////////
 
 	@POSTAPI(//
 			path = "insertProcessTableData", //
@@ -292,6 +262,11 @@ public class ProcessService extends Controller {
 		TableService tsService = Singleton.ins(TableService.class, "table");
 		return tsService.updateTableData(tableSchemaId, tableDataId, data);
 	}
+	
+	
+	///////////////////////////////
+	//////ProcessAsset
+	///////////////////////////////
 
 	@POSTAPI(//
 			path = "getProcessAssetByIdANDUserId", //
@@ -318,6 +293,112 @@ public class ProcessService extends Controller {
 			return jo;
 		}
 	}
+	
+	@POSTAPI(//
+			path = "createProcessAsset", //
+			des = "添加流程资产（附件，文件，表单等）", //
+			ret = "ProcessAsset实例"//
+	)
+	public ProcessAsset createProcessAsset(//
+			@P(t = "流程编号") Long processId, //
+			@P(t = "资产名称") String name, //
+			@P(t = "资产名称") String descType, //
+			@P(t = "资源描述编号") Long descId, //
+			@P(t = "资源内容（编号或url）") String src, //
+			@P(t = "用户编号") Long userId//
+	) throws Exception {
+		ProcessAsset pa = new ProcessAsset();
+		pa.id = IDUtils.getSimpleId();
+		pa.processId = processId;
+		pa.name = name;
+		pa.descType = descType;
+
+		pa.descId = descId;
+		pa.userId = userId;
+		pa.src = src;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			processAssetRepository.insert(conn, pa);
+			return pa;
+		}
+	}
+
+	@POSTAPI(//
+			path = "editProcessAsset", //
+			des = "编辑流程资产（附件，文件，表单等）", //
+			ret = "更新影响的记录行数"//
+	)
+	public int editProcessAsset(//
+			@P(t = "资产编号") Long assetId, //
+			@P(t = "资产名称") String name, //
+			@P(t = "资源内容（编号或url）") String src//
+	) throws Exception {
+		ProcessAsset renew = new ProcessAsset();
+		renew.name = name;
+		renew.src = src;
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return processAssetRepository.update(conn, EXP.INS().key("id", assetId), renew, true);
+		}
+	}
+
+	@POSTAPI(//
+			path = "delProcessAsset", //
+			des = "删除流程资产", //
+			ret = "更新影响的记录行数"//
+	)
+	public int delProcessAsset(//
+			@P(t = "assetId") Long assetId//
+	) throws Exception {
+		// 流程资产可以真删除
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return processAssetRepository.delete(conn, EXP.INS().key("id", assetId));
+		}
+	}
+	
+	@POSTAPI(//
+			path = "getProcessAssetByDescIds", //
+			des = "根据流程资产描述编号，获取对应的资产列表", //
+			ret = "ProcessAsset列表"//
+	)
+	public List<ProcessAsset> getProcessAssetByDescIds(//
+			@P(t = "资产编号") Long processId, //
+			@P(t = "资产描述编号列表") JSONArray descIds, //
+			Integer count, //
+			Integer offset//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			EXP exp = EXP.INS().key("process_id", processId).and(EXP.IN_ORDERED("desc_id", descIds.toArray()));
+			return processAssetRepository.getList(conn, exp, count, offset);
+		}
+	}
+
+	@POSTAPI(//
+			path = "getProcessAssetList", //
+			des = "根据用户编号以及流程编号，获取对应的资产列表", //
+			ret = "ProcessAsset列表"//
+	)
+	public List<ProcessAsset> getProcessAssetList(//
+			@P(t = "用户编号") Long userId, //
+			@P(t = "资产编号") Long processId, //
+			Integer count, //
+			Integer offset//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+
+			return processAssetRepository.getList(conn,
+					EXP.INS().key("user_id", userId).andKey("process_id", processId), count, offset);
+		}
+	}
+	
+
+	///////////////////////////////
+	//////ProcessAction
+	///////////////////////////////
+
+	/**
+	 * 原始版本
+	 *
+	 */
 
 	private void execAction(DruidPooledConnection conn, User user, Process p, ProcessActivity pa,
 			ProcessActivity.Action action, Long activityId) throws Exception {
@@ -348,16 +429,6 @@ public class ProcessService extends Controller {
 					// TODO 暂时不支持
 				}
 			}
-
-			// 如果之前都没有执行跳转，则开始自行跳转到defaultTarget
-			// @P(t = "流程编号") Long processId, //
-			// @P(t = "标题") String title, //
-			// @P(t = "使用者编号") Long userid, //
-			// @P(t = "使用者名称") String userName, //
-			// @P(t = "行为或活动") String action, //
-			// @P(t = "行为或活动说明") String actionDesc, //
-			// @P(t = "流程节点编号") Long activityId, //
-			// @P(t = "记录扩展数据") JSONObject ext//
 			createProcessLog(p.id, "执行Action", user.id, user.name, action.type, action.label, activityId, "");
 
 			Process renew = new Process();
@@ -367,7 +438,8 @@ public class ProcessService extends Controller {
 		}
 
 	}
-
+	
+	//重构后版本
 	//同意
 	public int processActionAccept(//
 			@P(t = "流程实例编号") Long processId, //
@@ -513,7 +585,7 @@ public class ProcessService extends Controller {
 
 	}
 
-	private ProcessAction processActionIF(Long processId, Long activityId, Long actionId) throws Exception {
+	protected ProcessAction processActionIF(Long processId, Long activityId, Long actionId) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			Process process = processRepository.get(conn, EXP.INS().key("id", processId));
 			if (process == null) {
@@ -536,69 +608,6 @@ public class ProcessService extends Controller {
 				}
 			}
 		}
-	}
-
-	public void execProcessAction(//
-			@P(t = "流程实例编号") Long processId, //
-			@P(t = "流程节点编号") Long activityId, //
-			@P(t = "执行的行为编号") String actionId, //
-			@P(t = "执行的行为编号") String actionType, //
-			@P(t = "用户编号") Long userId//
-	) throws Exception {
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			Process process = processRepository.get(conn, EXP.INS().key("id", processId));
-			if (process == null) {
-				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程实例");
-			} else {
-				if (process.currActivityId.equals(activityId)) {
-					ProcessActivity pa = activityRepository.get(conn, EXP.INS().key("id", activityId));
-					if (pa == null) {
-						throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点Activity");
-					} else {
-
-						if (StringUtils.isBlank(pa.actions)) {
-							throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
-						} else {
-
-							User user = userRepository.get(conn, EXP.INS().key("id", userId));
-							// if (user == null) {
-							// throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的用户");
-							// } else {
-
-							// 暂时没有鉴权
-							// TODO 做鉴权
-
-							user = new User();
-							user.id = userId;
-							user.name = "临时用户";
-
-							List<ProcessActivity.Action> list = JSON.parseArray(pa.actions,
-									ProcessActivity.Action.class);
-							if (list.size() > 0) {
-								HashMap<String, Action> actions = new HashMap<>();
-								list.forEach(item -> {
-									actions.put(item.id, item);
-								});
-								ProcessActivity.Action act = actions.get(actionId);
-								if (act == null) {
-									throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
-								} else {
-									// 终于找到节点，要开始执行了。
-									execAction(conn, user, process, pa, act, pa.id);
-								}
-							} else {
-								throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
-							}
-							// }
-						}
-
-					}
-				} else {
-					throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "业务进度（当前流程节点）与提交的activityId不符");
-				}
-			}
-		}
-
 	}
 
 	@POSTAPI(//
@@ -666,40 +675,9 @@ public class ProcessService extends Controller {
 		}
 	}
 
-	@POSTAPI(//
-			path = "createProcessAction", //
-			des = "创建流程Action", //
-			ret = "ProcessAction")
-	public ProcessAction createProcessAction(//
-			@P(t = "流程实例编号") Long pdId, //
-			@P(t = "流程节点编号") Long activityId, //
-			@P(t = "Action类型") String type, //
-			@P(t = "规则引擎脚本", r = false) JSONArray rules //
-	) throws Exception {
-		ProcessAction pa = new ProcessAction();
-		pa.pdId = pdId;
-		pa.activityId = activityId;
-		pa.id = IDUtils.getSimpleId();
-		pa.type = type;
-		pa.rules = rules;
+	
 
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			processActionRepository.insert(conn, pa);
-		}
-		return pa;
-	}
 
-	@POSTAPI(//
-			path = "delProcessAction", //
-			des = "删除流程Action", //
-			ret = "所影响记录行数")
-	public int delProcessAction(//
-			@P(t = "Action编号") Long actionId //
-	) throws Exception {
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processActionRepository.delete(conn, EXP.INS().key("id", actionId));
-		}
-	}
 
 	@POSTAPI(//
 			path = "getProcessActionsInActivity", //
@@ -716,7 +694,8 @@ public class ProcessService extends Controller {
 	@POSTAPI(//
 			path = "getProcessActionsInPD", //
 			des = "获取流程定义PD中流程Action列表", //
-			ret = "List<ProcessAction>")
+			ret = "List<ProcessAction>"//
+			)
 	public List<ProcessAction> getProcessActionsInPD(//
 			@P(t = "流程定义编号") Long pdId //
 	) throws Exception {
@@ -725,100 +704,6 @@ public class ProcessService extends Controller {
 		}
 	}
 
-	@POSTAPI(//
-			path = "editProcessAction", //
-			des = "编辑流程Action", //
-			ret = "所影响记录行数")
-	public int editProcessAction(//
-			@P(t = "Action编号") Long actionId, //
-			@P(t = "Action类型") String type, //
-			@P(t = "规则引擎脚本", r = false) JSONArray rules //
-	) throws Exception {
-
-		ProcessAction renew = new ProcessAction();
-		renew.type = type;
-		renew.rules = rules;
-
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processActionRepository.update(conn, EXP.INS().key("id", actionId), renew, true);
-		}
-	}
-
-	@POSTAPI(//
-			path = "getProcessLogList", //
-			des = "根据processId查询流程抄作日志", //
-			ret = "List<ProcessLog>")
-	public List<ProcessLog> getProcessLogList(//
-			@P(t = "processId流程编号") Long processId, //
-			Integer count, //
-			Integer offset//
-	) throws Exception {
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processLogRepository.getList(conn,
-					EXP.INS().key("process_id", processId).append("ORDER BY timestamp DESC"), count, offset);
-		}
-	}
-
-	@POSTAPI(//
-			path = "createProcessAsset", //
-			des = "添加流程资产（附件，文件，表单等）", //
-			ret = "ProcessAsset实例"//
-	)
-	public ProcessAsset createProcessAsset(//
-			@P(t = "流程编号") Long processId, //
-			@P(t = "资产名称") String name, //
-			@P(t = "资产名称") String descType, //
-			@P(t = "资源描述编号") Long descId, //
-			@P(t = "资源内容（编号或url）") String src, //
-			@P(t = "用户编号") Long userId//
-	) throws Exception {
-		ProcessAsset pa = new ProcessAsset();
-		pa.id = IDUtils.getSimpleId();
-		pa.processId = processId;
-		pa.name = name;
-		pa.descType = descType;
-
-		pa.descId = descId;
-		pa.userId = userId;
-		pa.src = src;
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			processAssetRepository.insert(conn, pa);
-			return pa;
-		}
-	}
-
-	@POSTAPI(//
-			path = "editProcessAsset", //
-			des = "编辑流程资产（附件，文件，表单等）", //
-			ret = "更新影响的记录行数"//
-	)
-	public int editProcessAsset(//
-			@P(t = "资产编号") Long assetId, //
-			@P(t = "资产名称") String name, //
-			@P(t = "资源内容（编号或url）") String src//
-	) throws Exception {
-		ProcessAsset renew = new ProcessAsset();
-		renew.name = name;
-		renew.src = src;
-
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processAssetRepository.update(conn, EXP.INS().key("id", assetId), renew, true);
-		}
-	}
-
-	@POSTAPI(//
-			path = "delProcessAsset", //
-			des = "删除流程资产", //
-			ret = "更新影响的记录行数"//
-	)
-	public int delProcessAsset(//
-			@P(t = "assetId") Long assetId//
-	) throws Exception {
-		// 流程资产可以真删除
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			return processAssetRepository.delete(conn, EXP.INS().key("id", assetId));
-		}
-	}
 
 	// @POSTAPI(//
 	// path = "getProcessAssetByDescIds", //
@@ -851,170 +736,58 @@ public class ProcessService extends Controller {
 	// }
 	// }
 
-	@POSTAPI(//
-			path = "getProcessAssetByDescIds", //
-			des = "根据流程资产描述编号，获取对应的资产列表", //
-			ret = "ProcessAsset列表"//
-	)
-	public List<ProcessAsset> getProcessAssetByDescIds(//
-			@P(t = "资产编号") Long processId, //
-			@P(t = "资产描述编号列表") JSONArray descIds, //
-			Integer count, //
-			Integer offset//
-	) throws Exception {
-		// TODO 换成 where in 语句，试一试
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			EXP exp = EXP.INS().key("process_id", processId).and(EXP.IN_ORDERED("desc_id", descIds.toArray()));
-			return processAssetRepository.getList(conn, exp, count, offset);
-		}
-	}
 
+	///////////////////////////////
+	//////ProcessLog
+	///////////////////////////////
+	
 	@POSTAPI(//
-			path = "getProcessAssetList", //
-			des = "根据用户编号以及流程编号，获取对应的资产列表", //
-			ret = "ProcessAsset列表"//
-	)
-	public List<ProcessAsset> getProcessAssetList(//
-			@P(t = "用户编号") Long userId, //
-			@P(t = "资产编号") Long processId, //
+			path = "getProcessLogList", //
+			des = "根据processId查询流程操作日志", //
+			ret = "List<ProcessLog>"//
+			)
+	public List<ProcessLog> getProcessLogList(//
+			@P(t = "processId流程编号") Long processId, //
 			Integer count, //
 			Integer offset//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-
-			return processAssetRepository.getList(conn,
-					EXP.INS().key("user_id", userId).andKey("process_id", processId), count, offset);
+			return processLogRepository.getList(conn,
+					EXP.INS().key("process_id", processId).append("ORDER BY timestamp DESC"), count, offset);
 		}
 	}
-
-	@POSTAPI(//
-			path = "createProcessActivityGroup", //
-			des = "创建流程节点分组", //
-			ret = "ProcessActivityGroup实例"//
-	)
-	public ProcessActivityGroup createProcessActivityGroup(//
-			@P(t = "流程定义编号") Long pdId, //
+	
+	
+	/**
+	 * 添加流程操作日志（不开放的接口）
+	 */
+	protected void createProcessLog(//
+			@P(t = "流程编号") Long processId, //
 			@P(t = "标题") String title, //
-			@P(t = "所属泳道") String part, //
-			@P(t = "可视化信息", r = false) JSONObject visual//
+			@P(t = "使用者编号") Long userid, //
+			@P(t = "使用者名称") String userName, //
+			@P(t = "行为或活动") String action, //
+			@P(t = "行为或活动说明") String actionDesc, //
+			@P(t = "流程节点编号") Long activityId, //
+			@P(t = "记录扩展数据") String ext//
 	) throws Exception {
-		ProcessActivityGroup pag = new ProcessActivityGroup();
-		pag.pdId = pdId;
-		pag.id = IDUtils.getSimpleId();
-		pag.title = title;
-		pag.part = part;
-		pag.visual = visual;
+		// 最好做成异步
+
+		ProcessLog pl = new ProcessLog();
+		pl.processId = processId;
+		pl.id = IDUtils.getSimpleId();
+		pl.title = title;
+		pl.type = ProcessLog.TYPE_INFO;
+		pl.userId = userid;
+		pl.userName = userName;
+		pl.action = action;
+		pl.actionDesc = actionDesc;
+		pl.activityId = activityId;
+		pl.ext = ext;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			activityGroupRepository.insert(conn, pag);
-			return pag;
+			processLogRepository.insert(conn, pl);
 		}
-	}
 
-	@POSTAPI(//
-			path = "putActivityInGroup", //
-			des = "增加一个Activity到Group中", //
-			ret = "更新影响的记录行数"//
-	)
-	public int putActivityInGroup(//
-			@P(t = "流程定义节点分组编号") Long activityGroupId, //
-			@P(t = "流程定义节点编号") Long acitvityId, //
-			@P(t = "是否必须") Boolean necessary//
-	) throws Exception {
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			ProcessActivityGroup pag = activityGroupRepository.get(conn, EXP.INS().key("id", activityGroupId));
-
-			if (pag == null) {
-				// 没找到指定的ProcessActivityGroup
-				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR,
-						StringUtils.join("没找到对应流程节点的分组>", activityGroupId));
-			} else {
-				ProcessActivityGroup.SubActivity sub = new ProcessActivityGroup.SubActivity();
-				sub.subActivityId = acitvityId;
-				sub.necessary = necessary;
-
-				ArrayList<ProcessActivityGroup.SubActivity> newSubs = new ArrayList<>();
-				if (pag.subActivities == null) {
-					// 数组为空，直接添加
-					newSubs.add(sub);
-				} else {
-					if (pag.subActivities.size() > 0) {
-						boolean exist = false;
-						for (int i = 0; i < pag.subActivities.size(); i++) {
-							ProcessActivityGroup.SubActivity p = pag.subActivities.get(i);
-							if (p.subActivityId.equals(acitvityId)) {
-								// 匹配
-								exist = true;
-								newSubs.add(sub);// 用新的替换
-							} else {
-								newSubs.add(p);
-							}
-						}
-						if (!exist) {
-							// 都不存在，则追加
-							newSubs.add(sub);
-						}
-					} else {
-						// 数组长度为空，直接添加
-						newSubs.add(sub);
-					}
-				}
-
-				// 处理完成，更新到数据库
-				// 只更新subActivities部分即可
-				ProcessActivityGroup renew = new ProcessActivityGroup();
-				renew.subActivities = newSubs;
-
-				return activityGroupRepository.update(conn, EXP.INS().key("id", activityGroupId), renew, true);
-			}
-		}
-	}
-
-	@POSTAPI(//
-			path = "removeActivityInGroup", //
-			des = "从Group中移除Activity", //
-			ret = "更新影响的记录行数"//
-	)
-	public int removeActivityInGroup(//
-			@P(t = "流程定义节点分组编号") Long activityGroupId, //
-			@P(t = "流程定义节点编号") Long acitvityId //
-	) throws Exception {
-
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			ProcessActivityGroup pag = activityGroupRepository.get(conn, EXP.INS().key("id", activityGroupId));
-
-			if (pag == null) {
-				// 没找到指定的ProcessActivityGroup
-				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR,
-						StringUtils.join("没找到对应流程节点的分组>", activityGroupId));
-			} else {
-
-				if (pag.subActivities == null || pag.subActivities.size() <= 0) {
-					// 数组为空，直接添加
-					throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR,
-							StringUtils.join("对应流程节点的分组中没有该Activity>", acitvityId));
-				} else {
-					ArrayList<ProcessActivityGroup.SubActivity> newSubs = new ArrayList<>();
-
-					boolean exist = false;
-					for (int i = 0; i < pag.subActivities.size(); i++) {
-						ProcessActivityGroup.SubActivity p = pag.subActivities.get(i);
-						if (p.subActivityId.equals(acitvityId)) {
-							// 匹配，不添加
-							exist = false;
-						} else {
-							newSubs.add(p);
-						}
-					}
-
-					// 处理完成，更新到数据库
-					// 只更新subActivities部分即可
-					ProcessActivityGroup renew = new ProcessActivityGroup();
-					renew.subActivities = newSubs;
-
-					return activityGroupRepository.update(conn, EXP.INS().key("id", activityGroupId), renew, true);
-				}
-			}
-		}
 	}
 }

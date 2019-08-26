@@ -1,7 +1,9 @@
 package zyxhj.flow.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,18 +17,20 @@ import zyxhj.core.domain.UserRole;
 import zyxhj.core.repository.UserRepository;
 import zyxhj.core.repository.UserRoleRepository;
 import zyxhj.flow.domain.Department;
+import zyxhj.flow.domain.ProcessAction;
 import zyxhj.flow.domain.ProcessActivity;
+import zyxhj.flow.domain.ProcessActivityGroup;
 import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.repository.DepartmentRepository;
+import zyxhj.flow.repository.ProcessActionRepository;
+import zyxhj.flow.repository.ProcessActivityGroupRepository;
 import zyxhj.flow.repository.ProcessActivityRepository;
 import zyxhj.flow.repository.ProcessAssetDescRepository;
-import zyxhj.flow.repository.ProcessAssetRepository;
 import zyxhj.flow.repository.ProcessDefinitionRepository;
-import zyxhj.flow.repository.ProcessLogRepository;
-import zyxhj.flow.repository.ProcessRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataConst;
@@ -40,35 +44,36 @@ public class FlowService extends Controller {
 	private DruidDataSource ds;
 
 	private ProcessAssetDescRepository assetDescRepository;
-	private ProcessRepository processRepository;
 	private ProcessDefinitionRepository definitionRepository;
 	private ProcessActivityRepository activityRepository;
-	private ProcessLogRepository processLogRepository;
-	private ProcessAssetRepository processAssetRepository;
 	private DepartmentRepository departmentRepository;
 	private UserRepository userRepository;
 	private UserRoleRepository roleRepository;
+	private ProcessActionRepository processActionRepository;
+	private ProcessActivityGroupRepository activityGroupRepository;
 
 	public FlowService(String node) {
 		super(node);
 		try {
 			ds = DataSource.getDruidDataSource("rdsDefault.prop");
 
-			processRepository = Singleton.ins(ProcessRepository.class);
 			definitionRepository = Singleton.ins(ProcessDefinitionRepository.class);
 			activityRepository = Singleton.ins(ProcessActivityRepository.class);
-			processLogRepository = Singleton.ins(ProcessLogRepository.class);
-			processAssetRepository = Singleton.ins(ProcessAssetRepository.class);
 			assetDescRepository = Singleton.ins(ProcessAssetDescRepository.class);
 			departmentRepository = Singleton.ins(DepartmentRepository.class);
 			userRepository = Singleton.ins(UserRepository.class);
 			roleRepository = Singleton.ins(UserRoleRepository.class);
+			processActionRepository = Singleton.ins(ProcessActionRepository.class);
+			activityGroupRepository = Singleton.ins(ProcessActivityGroupRepository.class);
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 	}
 
+	///////////////////////////////
+	//////ProcessDefinition
+	///////////////////////////////
 	@POSTAPI(//
 			path = "createPD", //
 			des = "创建流程定义", //
@@ -371,6 +376,11 @@ public class FlowService extends Controller {
 		}
 	}
 
+
+	///////////////////////////////
+	//////AssetDesc
+	///////////////////////////////
+	
 	/**
 	 * 返回值暂定为空，可能会返回desc对象
 	 */
@@ -460,6 +470,12 @@ public class FlowService extends Controller {
 			return assetDescRepository.getList(conn, EXP.INS().key("owner_id", ownerId), count, offset);
 		}
 	}
+	
+	
+
+	///////////////////////////////
+	//////User
+	///////////////////////////////
 
 	@POSTAPI(//
 			path = "getUserList", //
@@ -501,6 +517,200 @@ public class FlowService extends Controller {
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return departmentRepository.getList(conn, null, count, offset, "id", "name");
+		}
+	}
+	
+	
+	//////////////////////////////////
+	//////ProcessAction
+	//////////////////////////////////
+	
+	@POSTAPI(//
+			path = "createProcessAction", //
+			des = "创建流程Action", //
+			ret = "ProcessAction")
+	public ProcessAction createProcessAction(//
+			@P(t = "流程实例编号") Long pdId, //
+			@P(t = "流程节点编号") Long activityId, //
+			@P(t = "Action类型") String type, //
+			@P(t = "规则引擎脚本", r = false) JSONArray rules //
+	) throws Exception {
+		ProcessAction pa = new ProcessAction();
+		pa.pdId = pdId;
+		pa.activityId = activityId;
+		pa.id = IDUtils.getSimpleId();
+		pa.type = type;
+		pa.rules = rules;
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			processActionRepository.insert(conn, pa);
+		}
+		return pa;
+	}
+	
+	@POSTAPI(//
+			path = "editProcessAction", //
+			des = "编辑流程Action", //
+			ret = "所影响记录行数")
+	public int editProcessAction(//
+			@P(t = "Action编号") Long actionId, //
+			@P(t = "Action类型") String type, //
+			@P(t = "规则引擎脚本", r = false) JSONArray rules //
+	) throws Exception {
+
+		ProcessAction renew = new ProcessAction();
+		renew.type = type;
+		renew.rules = rules;
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return processActionRepository.update(conn, EXP.INS().key("id", actionId), renew, true);
+		}
+	}
+	
+	@POSTAPI(//
+			path = "delProcessAction", //
+			des = "删除流程Action", //
+			ret = "所影响记录行数")
+	public int delProcessAction(//
+			@P(t = "Action编号") Long actionId //
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return processActionRepository.delete(conn, EXP.INS().key("id", actionId));
+		}
+	}
+
+	//////////////////////////////////
+	//////ProcessActivityGroup
+	//////////////////////////////////
+	
+	@POSTAPI(//
+			path = "createProcessActivityGroup", //
+			des = "创建流程节点分组", //
+			ret = "ProcessActivityGroup实例"//
+	)
+	public ProcessActivityGroup createProcessActivityGroup(//
+			@P(t = "流程定义编号") Long pdId, //
+			@P(t = "标题") String title, //
+			@P(t = "所属泳道") String part, //
+			@P(t = "可视化信息", r = false) JSONObject visual//
+	) throws Exception {
+		ProcessActivityGroup pag = new ProcessActivityGroup();
+		pag.pdId = pdId;
+		pag.id = IDUtils.getSimpleId();
+		pag.title = title;
+		pag.part = part;
+		pag.visual = visual;
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			activityGroupRepository.insert(conn, pag);
+			return pag;
+		}
+	}
+
+	@POSTAPI(//
+			path = "putActivityInGroup", //
+			des = "增加一个Activity到Group中", //
+			ret = "更新影响的记录行数"//
+	)
+	public int putActivityInGroup(//
+			@P(t = "流程定义节点分组编号") Long activityGroupId, //
+			@P(t = "流程定义节点编号") Long acitvityId, //
+			@P(t = "是否必须") Boolean necessary//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			ProcessActivityGroup pag = activityGroupRepository.get(conn, EXP.INS().key("id", activityGroupId));
+
+			if (pag == null) {
+				// 没找到指定的ProcessActivityGroup
+				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR,
+						StringUtils.join("没找到对应流程节点的分组>", activityGroupId));
+			} else {
+				ProcessActivityGroup.SubActivity sub = new ProcessActivityGroup.SubActivity();
+				sub.subActivityId = acitvityId;
+				sub.necessary = necessary;
+
+				ArrayList<ProcessActivityGroup.SubActivity> newSubs = new ArrayList<>();
+				if (pag.subActivities == null) {
+					// 数组为空，直接添加
+					newSubs.add(sub);
+				} else {
+					if (pag.subActivities.size() > 0) {
+						boolean exist = false;
+						for (int i = 0; i < pag.subActivities.size(); i++) {
+							ProcessActivityGroup.SubActivity p = pag.subActivities.get(i);
+							if (p.subActivityId.equals(acitvityId)) {
+								// 匹配
+								exist = true;
+								newSubs.add(sub);// 用新的替换
+							} else {
+								newSubs.add(p);
+							}
+						}
+						if (!exist) {
+							// 都不存在，则追加
+							newSubs.add(sub);
+						}
+					} else {
+						// 数组长度为空，直接添加
+						newSubs.add(sub);
+					}
+				}
+
+				// 处理完成，更新到数据库
+				// 只更新subActivities部分即可
+				ProcessActivityGroup renew = new ProcessActivityGroup();
+				renew.subActivities = newSubs;
+
+				return activityGroupRepository.update(conn, EXP.INS().key("id", activityGroupId), renew, true);
+			}
+		}
+	}
+
+	@POSTAPI(//
+			path = "removeActivityInGroup", //
+			des = "从Group中移除Activity", //
+			ret = "更新影响的记录行数"//
+	)
+	public int removeActivityInGroup(//
+			@P(t = "流程定义节点分组编号") Long activityGroupId, //
+			@P(t = "流程定义节点编号") Long acitvityId //
+	) throws Exception {
+
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			ProcessActivityGroup pag = activityGroupRepository.get(conn, EXP.INS().key("id", activityGroupId));
+
+			if (pag == null) {
+				// 没找到指定的ProcessActivityGroup
+				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR,
+						StringUtils.join("没找到对应流程节点的分组>", activityGroupId));
+			} else {
+
+				if (pag.subActivities == null || pag.subActivities.size() <= 0) {
+					// 数组为空，直接添加
+					throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR,
+							StringUtils.join("对应流程节点的分组中没有该Activity>", acitvityId));
+				} else {
+					ArrayList<ProcessActivityGroup.SubActivity> newSubs = new ArrayList<>();
+
+					boolean exist = false;
+					for (int i = 0; i < pag.subActivities.size(); i++) {
+						ProcessActivityGroup.SubActivity p = pag.subActivities.get(i);
+						if (p.subActivityId.equals(acitvityId)) {
+							// 匹配，不添加
+							exist = false;
+						} else {
+							newSubs.add(p);
+						}
+					}
+
+					// 处理完成，更新到数据库
+					// 只更新subActivities部分即可
+					ProcessActivityGroup renew = new ProcessActivityGroup();
+					renew.subActivities = newSubs;
+
+					return activityGroupRepository.update(conn, EXP.INS().key("id", activityGroupId), renew, true);
+				}
+			}
 		}
 	}
 }
