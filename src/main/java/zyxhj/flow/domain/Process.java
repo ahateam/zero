@@ -75,4 +75,7 @@ public class Process {
 
 	@AnnDicField(alias = "已结束")
 	public static final Byte STATE_END = 2;
+	
+	@AnnDicField(alias = "Action行为，结束/废除process实例")
+	public static final Byte STATE_TERMINATE = 3;
 }

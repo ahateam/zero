@@ -358,7 +358,7 @@ public class ProcessService extends Controller {
 			// @P(t = "行为或活动说明") String actionDesc, //
 			// @P(t = "流程节点编号") Long activityId, //
 			// @P(t = "记录扩展数据") JSONObject ext//
-			createProcessLog(p.id, "", user.id, user.name, action.type, action.label, activityId, "");
+			createProcessLog(p.id, "执行Action", user.id, user.name, action.type, action.label, activityId, "");
 
 			Process renew = new Process();
 			renew.currActivityId = Long.decode(defaultTarget);
@@ -368,16 +368,141 @@ public class ProcessService extends Controller {
 
 	}
 
-	public void processActionAccept() {
+	//同意
+	public int processActionAccept(//
+			@P(t = "流程实例编号") Long processId, //
+			@P(t = "流程节点编号") Long activityId, //
+			@P(t = "执行的行为编号") Long actionId, //
+			@P(t = "执行的行为类型") String actionType, //
+			@P(t = "用户编号") Long userId//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			ProcessAction action = processActionIF(processId, activityId, actionId);
+			if (action != null) {
+				if (actionType.equals(ProcessAction.TYPE_ACCEPT)) {
+					// 判断role
+					User user = userRepository.get(conn, EXP.INS().key("id", userId));
+					JSONArray rules = action.rules;
 
+					String defaultTarget = null;
+					for (int i = 0; i < rules.size(); i++) {
+						JSONObject jo = rules.getJSONObject(i);
+						String exp = jo.getString("exp");
+						String targetType = jo.getString("targetType");
+						String target = null;
+						// 判断是节点，还是节点分组
+						if (targetType.equals("activity")) {
+							target = jo.getString("target");
+
+						} else if (targetType.equals("activityGroup")) {
+							target = jo.getString("target");
+							//TODO 未完善
+						}
+
+						System.out.println(StringUtils.join("exec rule>>> ", exp, " --- ", target));
+
+						if (exp.equals("expDefault")) {
+							// 默认case
+							defaultTarget = target;
+						} else {
+							// 其它case，先判断表达式，然后执行
+							// TODO 暂时不支持
+						}
+					}
+					createProcessLog(processId, "", user.id, user.name, action.type, action.label, activityId, "");
+
+					Process renew = new Process();
+					renew.currActivityId = Long.decode(defaultTarget);
+					processRepository.update(conn, EXP.INS().key("id", processId), renew, true);
+				} else {
+					throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "流程节点的行为Action类型错误");
+				}
+			} else {
+				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
+			}
+		}
+		return 1;
 	}
 
-	public void processActionReject() {
+	//驳回
+	public int processActionReject(//
+			@P(t = "流程实例编号") Long processId, //
+			@P(t = "流程节点编号") Long activityId, //
+			@P(t = "执行的行为编号") Long actionId, //
+			@P(t = "执行的行为类型") String actionType, //
+			@P(t = "用户编号") Long userId, //
+			@P(t = "驳回原因") String remark//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			ProcessAction action = processActionIF(processId, activityId, actionId);
+			if (action != null) {
+				if (actionType.equals(ProcessAction.TYPE_REJECT)) {
+					// 判断role
+					User user = userRepository.get(conn, EXP.INS().key("id", userId));
+					JSONArray rules = action.rules;
 
+					String defaultTarget = null;
+					for (int i = 0; i < rules.size(); i++) {
+						JSONObject jo = rules.getJSONObject(i);
+						String exp = jo.getString("exp");
+						String targetType = jo.getString("targetType");
+						String target = null;
+						// 判断是节点，还是节点分组
+						if (targetType.equals("activity")) {
+							target = jo.getString("target");
+
+						} else if (targetType.equals("activityGroup")) {
+							target = jo.getString("target");
+							//TODO 未完善
+						}
+
+						System.out.println(StringUtils.join("exec rule>>> ", exp, " --- ", target));
+
+						if (exp.equals("expDefault")) {
+							// 默认case
+							defaultTarget = target;
+						} else {
+							// 其它case，先判断表达式，然后执行
+							// TODO 暂时不支持
+						}
+					}
+					createProcessLog(processId, "驳回", user.id, user.name, action.type, action.label+",驳回原因："+remark, activityId, "");
+
+					Process renew = new Process();
+					renew.currActivityId = Long.decode(defaultTarget);
+					processRepository.update(conn, EXP.INS().key("id", processId), renew, true);
+				} else {
+					throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "流程节点的行为Action类型错误");
+				}
+			} else {
+				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
+			}
+		}
+		return 1;
 	}
 
-	public void processActionTerminate() {
-
+	//废除/终结
+	public void processActionTerminate(//
+			@P(t = "流程实例编号") Long processId, //
+			@P(t = "流程节点编号") Long activityId, //
+			@P(t = "执行的行为编号") Long actionId, //
+			@P(t = "执行的行为类型") String actionType, //
+			@P(t = "用户编号") Long userId, //
+			@P(t = "废除/终结原因") String remark//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			ProcessAction action = processActionIF(processId, activityId, actionId);
+			if(action != null) {
+				if (actionType.equals(ProcessAction.TYPE_TERMINATE)) {
+					User user = userRepository.get(conn, EXP.INS().key("id", userId));
+					//修改process流程实例状态为废除/终结
+					Process t = new Process();
+					t.state = Process.STATE_TERMINATE;
+					processRepository.update(conn, EXP.INS().key("id", processId), t, true);
+					createProcessLog(processId, "废除Process流程实例", user.id, user.name, action.type, action.label+",废除原因："+remark, activityId, "");	
+				}
+			}
+		}
 	}
 
 	public void processActionTransfer() {
@@ -386,6 +511,31 @@ public class ProcessService extends Controller {
 
 	public void processActionCirculation() {
 
+	}
+
+	private ProcessAction processActionIF(Long processId, Long activityId, Long actionId) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			Process process = processRepository.get(conn, EXP.INS().key("id", processId));
+			if (process == null) {
+				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程实例");
+			} else {
+				if (process.currActivityId.equals(activityId)) {
+					ProcessActivity pa = activityRepository.get(conn, EXP.INS().key("id", activityId));
+					if (pa == null) {
+						throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点Activity");
+					} else {
+						ProcessAction paction = processActionRepository.get(conn, EXP.INS().key("id", actionId));
+						if (paction == null) {
+							throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
+						} else {
+							return paction;
+						}
+					}
+				} else {
+					throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "业务进度（当前流程节点）与提交的activityId不符");
+				}
+			}
+		}
 	}
 
 	public void execProcessAction(//
@@ -524,9 +674,7 @@ public class ProcessService extends Controller {
 			@P(t = "流程实例编号") Long pdId, //
 			@P(t = "流程节点编号") Long activityId, //
 			@P(t = "Action类型") String type, //
-			@P(t = "规则引擎脚本", r = false) JSONArray rules, //
-			@P(t = "转办人信息", r = false) JSONArray transfers, //
-			@P(t = "传阅信息", r = false) JSONArray circulations //
+			@P(t = "规则引擎脚本", r = false) JSONArray rules //
 	) throws Exception {
 		ProcessAction pa = new ProcessAction();
 		pa.pdId = pdId;
@@ -584,9 +732,7 @@ public class ProcessService extends Controller {
 	public int editProcessAction(//
 			@P(t = "Action编号") Long actionId, //
 			@P(t = "Action类型") String type, //
-			@P(t = "规则引擎脚本", r = false) JSONArray rules, //
-			@P(t = "转办人信息", r = false) JSONArray transfers, //
-			@P(t = "传阅信息", r = false) JSONArray circulations //
+			@P(t = "规则引擎脚本", r = false) JSONArray rules //
 	) throws Exception {
 
 		ProcessAction renew = new ProcessAction();
