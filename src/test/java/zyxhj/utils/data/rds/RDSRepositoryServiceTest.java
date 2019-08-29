@@ -25,10 +25,6 @@ import zyxhj.utils.data.EXP;
 
 public class RDSRepositoryServiceTest {
 
-	// TODO 为ProcessLog增加Activity信息 --- 完成
-	// Repository关键方法的单元测试覆盖
-	// FlowTest流程，复盘，仔细阅读，进一步根据业务流程需求，继续串流程
-	// insertProcessTableData方法调试 -------完成
 
 	public static class RDSRepositoryTest extends RDSRepository<TestDomain> {
 
@@ -79,9 +75,8 @@ public class RDSRepositoryServiceTest {
 		try {
 
 			testUpdateByKey(td.id);
-			testUpdateByANDKey(td.id);
+			testUpdateByANDKey(td.id, "123adsfs");
 
-			testGet(td.id);
 			testGetList();
 			testGetListByKey(td.id);
 			testGetListByANDKeys();
@@ -108,14 +103,13 @@ public class RDSRepositoryServiceTest {
 	}
 
 
+
 	/**
-	 * 查询一条数据
+	 * 插入单个对象
+	 * @return
+	 * 	返回创建的实体对象
+	 * @throws Exception
 	 */
-
-	private void testGet(Long id) {
-
-	}
-
 	private TestDomain testInsert() throws Exception {
 
 		TestDomain t = new TestDomain();
@@ -151,8 +145,41 @@ public class RDSRepositoryServiceTest {
 
 		return t;
 	}
+	
+	/**
+	 * 
+	 * 插入多个对象
+	 */
+	private void testInsertList() throws Exception {
+	    TestDomain t = new TestDomain();
+	    t.id = IDUtils.getSimpleId();
+	    t.name = "123sdaf";
+	    t.year = "45641456asdfasd";
+	    t.status = 0;
+	    JSONArray arr1 = new JSONArray();
+	    JSONObject jo = new JSONObject();
+	    t.arrays = arr1;
+	    t.tags = jo;
+	  
+	   TestDomain t1 = new TestDomain();
+	    t1.id = IDUtils.getSimpleId();
+	    t1.name = "123sdaf";
+	    t1.year = "45641456asdfasd";
+	    t1.status = 0;
+	    t1.arrays = arr1;
+	    t1.tags = jo;
+	  
+	  	List<TestDomain> tlist = new ArrayList<TestDomain>();
+	  	tlist.add(t);
+	  	tlist.add(t1);
+	    testRepository.insertList(conn, tlist);
+	}
 
-	// 完成
+	/**
+	 * 删除单条数据
+	 * @param id
+	 * @throws ServerException
+	 */
 	private void testDelByKey(Long id) throws ServerException {
 		int ret = testRepository.delete(conn, EXP.INS().key("id", id));
 		System.out.println("----------testDelByKey==>>" + ret);
@@ -163,7 +190,21 @@ public class RDSRepositoryServiceTest {
 		System.out.println("----------testDelByANDKeys==>>" + ret);
 
 	}
+	/**
+	 * 删除多条数据
+	 * @throws Exception
+	 */
+	private void testDelByInOrder() throws Exception {
+	  	EXP inOrderBy = EXP.INS().and(EXP.IN_ORDERED("id", 400992946457487L,400992806774166L));
+	    int ret = testRepository.delete(conn, inOrderBy);
+	  	System.out.println("----------testDelByANDKeys==>>" + ret);
+	}
 
+	/**
+	 * 单条件修改数据
+	 * @param id
+	 * @throws ServerException
+	 */
 	private void testUpdateByKey(Long id) throws ServerException {
 		TestDomain t = new TestDomain();
 		t.name = "123sdaf";
@@ -173,17 +214,46 @@ public class RDSRepositoryServiceTest {
 		int ret = testRepository.update(conn, EXP.INS().key("id", id), t, true);
 		System.out.println("----------testUpdateByKey==>>" + ret);
 	}
-
-	private void testUpdateByANDKey(Long id) throws ServerException {
+	
+	/**
+	 * 	多条件修改
+	 * @param id
+	 * @param name
+	 * @throws ServerException
+	 */
+	private void testUpdateByANDKey(Long id, String name) throws ServerException {
 
 		TestDomain t = new TestDomain();
 		t.status = 10;
 		t.year = "测试";
 
-		int ret = testRepository.update(conn, EXP.INS().key("id", id).andKey("name", "123sdaf"), t, true);
+		int ret = testRepository.update(conn, EXP.INS().key("id", id).andKey("name", name), t, true);
 		System.out.println("----------testUpdateByANDKey==>>" + ret);
 	}
 
+	/**
+	 * 获取单条数据
+	 * 单条件
+	 * @param id
+	 * @throws Exception
+	 */
+	private void testGet(Long id) throws Exception {
+		TestDomain t = testRepository.get(conn, EXP.INS().key("id", id));
+	    System.out.println("----------testUpdateTagToJSONSET==>>" + t.name);
+	}
+	
+	/**
+	 * 多条件
+	 * @param id
+	 * @param testName
+	 * @throws Exception
+	 */
+	private void testGet(Long id,String testName) throws Exception {
+		TestDomain t = testRepository.get(conn, EXP.INS().key("id", id).andKey("name", testName));
+	    System.out.println("----------testUpdateTagToJSONSET==>>" + t.name);
+	}
+	
+	
 	private void testGetList() {
 		try {
 			List<TestDomain> t = testRepository.getList(conn, null, 10, 0);

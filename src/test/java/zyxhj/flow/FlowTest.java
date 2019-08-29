@@ -16,9 +16,12 @@ import com.alibaba.fastjson.JSONObject;
 import zyxhj.core.domain.Module;
 import zyxhj.core.domain.Tag;
 import zyxhj.flow.domain.Process;
+import zyxhj.flow.domain.ProcessAction;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessActivity.Action;
 import zyxhj.flow.domain.ProcessActivity.Receiver;
+import zyxhj.flow.domain.ProcessActivityGroup.SubActivity;
+import zyxhj.flow.domain.ProcessActivityGroup;
 import zyxhj.flow.domain.ProcessAsset;
 import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
@@ -208,7 +211,7 @@ public class FlowTest {
 	@Test
 	public void testCreatProcess() throws Exception {
 
-		Process p = processService.createProcess(pdId, "这事一个测试", "我要测试");
+		Process p = processService.createProcess(pdId, 1L,"这事一个测试", "我要测试");
 		System.out.println("--- set Set Action ok ---");
 
 	}
@@ -262,4 +265,195 @@ public class FlowTest {
 		processService.editProcessTableData(400792274247519L, 400809850254116L, data);
 
 	}
+
+	//创建流程定义   pdId = 401122871418288
+	@Test
+	public void testCreatePDefinition() throws Exception {
+		String title = "测试申请流程定义";
+		JSONArray tags = new JSONArray();
+		tags.add("测试1");
+		tags.add("测试2");
+
+		JSONArray lanes = new JSONArray();
+		lanes.add("测试泳道名称1");
+		lanes.add("测试泳道名称2");
+
+		flowService.createPD(Module.FLOW.key, title, tags, lanes);
+	}
+	
+	
+	//创建节点
+	/**
+	 * 第六个节点   401127889022941
+	 * 第五个节点   401127885477213
+	 * 第四个节点   401127881993223
+	 * 第三个节点   401127873928902
+	 * 第二个节点   401127871000279
+	 * 第一个节点   401127867024131
+	 * 
+	 */
+			
+	@Test
+	public void testCreateActivity() throws Exception {
+		List<Receiver> receivers = new ArrayList<ProcessActivity.Receiver>();
+
+		Receiver r = new Receiver();
+		r.type = Receiver.TYPE_USER;
+		r.id = IDUtils.getSimpleId();
+		r.label = "测试权限用户";
+		r.remark = "单元测试Receiver数据";
+
+		receivers.add(r);
+		
+		flowService.createPDActivity(401122871418288L, "第六个节点", "测试泳道", JSON.toJSONString(receivers), null);
+	}
+	
+	
+	
+	// 创建节点分组
+	@Test
+	public void testCreateActivityGroup() throws Exception {
+		JSONObject jo = new JSONObject();
+		jo.put("size", new int[] { 70, 40 });
+		jo.put("shape", "round-rect");
+		jo.put("x", 532);
+		jo.put("y", 488);
+
+		JSONObject jo1 = new JSONObject();
+		jo1.put("fill", "#fff");
+		jo1.put("radius", 5);
+		jo1.put("stroke", "#1890ff");
+
+		jo.put("style", jo1);
+		jo.put("id", 400969407422093L);
+		jo.put("label", "常规节点");
+
+		ProcessActivityGroup pag = flowService.createProcessActivityGroup(401122871418288L, "测试流程节点分组", "", jo);
+
+	}
+
+	// 添加一个节点到节点分组中 //第三、四、五个节点
+	@Test
+	public void testAddSubActivity() throws Exception {
+		int ret = flowService.putActivityInGroup(401127906929613L, 401127885477213L, true);
+		System.out.println(ret);
+	}
+
+	// 从节点分组中移除一个节点
+	@Test
+	public void testRemaveSubActivity() throws Exception {
+		int ret = flowService.removeActivityInGroup(401123305577518L, 400969404882060L);
+		System.out.println(ret);
+	}
+
+	// 得到节点分组中的所有节点编号
+	@Test
+	public void testGetALLSubActivity() throws Exception {
+		Long activityGroupId = 401127906929613L;
+		List<SubActivity> slist = flowService.getSubActivity(activityGroupId);
+		for (int i = 0; i < slist.size(); i++) {
+			System.out.println(slist.get(i).subActivityId);
+		}
+	}
+
+	@Test
+	public void testUpdateSubActivity() throws Exception {
+		Long activityGroupId = 401127906929613L;
+		Boolean necessary = false;
+		Long activityId = 400969407422093L;
+		int ret = flowService.editSubActivity(activityGroupId, activityId, necessary);
+		System.out.println(ret);
+	}
+
+	// 创建action行为
+	@Test
+	public void testCreateAction1() throws Exception {
+		JSONArray roles = new JSONArray();
+		JSONObject jo = new JSONObject();
+		jo.put("exp", "expDefault");
+		jo.put("targetType", "activity");
+		jo.put("target", 401127871000279L);// 下一节点 第二节点
+		roles.add(jo);
+		Long pdId = 401122871418288L;
+		Long activityId = 401127867024131L;// 当前节点  第一个节点
+
+		ProcessAction paction = flowService.createProcessAction(pdId, activityId, ProcessAction.TYPE_ACCEPT, roles);
+	}
+
+	@Test
+	public void testCreateAction2() throws Exception {
+		JSONArray roles = new JSONArray();
+		JSONObject jo = new JSONObject();
+		jo.put("exp", "expDefault");
+		jo.put("targetType", "activityGroup");
+		jo.put("target", 401127906929613L);// 下一节点,节点分组
+		roles.add(jo);
+
+		Long pdId = 401122871418288L;
+		Long activityId = 401127871000279L;// 当前节点 第二个节点
+
+		ProcessAction paction = flowService.createProcessAction(pdId, activityId, ProcessAction.TYPE_ACCEPT, roles);
+	}
+
+	// 为 节点分组 添加行为动作，同意和驳回
+	@Test
+	public void testCreateAction3() throws Exception {
+		// 同意
+		JSONArray roles1 = new JSONArray();
+		JSONObject jo1 = new JSONObject();
+		jo1.put("exp", "expDefault");
+		jo1.put("targetType", "activity");
+		jo1.put("target", 401127889022941L);// 下一节点 第六个节点
+		roles1.add(jo1);
+
+		// 驳回
+		JSONArray roles2 = new JSONArray();
+
+		JSONObject jo2 = new JSONObject();
+		jo2.put("exp", "expDefault");
+		jo2.put("targetType", "activity");
+		jo2.put("target", 401127871000279L);// 上一节点 第二个节点
+		roles2.add(jo2);
+
+		Long pdId = 401122871418288L;
+		Long activityId = 401127906929613L;// 当前节点分组
+
+		flowService.createProcessAction(pdId, activityId, ProcessAction.TYPE_ACCEPT, roles1);
+		flowService.createProcessAction(pdId, activityId, ProcessAction.TYPE_REJECT, roles2);
+	}
+	
+	
+	/**
+	 * 流程实例测试User
+	 * id= 125469853421023
+	 * id_module 522121199810042016
+	 * mobile 18275422377
+	 * rel_name = testUser
+	 * pwd 147258
+	 * create_time 2019-08-28 09:45:49
+	 * 
+	 */
+	
+	/**
+	 * 流程实例
+	 */
+	private static Long pid = 401141089162204L;
+	//创建流程实例 --- 成功
+	@Test
+	public void testCreateProcess() throws Exception {
+		Long pdId = 401122871418288L;
+		Long userId = 125469853421023L;
+		processService.createProcess(pdId, userId, "重构测试流程实例接口", "重构测试流程实例接口");
+	}
+	
+	//得到process相关信息、processDefinition processActivity processAction
+	@Test // --- 成功
+	public void testGetProcessInfo() throws Exception {
+		Long userId = 125469853421023L;
+		JSONObject jo = processService.getProcessInfo(userId, pid);
+		System.out.println(jo.toJSONString());
+	}
+	
+	
+
 }

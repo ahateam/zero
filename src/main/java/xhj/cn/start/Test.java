@@ -4,6 +4,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.alicloud.openservices.tablestore.SyncClient;
 
 import zyxhj.flow.domain.ProcessAction;
+import zyxhj.flow.domain.ProcessActivityGroup;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.rds.RDSUtils;
 
@@ -24,7 +25,7 @@ public class Test {
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 
-			RDSUtils.createTableByEntity(dds, ProcessAction.class);
+			RDSUtils.createTableByEntity(dds, ProcessActivityGroup.class);
 
 
 //			TSUtils.createTableByEntity(client, TaskWall.class);

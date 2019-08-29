@@ -40,13 +40,15 @@ public class ProcessAction {
 	/**
 	 * 规则引擎脚本</br>
 	 * [</br>
-	 * {exp:"expDefault",target:"activityId"},</br>
 	 * {exp:(EXP...),targetType:"activity",target:"activityId"},</br>
 	 * {exp:(EXP...),targetType:"activityGroup",target:"activityGroupId"},</br>
 	 * ]</br>
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public JSONArray rules;
+	
+	@RDSAnnField(column = RDSAnnField.INTEGER)
+	public Integer ext;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////

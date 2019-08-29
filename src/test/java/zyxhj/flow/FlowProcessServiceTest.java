@@ -13,9 +13,12 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.domain.User;
+import zyxhj.flow.domain.ProcessAction;
 import zyxhj.flow.domain.ProcessActivity;
+import zyxhj.flow.domain.ProcessActivityGroup;
 import zyxhj.flow.domain.ProcessActivity.Action;
 import zyxhj.flow.domain.ProcessActivity.Receiver;
+import zyxhj.flow.domain.ProcessActivityGroup.SubActivity;
 import zyxhj.flow.domain.ProcessAssetDesc;
 import zyxhj.flow.domain.ProcessDefinition;
 import zyxhj.flow.domain.ProcessLog;
@@ -305,7 +308,6 @@ public class FlowProcessServiceTest {
 		}
 	}
 
-	
 	@Test
 	public void testDelAssetDesc() {
 		JSONArray j = new JSONArray();
@@ -334,12 +336,5 @@ public class FlowProcessServiceTest {
 		System.out.println(a);
 
 	}
-
-	@Test
-	public void getProcessInfoTest() throws Exception {
-		JSONObject js = processService.getProcessInfo(400654738395523L);
-		System.out.println(js.toString());
-
-	}
-
+	
 }
