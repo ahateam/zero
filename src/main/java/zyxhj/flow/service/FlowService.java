@@ -528,13 +528,15 @@ public class FlowService extends Controller {
 			ret = "ProcessAction")
 	public ProcessAction createProcessAction(//
 			@P(t = "流程实例编号") Long pdId, //
-			@P(t = "流程节点编号") Long activityId, //
+			@P(t = "节点或节点分组编号") Long ownerId, //
+			@P(t = "节点或节点分组") Byte ownerType, //
 			@P(t = "Action类型") String type, //
 			@P(t = "规则引擎脚本", r = false) JSONArray rules //
 	) throws Exception {
 		ProcessAction pa = new ProcessAction();
 		pa.pdId = pdId;
-		pa.activityId = activityId;
+		pa.ownerId = ownerId;
+		pa.ownerType = ownerType;
 		pa.id = IDUtils.getSimpleId();
 		pa.type = type;
 		pa.rules = rules;

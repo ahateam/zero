@@ -16,14 +16,20 @@ public class ProcessAction {
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long pdId;
-
+	
 	/**
-	 * 所属Activity编号
+	 * 所属编号
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
-	public Long activityId;
+	public Long ownerId;
 
+	/**
+	 * 所属类型
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte ownerType;
+	
 	/**
 	 * 编号
 	 */
@@ -47,8 +53,8 @@ public class ProcessAction {
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public JSONArray rules;
 	
-	@RDSAnnField(column = RDSAnnField.INTEGER)
-	public Integer ext;
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte ext;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
@@ -68,4 +74,14 @@ public class ProcessAction {
 
 	@AnnDicField(alias = "传阅")
 	public static final String TYPE_CIRCULATION = "circulation";
+	
+	/**
+	 * ownerType类型
+	 * 	节点、节点分组
+	 */
+	@AnnDicField(alias = "节点")
+	public static final Byte OWNER_TYPE_ACTIVITY = 0;
+
+	@AnnDicField(alias = "节点分组")
+	public static final Byte OWNER_TYPE_ACTIVITY_GROUP = 1;
 }
