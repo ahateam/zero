@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 
-import zyxhj.core.domain.UserRole;
+import zyxhj.core.domain.SysRole;
 import zyxhj.core.repository.UserRoleRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
@@ -34,8 +34,8 @@ public class UserRoleService {
 	/**
 	 * 创建自定义角色
 	 */
-	public UserRole createUserRole(DruidPooledConnection conn, String name, String remark) throws Exception {
-		UserRole role = new UserRole();
+	public SysRole createUserRole(DruidPooledConnection conn, String name, String remark) throws Exception {
+		SysRole role = new SysRole();
 		role.id = IDUtils.getSimpleId();
 		role.name = name;
 		role.remark = remark;
@@ -49,7 +49,7 @@ public class UserRoleService {
 	 * 编辑自定义角色
 	 */
 	public int editUserRole(DruidPooledConnection conn, Long roleId, String name, String remark) throws Exception {
-		UserRole renew = new UserRole();
+		SysRole renew = new SysRole();
 		renew.name = name;
 		renew.remark = remark;
 
@@ -67,7 +67,7 @@ public class UserRoleService {
 	/**
 	 * 获取系统角色列表
 	 */
-	public List<UserRole> getUserRoles(DruidPooledConnection conn, Integer count, Integer offset) throws Exception {
+	public List<SysRole> getUserRoles(DruidPooledConnection conn, Integer count, Integer offset) throws Exception {
 		return roleRepository.getList(conn, null, count, offset);
 	}
 

@@ -16,6 +16,11 @@ public class APIRequest {
 	public String c;
 
 	/**
+	 * 用户编号(不是必须)
+	 */
+	public String uid;
+
+	/**
 	 * 签名<br>
 	 * 按id->cn的顺序连接字符串，然后再使用HmacSHA1(verifyByHmacSHA1ToID64)和密钥进行签名得到v
 	 */

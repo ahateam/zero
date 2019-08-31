@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import zyxhj.core.domain.UserRole;
+import zyxhj.core.domain.SysRole;
 import zyxhj.core.domain.UserSession;
 
 /**
@@ -25,7 +25,7 @@ public class CacheCenter {
 			.maximumSize(100000)// 最大缓存对象数量，十万
 			.build();
 
-	public static Cache<Long, UserRole> USER_ROLE_CACHE = CacheBuilder.newBuilder()//
+	public static Cache<Long, SysRole> USER_ROLE_CACHE = CacheBuilder.newBuilder()//
 			.expireAfterAccess(5, TimeUnit.MINUTES)// 缓存对象有效时间，2天
 			.maximumSize(100)// 最大缓存对象数量
 			.build();

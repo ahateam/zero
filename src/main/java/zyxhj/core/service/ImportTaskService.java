@@ -35,17 +35,18 @@ public class ImportTaskService {
 	private ImportTaskRepository taskRepository;
 	private ImportTempRecordRepository tempRecordRepository;
 
-//	private static TSAutoCloseableClient client;
+	// private static TSAutoCloseableClient client;
 
 	public ImportTaskService() {
 		try {
 
-//			client = (TSAutoCloseableClient) DataSourceUtils.getDataSource("tsDefault").openConnection();
+			// client = (TSAutoCloseableClient)
+			// DataSourceUtils.getDataSource("tsDefault").openConnection();
 
 			taskRepository = Singleton.ins(ImportTaskRepository.class);
 			tempRecordRepository = Singleton.ins(ImportTempRecordRepository.class);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(e.getMessage());
 		}
 	}
 
@@ -82,8 +83,8 @@ public class ImportTaskService {
 			renew.status = ImportTask.STATUS.FILE_READY.v();
 			renew.fileUrls = JSON.toJSONString(fileUrls);
 
-			return taskRepository.update(conn,EXP.INS().key("origin", origin).andKey("task_id", taskId), renew, true);
-			
+			return taskRepository.update(conn, EXP.INS().key("origin", origin).andKey("task_id", taskId), renew, true);
+
 		} else {
 			return 0;
 		}

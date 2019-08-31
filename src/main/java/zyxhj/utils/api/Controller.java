@@ -123,6 +123,7 @@ public abstract class Controller {
 	@Target(ElementType.METHOD)
 	@Retention(RetentionPolicy.RUNTIME)
 	protected @interface POSTAPI {
+
 		public String path();
 
 		public String des();
@@ -133,6 +134,24 @@ public abstract class Controller {
 
 		// 默认需要验证，如登录，注册等方法
 		public boolean verify() default true;
+	}
+
+	/**
+	 * 接口权限注解</br>
+	 * 严格按按顺序验证(参考shiro)</br>
+	 */
+	@Target(ElementType.METHOD)
+	@Retention(RetentionPolicy.RUNTIME)
+	protected @interface REQUIRE {
+		public String[] role() default "";
+
+		public String[] perm() default "";
+
+		public String[] auth() default "";
+
+		public String[] user() default "";
+
+		public String[] guest() default "";
 	}
 
 	/**

@@ -7,7 +7,7 @@ import zyxhj.flow.domain.Form;
 import zyxhj.flow.domain.ProcessAction;
 import zyxhj.flow.domain.ProcessActivityGroup;
 import zyxhj.utils.data.DataSource;
-import zyxhj.utils.data.rds.RDSUtils;
+import zyxhj.utils.data.ts.TSUtils;
 
 public class Test {
 
@@ -26,10 +26,10 @@ public class Test {
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 
-			RDSUtils.createTableByEntity(dds, Form.class);
+//			RDSUtils.createTableByEntity(dds, Form.class);
 
 
-//			TSUtils.createTableByEntity(client, TaskWall.class);
+//			TSUtils.createTableByEntity(client, IMStore.class);
 //			TSUtils.drapTableByEntity(client, TaskWall.class);
 			client.shutdown();
 
