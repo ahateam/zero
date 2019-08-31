@@ -26,13 +26,10 @@ public class Test {
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 
-			RDSUtils.createTableByEntity(dds, Form.class);
+//			RDSUtils.createTableByEntity(dds, Form.class);
 
 
-			TSUtils.createTableByEntity(client, IMStore.class);
-			TSUtils.createTableByEntity(client, IMSync.class);
-			TSUtils.createTableByEntity(client, IMMeta.class);
-			TSUtils.createTableByEntity(client, IMRelation.class);
+//			TSUtils.createTableByEntity(client, IMStore.class);
 //			TSUtils.drapTableByEntity(client, TaskWall.class);
 			client.shutdown();
 
