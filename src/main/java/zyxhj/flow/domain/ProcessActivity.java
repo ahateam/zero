@@ -16,7 +16,7 @@ public class ProcessActivity {
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long pdId;
-
+	
 	/**
 	 * 编号
 	 */
@@ -24,6 +24,12 @@ public class ProcessActivity {
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
 
+	/**
+	 *  所属节点分组编号，为空时为非分组内节点
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long activityGroupId;
+	
 	/**
 	 * 标题
 	 */

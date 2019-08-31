@@ -613,7 +613,7 @@ public class FlowService extends Controller {
 	)
 	public int putActivityInGroup(//
 			@P(t = "流程定义节点分组编号") Long activityGroupId, //
-			@P(t = "流程定义节点编号") Long acitvityId, //
+			@P(t = "流程定义节点编号") Long activityId, //
 			@P(t = "是否必须") Boolean necessary//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -625,7 +625,7 @@ public class FlowService extends Controller {
 						StringUtils.join("没找到对应流程节点的分组>", activityGroupId));
 			} else {
 				ProcessActivityGroup.SubActivity sub = new ProcessActivityGroup.SubActivity();
-				sub.subActivityId = acitvityId;
+				sub.subActivityId = activityId;
 				sub.necessary = necessary;
 
 				ArrayList<ProcessActivityGroup.SubActivity> newSubs = new ArrayList<>();
@@ -637,7 +637,7 @@ public class FlowService extends Controller {
 						boolean exist = false;
 						for (int i = 0; i < pag.subActivities.size(); i++) {
 							ProcessActivityGroup.SubActivity p = pag.subActivities.get(i);
-							if (p.subActivityId.equals(acitvityId)) {
+							if (p.subActivityId.equals(activityId)) {
 								// 匹配
 								exist = true;
 								newSubs.add(sub);// 用新的替换
@@ -654,7 +654,12 @@ public class FlowService extends Controller {
 						newSubs.add(sub);
 					}
 				}
-
+				
+				//为节点添加分组编号
+				ProcessActivity pa = new ProcessActivity();
+				pa.activityGroupId = activityGroupId;
+				activityRepository.update(conn, EXP.INS().key("id", activityId), pa ,true);
+				
 				// 处理完成，更新到数据库
 				// 只更新subActivities部分即可
 				ProcessActivityGroup renew = new ProcessActivityGroup();
@@ -672,7 +677,7 @@ public class FlowService extends Controller {
 	)
 	public int removeActivityInGroup(//
 			@P(t = "流程定义节点分组编号") Long activityGroupId, //
-			@P(t = "流程定义节点编号") Long acitvityId //
+			@P(t = "流程定义节点编号") Long activityId //
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -687,14 +692,14 @@ public class FlowService extends Controller {
 				if (pag.subActivities == null || pag.subActivities.size() <= 0) {
 					// 数组为空，直接添加
 					throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR,
-							StringUtils.join("对应流程节点的分组中没有该Activity>", acitvityId));
+							StringUtils.join("对应流程节点的分组中没有该Activity>", activityId));
 				} else {
 					ArrayList<ProcessActivityGroup.SubActivity> newSubs = new ArrayList<>();
 
 					boolean exist = false;
 					for (int i = 0; i < pag.subActivities.size(); i++) {
 						ProcessActivityGroup.SubActivity p = pag.subActivities.get(i);
-						if (p.subActivityId.equals(acitvityId)) {
+						if (p.subActivityId.equals(activityId)) {
 							// 匹配，不添加
 							exist = false;
 						} else {
@@ -702,6 +707,11 @@ public class FlowService extends Controller {
 						}
 					}
 
+					//将节点中的分组编号置为空
+					ProcessActivity pa = new ProcessActivity();
+					pa.activityGroupId = null;
+					activityRepository.update(conn, EXP.INS().key("id", activityId), pa ,true);
+					
 					// 处理完成，更新到数据库
 					// 只更新subActivities部分即可
 					ProcessActivityGroup renew = new ProcessActivityGroup();
