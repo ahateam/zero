@@ -1,15 +1,15 @@
 package zyxhj.core.repository;
 
-import zyxhj.core.domain.UserRole;
+import zyxhj.core.domain.SysRole;
 import zyxhj.utils.data.rds.RDSRepository;
 
 /**
  * 
  */
-public class UserRoleRepository extends RDSRepository<UserRole> {
+public class UserRoleRepository extends RDSRepository<SysRole> {
 
 	public UserRoleRepository() {
-		super(UserRole.class);
+		super(SysRole.class);
 	}
 
 }

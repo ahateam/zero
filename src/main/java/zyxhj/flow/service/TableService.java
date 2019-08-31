@@ -132,6 +132,7 @@ public class TableService extends Controller {
 			path = "createTableSchema", //
 			des = "创建表结构表TableSchema" //
 	)
+	@REQUIRE(role = { "orgAdmin" }, perm = { "tableSchema" })
 	public TableSchema createTableSchema(@P(t = "表名") String alias, //
 			@P(t = "表类型") Byte type, //
 			@P(t = "数据列") JSONArray columns, //

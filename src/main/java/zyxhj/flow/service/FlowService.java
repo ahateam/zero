@@ -13,7 +13,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.domain.User;
-import zyxhj.core.domain.UserRole;
+import zyxhj.core.domain.SysRole;
 import zyxhj.core.repository.UserRepository;
 import zyxhj.core.repository.UserRoleRepository;
 import zyxhj.flow.domain.Department;
@@ -495,7 +495,7 @@ public class FlowService extends Controller {
 			des = "得到角色列表", //
 			ret = "List<UserRole>"//
 	)
-	public List<UserRole> getUserRoleList(//
+	public List<SysRole> getUserRoleList(//
 			Integer count, //
 			Integer offset//
 	) throws Exception {

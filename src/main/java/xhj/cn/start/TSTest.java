@@ -42,13 +42,13 @@ import zyxhj.utils.data.ts.TSUtils;
 //LTAIJ9mYIjuW54Cj
 //89EMlXLsP13H8mWKIvdr4iM1OvdVxs
 
-public class InboxTest {
+public class TSTest {
 
 	private static final String TABLE_NAME = "TempTable";
 	private static final String PK1 = "pk1";
 	private static final String PK2 = "pk2";
 
-	public InboxTest() {
+	public TSTest() {
 	}
 
 	private static DruidPooledConnection conn;
