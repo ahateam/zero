@@ -19,6 +19,7 @@ import zyxhj.utils.data.ts.TSEntity;
 @TSAnnEntity(alias = "core_reply", indexName = "core_reply_index")
 public class Reply extends TSEntity {
 
+
 	/**
 	 * 分片编号，MD5(id)，避免数据热点
 	 */
