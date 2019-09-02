@@ -15,6 +15,13 @@ import zyxhj.utils.data.rds.RDSAnnID;
 public class ChannelUser {
 
 	/**
+	 * 所属模块
+	 */
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long moduleId;
+
+	/**
 	 * 频道编号，ID列，无需索引
 	 */
 	@RDSAnnID

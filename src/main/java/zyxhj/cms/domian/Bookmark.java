@@ -14,6 +14,13 @@ import zyxhj.utils.data.rds.RDSAnnID;
 public class Bookmark {
 
 	/**
+	 * 所属模块
+	 */
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long moduleId;
+
+	/**
 	 * 用户编号，ID列，无需索引
 	 */
 	@RDSAnnID
@@ -26,12 +33,6 @@ public class Bookmark {
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long contentId;
-	
-	/**
-	 * 隶属
-	 */
-	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
-	public String module;
 
 	/**
 	 * 创建时间

@@ -16,6 +16,7 @@ import com.alicloud.openservices.tablestore.model.BatchWriteRowResponse;
 import com.alicloud.openservices.tablestore.model.Column;
 import com.alicloud.openservices.tablestore.model.Condition;
 import com.alicloud.openservices.tablestore.model.DeleteRowRequest;
+import com.alicloud.openservices.tablestore.model.Direction;
 import com.alicloud.openservices.tablestore.model.GetRangeRequest;
 import com.alicloud.openservices.tablestore.model.GetRangeResponse;
 import com.alicloud.openservices.tablestore.model.GetRowRequest;
@@ -39,7 +40,7 @@ import com.alicloud.openservices.tablestore.model.search.SearchResponse;
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.ServerException;
 
-public abstract class TSRepository<T extends TSEntity>{
+public abstract class TSRepository<T extends TSEntity> {
 	protected TSObjectMapper<T> mapper;
 
 	protected TSRepository(Class<T> clazz) {
@@ -252,8 +253,8 @@ public abstract class TSRepository<T extends TSEntity>{
 	 *            可选参数，要查询的列名，不填则查询所有列
 	 * @return 查询到的记录，JSONArray格式
 	 */
-	public static JSONArray nativeGetRange(SyncClient client, String tableName, PrimaryKey pkStart, PrimaryKey pkEnd,
-			Integer count, Integer offset, String... selections) throws ServerException {
+	public static JSONArray nativeGetRange(SyncClient client, String tableName, Direction d, PrimaryKey pkStart,
+			PrimaryKey pkEnd, Integer count, Integer offset, String... selections) throws ServerException {
 
 		int limit = count;
 		int skip = offset;
@@ -268,6 +269,8 @@ public abstract class TSRepository<T extends TSEntity>{
 			criteria.setExclusiveEndPrimaryKey(pkEnd);
 			// 需要设置正确的limit，这里期望读出的数据行数最多为完整的一页数据以及需要过滤(offset)的数据
 			criteria.setLimit(skip + limit);
+
+			criteria.setDirection(d);
 
 			criteria.setMaxVersions(1);
 			if (selections != null && selections.length > 0) {
@@ -420,9 +423,9 @@ public abstract class TSRepository<T extends TSEntity>{
 	 * @param selections
 	 *            可选参数，要查询的列名，不填则查询所有列
 	 */
-	public JSONArray getRange(SyncClient client, PrimaryKey pkStart, PrimaryKey pkEnd, Integer count, Integer offset,
-			String... selections) throws Exception {
-		return nativeGetRange(client, mapper.getTableName(), pkStart, pkEnd, count, offset, selections);
+	public JSONArray getRange(SyncClient client, Direction d, PrimaryKey pkStart, PrimaryKey pkEnd, Integer count,
+			Integer offset, String... selections) throws Exception {
+		return nativeGetRange(client, mapper.getTableName(), d, pkStart, pkEnd, count, offset, selections);
 	}
 
 	/**

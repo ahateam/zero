@@ -14,6 +14,7 @@ import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.BatchWriteRowRequest;
 import com.alicloud.openservices.tablestore.model.Column;
 import com.alicloud.openservices.tablestore.model.ColumnValue;
+import com.alicloud.openservices.tablestore.model.Direction;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
 import com.alicloud.openservices.tablestore.model.PrimaryKeyValue;
 import com.alicloud.openservices.tablestore.model.search.SearchQuery;
@@ -113,7 +114,7 @@ public class TSTest {
 
 		// 查询所有
 		// getCate(syncClient);
-//		testSearch(syncClient);
+		// testSearch(syncClient);
 	}
 
 	private static void getCate(SyncClient client) throws Exception {
@@ -124,7 +125,8 @@ public class TSTest {
 		// 设置结束主键
 		PrimaryKey pkEnd = new PrimaryKeyBuilder().add("_id", PrimaryKeyValue.INF_MAX)
 				.add("id", PrimaryKeyValue.INF_MAX).build();
-		JSONArray s = TSRepository.nativeGetRange(client, cateInfoRepository.getTableName(), pkStart, pkEnd, 100, 0);
+		JSONArray s = TSRepository.nativeGetRange(client, cateInfoRepository.getTableName(), Direction.FORWARD, pkStart,
+				pkEnd, 100, 0);
 		System.out.println(JSON.toJSONString(s, true));
 	}
 
@@ -196,8 +198,8 @@ public class TSTest {
 		TSUtils.createTableByEntity(client, ContentTag.class);
 
 		// 测试删除表
-//		 TSUtils.drapTableByEntity(client, ContentTag.class);
-//
+		// TSUtils.drapTableByEntity(client, ContentTag.class);
+		//
 		// ImportTempRecord itr = new ImportTempRecord();
 		// itr.taskId = 123L;
 		// itr.recordId = null;// 自增列，随便怎么赋值，都会被忽略
@@ -296,7 +298,7 @@ public class TSTest {
 			TSQL ts = new TSQL();
 			// ts.setFirstTerms("tags", "tag1", "tag3").ANDTerm("status",
 			// 1L).ANDTerm("cate", "类3");
-//			ts.Term(OP.OR, "cate", "类1").Term(OP.OR, "status", 1L);
+			// ts.Term(OP.OR, "cate", "类1").Term(OP.OR, "status", 1L);
 			ts.Terms(OP.OR, "tags", "tag1");
 			ts.setLimit(10);
 			ts.setOffset(0);
@@ -305,7 +307,7 @@ public class TSTest {
 
 			JSONObject resp = cateInfoRepository.search(client, myQuery);
 
-			System.out.println("1"+JSON.toJSONString(resp, true));
+			System.out.println("1" + JSON.toJSONString(resp, true));
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -429,8 +431,8 @@ public class TSTest {
 		PrimaryKey pkEnd = new PrimaryKeyBuilder().add(PK1, 123l).add("recordId", "max(recordId)").build();
 
 		try {
-			JSONArray array = TSRepository.nativeGetRange(client, TABLE_NAME, pkStart, pkEnd, 10, 2, "Col1", "Col5",
-					"xxx");
+			JSONArray array = TSRepository.nativeGetRange(client, TABLE_NAME, Direction.FORWARD, pkStart, pkEnd, 10, 2,
+					"Col1", "Col5", "xxx");
 			System.out.println(JSON.toJSONString(array, true));
 		} catch (ServerException e) {
 			e.printStackTrace();

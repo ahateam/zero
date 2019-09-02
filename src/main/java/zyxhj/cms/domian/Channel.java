@@ -2,101 +2,73 @@ package zyxhj.cms.domian;
 
 import java.util.Date;
 
-import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
-import com.alicloud.openservices.tablestore.model.search.FieldType;
+import com.alibaba.fastjson.JSONObject;
 
-import zyxhj.utils.api.Controller.ENUMVALUE;
-import zyxhj.utils.data.ts.TSAnnEntity;
-import zyxhj.utils.data.ts.TSAnnField;
-import zyxhj.utils.data.ts.TSAnnID;
-import zyxhj.utils.data.ts.TSAnnIndex;
-import zyxhj.utils.data.ts.TSEntity;
+import zyxhj.utils.data.AnnDicField;
+import zyxhj.utils.data.rds.RDSAnnEntity;
+import zyxhj.utils.data.rds.RDSAnnField;
+import zyxhj.utils.data.rds.RDSAnnID;
 
 /**
  * 内容频道（专栏）实体
  *
  */
-@TSAnnEntity(alias = "channel", indexName = "ChannelIndex")
-public class Channel extends  TSEntity{
-
-	public static enum STATUS implements ENUMVALUE {
-		NORMAL((byte) 0, "正常"), //
-		CLOSED((byte) 1, "已关闭"), //
-		DELETED((byte) 2, "已删除"), //
-		PUBLISHED((byte) 3, "已发布"), //
-		PUBLISHEDFAIL((byte) 4, "发布失败"), //
-		;
-
-		private byte v;
-		private String txt;
-
-		private STATUS(byte v, String txt) {
-			this.v = v;
-			this.txt = txt;
-		}
-
-		@Override
-		public byte v() {
-			return v;
-		}
-
-		@Override
-		public String txt() {
-			return txt;
-		}
-	}
-
-	/**
-	 * 分片编号，MD5(id)，避免数据热点
-	 */
-	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.STRING)
-	public String _id;
-
-	/**
-	 * 编号
-	 */
-	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
-	public Long id;
+@RDSAnnEntity(alias = "tb_cms_channel")
+public class Channel {
 
 	/**
 	 * 所属模块
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String module;
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long moduleId;
+
+	/**
+	 * 编号
+	 */
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long id;
 
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long status;
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte status;
 
 	/**
 	 * 创建时间
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.TIME)
 	public Date createTime;
 
 	/**
 	 * 标题
 	 */
-	@TSAnnIndex(type = FieldType.TEXT, enableSortAndAgg = false, store = false)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String title;
-	
+
 	/**
 	 * 标签
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true,isArray = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String tags;
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public JSONObject tags;
 
 	/**
 	 * 数据
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT)
 	public String data;
+
+	/////////////////////////////////////////////
+	/////////////////////////////////////////////
+	/////////////////////////////////////////////
+
+	@AnnDicField(alias = "禁用")
+	public static final Byte STATUS_DISABLE = 0;
+	@AnnDicField(alias = "启用")
+	public static final Byte STATUS_ENABLE = 1;
+	@AnnDicField(alias = "锁定")
+	public static final Byte STATUS_LOCKED = 2;
 
 }
