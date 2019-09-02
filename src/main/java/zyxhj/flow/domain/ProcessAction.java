@@ -25,7 +25,7 @@ public class ProcessAction {
 	public Long ownerId;
 
 	/**
-	 * 所属类型
+	 * 所属类型、节点或节点分组
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte ownerType;
