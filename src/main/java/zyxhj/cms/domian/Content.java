@@ -2,202 +2,145 @@ package zyxhj.cms.domian;
 
 import java.util.Date;
 
-import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
-import com.alicloud.openservices.tablestore.model.search.FieldType;
+import com.alibaba.fastjson.JSONObject;
 
-import zyxhj.utils.api.Controller.ENUMVALUE;
-import zyxhj.utils.data.ts.TSAnnEntity;
-import zyxhj.utils.data.ts.TSAnnField;
-import zyxhj.utils.data.ts.TSAnnID;
-import zyxhj.utils.data.ts.TSAnnIndex;
-import zyxhj.utils.data.ts.TSEntity;
+import zyxhj.utils.data.AnnDicField;
+import zyxhj.utils.data.rds.RDSAnnEntity;
+import zyxhj.utils.data.rds.RDSAnnField;
+import zyxhj.utils.data.rds.RDSAnnID;
 
 /**
  * 内容
  *
  */
-@TSAnnEntity(alias = "Content", indexName = "ContentIndex")
-public class Content extends TSEntity {
-
-	public static enum TYPE implements ENUMVALUE {
-		ALBUM((byte) 0, "相册"), //
-		AUDIO((byte) 1, "音频"), //
-		VIDEO_CLIP((byte) 2, "短视频"), //
-		VIDEO((byte) 3, "视频"), //
-		LIVE((byte) 4, "直播"), //
-		H5((byte) 5, "H5文本"), //
-		POST((byte) 6, "帖子"), //
-		SET((byte) 7, "内容集合"),//
-		;
-
-		private byte v;
-		private String txt;
-
-		private TYPE(byte v, String txt) {
-			this.v = v;
-			this.txt = txt;
-		}
-
-		@Override
-		public byte v() {
-			return v;
-		}
-
-		@Override
-		public String txt() {
-			return txt;
-		}
-	}
-
-	public static enum STATUS implements ENUMVALUE {
-		DRAFT((byte) 0, "草稿"), //
-		NORMAL((byte) 1, "正常"), //
-		CLOSED((byte) 2, "已关闭"), //
-		DELETED((byte) 3, "已删除"), //
-		PUBLISHED((byte) 4, "已发布"), //
-		PUBLISHEDFAIL((byte) 5, "发布失败"), //
-		;
-
-		private byte v;
-		private String txt;
-
-		private STATUS(byte v, String txt) {
-			this.v = v;
-			this.txt = txt;
-		}
-
-		@Override
-		public byte v() {
-			return v;
-		}
-
-		@Override
-		public String txt() {
-			return txt;
-		}
-	}
-
-	public static enum PAID implements ENUMVALUE {
-		Free((byte) 0, "免费"), //
-		PAY((byte) 1, "付费"), //
-		;
-
-		private byte v;
-		private String txt;
-
-		private PAID(byte v, String txt) {
-			this.v = v;
-			this.txt = txt;
-		}
-
-		@Override
-		public byte v() {
-			return v;
-		}
-
-		@Override
-		public String txt() {
-			return txt;
-		}
-	}
-
-	/**
-	 * 分片编号，MD5(id)，避免数据热点
-	 */
-	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.STRING)
-	public String _id;
-
-	/**
-	 * 编号
-	 */
-	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
-	public Long id;
+@RDSAnnEntity(alias = "tb_cms_content")
+public class Content {
 
 	/**
 	 * 所属模块
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String module;
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
+	public String moduleId;
 
 	/**
-	 * 类型
+	 * 编号
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long type;
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long id;
 
 	/**
 	 * 创建时间
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.TIME)
 	public Date createTime;
 
 	/**
 	 * 更新时间
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.TIME)
 	public Date updateTime;
+
+	/**
+	 * 类型
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte type;
 
 	/**
 	 * 状态
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long status;
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte status;
+
+	/**
+	 * 权利（会员，付费，等）
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte right;
 
 	/**
 	 * 标题
 	 */
-	@TSAnnIndex(type = FieldType.TEXT, enableSortAndAgg = false, store = false)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String title;
 
 	/**
 	 * 上传用户编号
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.ID)
 	public Long upUserId;
 
 	/**
 	 * 上传专栏编号
 	 */
-	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
+	@RDSAnnField(column = RDSAnnField.ID)
 	public Long upChannelId;
 
 	/**
 	 * 标签
 	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = true, store = true, isArray = true)
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
-	public String tags;
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public JSONObject tags;
 
 	/**
 	 * 数据
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.TEXT)
 	public String data;
 
 	/**
 	 * 私密信息
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String proviteData;
-
-	/**
-	 * 是否付费
-	 */
-	@TSAnnIndex(type = FieldType.KEYWORD, enableSortAndAgg = false, store = true)
-	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long paid;
 
 	/**
 	 * 扩展信息，可用JSON格式自行扩展
 	 */
-	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String ext;
+
+	/////////////////////////////////////////////
+	/////////////////////////////////////////////
+	/////////////////////////////////////////////
+
+	@AnnDicField(alias = "相册")
+	public static final Byte TYPE_ALUMB = 0;
+	@AnnDicField(alias = "音频")
+	public static final Byte TYPE_AUDIO = 1;
+	@AnnDicField(alias = "短视频")
+	public static final Byte TYPE_VIDEO_CLIP = 2;
+	@AnnDicField(alias = "视频")
+	public static final Byte TYPE_VIDEO = 3;
+	@AnnDicField(alias = "直播")
+	public static final Byte TYPE_LIVE = 4;
+	@AnnDicField(alias = "H5文本")
+	public static final Byte TYPE_H5 = 5;
+	@AnnDicField(alias = "帖子")
+	public static final Byte TYPE_POST = 6;
+	@AnnDicField(alias = "集合")
+	public static final Byte TYPE_SET = 7;
+
+	@AnnDicField(alias = "草稿")
+	public static final Byte STATUS_DRAFT = 0;
+	@AnnDicField(alias = "正常")
+	public static final Byte STATUS_NORMAL = 1;
+	@AnnDicField(alias = "已关闭")
+	public static final Byte STATUS_CLOSED = 2;
+	@AnnDicField(alias = "已删除")
+	public static final Byte STATUS_DELETED = 3;
+	@AnnDicField(alias = "已发布")
+	public static final Byte STATUS_PUBLISHED = 4;
+
+	@AnnDicField(alias = "免费")
+	public static final Byte RIGHT_FREE = 0;
+	@AnnDicField(alias = "付费")
+	public static final Byte RIGHT_PAY = 1;
+	@AnnDicField(alias = "会员")
+	public static final Byte RIGHT_MEMBER = 2;
+	@AnnDicField(alias = "会员付费")
+	public static final Byte RIGHT_MEMBER_PAY = 3;
+
 }

@@ -6,11 +6,11 @@ import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
 
 /**
- * 
- * 内容标签
+ * 专栏的所属内容的标签
+ *
  */
-@RDSAnnEntity(alias = "tb_cms_content_tag")
-public class ContentTag {
+@RDSAnnEntity(alias = "tb_channel_content_tag")
+public class ChannelContentTag {
 
 	/**
 	 * 所属模块
@@ -20,11 +20,11 @@ public class ContentTag {
 	public Long moduleId;
 
 	/**
-	 * 所属分组编号
+	 * 所属专栏编号
 	 */
 	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
-	public String group;
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long channelId;
 
 	/**
 	 * 标签名称（名称直接配合模块编号和持有者编号做主键，不重复）

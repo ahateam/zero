@@ -97,7 +97,7 @@ public class MailService extends Controller {
 	public void setMailTagStatus(//
 			@P(t = "模块编号") Long moduleId, //
 			@P(t = "标签名称（关键字）") String name, //
-			@P(t = "标签状态") Integer status//
+			@P(t = "标签状态") Byte status//
 	) throws Exception {
 
 		MailTag mt = new MailTag();
