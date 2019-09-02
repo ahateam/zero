@@ -654,12 +654,12 @@ public class FlowService extends Controller {
 						newSubs.add(sub);
 					}
 				}
-				
-				//为节点添加分组编号
+
+				// 为节点添加分组编号
 				ProcessActivity pa = new ProcessActivity();
 				pa.activityGroupId = activityGroupId;
-				activityRepository.update(conn, EXP.INS().key("id", activityId), pa ,true);
-				
+				activityRepository.update(conn, EXP.INS().key("id", activityId), pa, true);
+
 				// 处理完成，更新到数据库
 				// 只更新subActivities部分即可
 				ProcessActivityGroup renew = new ProcessActivityGroup();
@@ -690,37 +690,30 @@ public class FlowService extends Controller {
 			} else {
 
 				if (pag.subActivities == null || pag.subActivities.size() <= 0) {
-					// 数组为空，直接添加
+					// 数组为空， 节点分组中没有节点
 					throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR,
 							StringUtils.join("对应流程节点的分组中没有该Activity>", activityId));
 				} else {
 					ArrayList<ProcessActivityGroup.SubActivity> newSubs = new ArrayList<>();
 
-					boolean exist = false;
 					for (int i = 0; i < pag.subActivities.size(); i++) {
 						ProcessActivityGroup.SubActivity p = pag.subActivities.get(i);
 						if (p.subActivityId.equals(activityId)) {
-							// 匹配，不添加
-							exist = false;
-						} else {
-							newSubs.add(p);
+							// 匹配，则移除当前节点
+							// 将节点中的分组编号置为空
+							ProcessActivity pa = new ProcessActivity();
+							pa.activityGroupId = 0L;
+							activityRepository.update(conn, EXP.INS().key("id", activityId), pa, true);
+							
+							EXP set = EXP.JSON_ARRAY_REMOVE("sub_activities", "$", i);
+							EXP where = EXP.INS().key("id", activityGroupId);
+							return activityGroupRepository.update(conn, set, where);
 						}
 					}
-
-					//将节点中的分组编号置为空
-					ProcessActivity pa = new ProcessActivity();
-					pa.activityGroupId = null;
-					activityRepository.update(conn, EXP.INS().key("id", activityId), pa ,true);
-					
-					// 处理完成，更新到数据库
-					// 只更新subActivities部分即可
-					ProcessActivityGroup renew = new ProcessActivityGroup();
-					renew.subActivities = newSubs;
-
-					return activityGroupRepository.update(conn, EXP.INS().key("id", activityGroupId), renew, true);
 				}
 			}
 		}
+		return 0;
 	}
 
 	@POSTAPI(//
@@ -728,15 +721,19 @@ public class FlowService extends Controller {
 			des = "获取节点分组中的所有节点", //
 			ret = "List<SubActivity>"//
 	)
-	public List<SubActivity> getSubActivity(//
+	public List<ProcessActivity> getSubActivity(//
 			@P(t = "流程定义节点分组编号") Long activityGroupId//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			ProcessActivityGroup pag = activityGroupRepository.get(conn, EXP.INS().key("id", activityGroupId));
-			return pag.subActivities;
+			List<Long> arges = new ArrayList<Long>();
+			for (SubActivity s : pag.subActivities) {
+				arges.add(s.subActivityId);
+			}
+			return activityRepository.getList(conn, EXP.INS().key("activity_group_id", activityGroupId),
+					pag.subActivities.size(), 0);
 		}
 	}
-
 
 	@POSTAPI(//
 			path = "updateSubActivity", //
@@ -779,6 +776,25 @@ public class FlowService extends Controller {
 			}
 		}
 	}
-	
-	
+
+	@POSTAPI(//
+			path = "delProcessActivityGroup", //
+			des = "删除流程节点分组", //
+			ret = "受影响行数"//
+	)
+	public int delProcessActivityGroup(//
+			@P(t = "当前流程定义编号") Long pdId, //
+			@P(t = "流程节点分组编号") Long activityGroupId//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			List<ProcessActivity> subList = getSubActivity(activityGroupId);
+			List<Long> arges = new ArrayList<Long>();
+			for (ProcessActivity s : subList) {
+				arges.add(s.id);
+			}
+			activityRepository.delete(conn, EXP.INS().key("pd_id", pdId).and(EXP.IN_ORDERED("id", arges)));
+			return activityGroupRepository.delete(conn, EXP.INS().key("pd_id", pdId).andKey("id", activityGroupId));
+		}
+	}
+
 }
