@@ -350,9 +350,9 @@ public class FlowTest {
 	@Test
 	public void testGetALLSubActivity() throws Exception {
 		Long activityGroupId = 401127906929613L;
-		List<SubActivity> slist = flowService.getSubActivity(activityGroupId);
+		List<ProcessActivity> slist = flowService.getSubActivity(activityGroupId);
 		for (int i = 0; i < slist.size(); i++) {
-			System.out.println(slist.get(i).subActivityId);
+			System.out.println(slist.get(i).id);
 		}
 	}
 

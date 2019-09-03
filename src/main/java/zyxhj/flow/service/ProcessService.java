@@ -518,11 +518,11 @@ public class ProcessService extends Controller {
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			int res = 0;
-			List<SubActivity> sublist = flowService.getSubActivity(activityGroupId);
-			for (SubActivity s : sublist) {
+			List<ProcessActivity> sublist = flowService.getSubActivity(activityGroupId);
+			for (ProcessActivity s : sublist) {
 
 				List<ProcessAction> alist = processActionRepository.getList(conn,
-						EXP.INS().key("owner_id", s.subActivityId).andKey("owner_type", 1), null, null);
+						EXP.INS().key("owner_id", s.id).andKey("owner_type", 1), null, null);
 				int i = 0;
 				for (ProcessAction pa : alist) {
 					i = i + pa.ext;
@@ -599,7 +599,7 @@ public class ProcessService extends Controller {
 						ProcessActivity activity = flowService.getPDActivityById(action.pdId, activityId);
 						if (activity != null) {
 							System.out.println("+++++++++++++"+activity.activityGroupId);
-							if (activity.activityGroupId == 0) {
+							if (activity.activityGroupId == 0 || activity.activityGroupId == null) {
 
 								System.out.println("进入普通节点");
 								// 执行表达式 得到下一目标节点

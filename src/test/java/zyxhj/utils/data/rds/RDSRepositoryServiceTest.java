@@ -15,6 +15,9 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import zyxhj.flow.domain.ProcessActivity;
+import zyxhj.flow.repository.ProcessActivityGroupRepository;
+import zyxhj.flow.repository.ProcessActivityRepository;
 import zyxhj.test.domain.TestDomain;
 import zyxhj.test.domain.TestDomain1;
 import zyxhj.utils.IDUtils;
@@ -458,7 +461,6 @@ public class RDSRepositoryServiceTest {
 		}
 	}
 	
-	@Test
 	public void testSqlGetOtherList() throws Exception {
 		String sql = "select * from tb_rds_test1";
 		List<TestDomain1> list= testRepository.sqlGetOtherList(conn, testRepository1, sql, null);
@@ -466,4 +468,15 @@ public class RDSRepositoryServiceTest {
 			System.out.println(t.id);
 		}
 	}
+	
+	@Test 
+	public void testJSONREMOVE() throws Exception {
+		
+		ProcessActivityRepository activityRepository = new ProcessActivityRepository();
+		
+		ProcessActivity pa = new ProcessActivity();
+		pa.activityGroupId = new Long(0);
+		activityRepository.update(conn, EXP.INS().key("id", 400719819725379L), pa, true);
+	}
+	
 }
