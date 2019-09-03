@@ -3,6 +3,10 @@ package xhj.cn.start;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alicloud.openservices.tablestore.SyncClient;
 
+import zyxhj.core.domain.Appraise;
+import zyxhj.core.domain.Mail;
+import zyxhj.core.domain.MailTag;
+import zyxhj.core.domain.Reply;
 import zyxhj.flow.domain.Form;
 import zyxhj.flow.domain.ProcessAction;
 import zyxhj.flow.domain.ProcessActivityGroup;
@@ -29,8 +33,8 @@ public class Test {
 //			RDSUtils.createTableByEntity(dds, Form.class);
 
 
-//			TSUtils.createTableByEntity(client, IMStore.class);
-//			TSUtils.drapTableByEntity(client, TaskWall.class);
+//			TSUtils.createTableByEntity(client, MailTag.class);
+//			TSUtils.drapTableByEntity(client, MailTag.class);
 			client.shutdown();
 
 		} catch (Exception e) {
