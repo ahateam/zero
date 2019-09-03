@@ -58,7 +58,8 @@ public class Content {
 	 * 权利（会员，付费，等）
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
-	public Byte right;
+	public Byte power;
+//	public Byte right;//mysql关键字，报错
 
 	/**
 	 * 标题
@@ -81,9 +82,10 @@ public class Content {
 	/**
 	 * 标签
 	 */
-	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public JSONObject tags;
-
+//	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	@RDSAnnField(column = RDSAnnField.JSON)
+//	public JSONObject tags;
+	public String tags;
 	/**
 	 * 数据
 	 */
