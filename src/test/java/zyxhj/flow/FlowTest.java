@@ -372,10 +372,10 @@ public class FlowTest {
 		JSONObject jo = new JSONObject();
 		jo.put("exp", "expDefault");
 		jo.put("targetType", "activity");
-		jo.put("target", 401127871000279L);// 下一节点 第二节点
+		jo.put("target", 401274724523438L);// 下一节点 第二节点
 		roles.add(jo);
-		Long pdId = 401122871418288L;
-		Long activityId = 401127867024131L;// 当前节点  第一个节点
+		Long pdId = 401274709271725L;
+		Long activityId = 400719819725379L;// 当前节点  第一个节点
 
 		ProcessAction paction = flowService.createProcessAction(pdId, activityId, ProcessAction.OWNER_TYPE_ACTIVITY, ProcessAction.TYPE_ACCEPT, roles);
 	}
@@ -403,7 +403,7 @@ public class FlowTest {
 		JSONObject jo1 = new JSONObject();
 		jo1.put("exp", "expDefault");
 		jo1.put("targetType", "activity");
-		jo1.put("target", 401127889022941L);// 下一节点 第六个节点
+		jo1.put("target", 401274745109938L);// 下一节点 第六个节点
 		roles1.add(jo1);
 
 		// 驳回
@@ -412,11 +412,11 @@ public class FlowTest {
 		JSONObject jo2 = new JSONObject();
 		jo2.put("exp", "expDefault");
 		jo2.put("targetType", "activity");
-		jo2.put("target", 401127871000279L);// 上一节点 第二个节点
+		jo2.put("target", 401274724523438L);// 上一节点 第二个节点
 		roles2.add(jo2);
 
-		Long pdId = 401122871418288L;
-		Long activityId = 401127906929613L;// 当前节点分组
+		Long pdId = 401274709271725L;
+		Long activityId = 401274733715119L;// 当前节点分组
 
 		flowService.createProcessAction(pdId, activityId, ProcessAction.OWNER_TYPE_ACTIVITY_GROUP, ProcessAction.TYPE_ACCEPT, roles1);
 		flowService.createProcessAction(pdId, activityId, ProcessAction.OWNER_TYPE_ACTIVITY_GROUP, ProcessAction.TYPE_REJECT, roles2);
@@ -431,7 +431,7 @@ public class FlowTest {
 			JSONArray roles1 = new JSONArray();
 			JSONObject jo1 = new JSONObject();
 			jo1.put("exp", "expDefault");
-			jo1.put("targetType", "activityGroup");
+			jo1.put("targetType", "activity");
 			jo1.put("target", "null");
 			roles1.add(jo1);
 
@@ -440,18 +440,13 @@ public class FlowTest {
 
 			JSONObject jo2 = new JSONObject();
 			jo2.put("exp", "expDefault");
-			jo2.put("targetType", "activityGroup");
+			jo2.put("targetType", "activity");
 			jo2.put("target", "null");
 			roles2.add(jo2);
 
-			Long pdId = 401122871418288L;
-			Long activityId3 = 401127873928902L;// 第三个节点
-			Long activityId4 = 401127881993223L;// 第四个节点
-			Long activityId5 = 401127885477213L;// 第五个节点
-
-			flowService.createProcessAction(pdId, activityId3, ProcessAction.OWNER_TYPE_ACTIVITY_GROUP, ProcessAction.TYPE_ACCEPT, roles1);
-			flowService.createProcessAction(pdId, activityId3, ProcessAction.OWNER_TYPE_ACTIVITY_GROUP, ProcessAction.TYPE_REJECT, roles2);
-			
+			Long pdId = 401274709271725L;
+			Long activityId4 = 401274737184176L;// 第四个节点
+			Long activityId5 = 401274739926705L;// 第五个节点
 
 			flowService.createProcessAction(pdId, activityId4, ProcessAction.OWNER_TYPE_ACTIVITY_GROUP, ProcessAction.TYPE_ACCEPT, roles1);
 			flowService.createProcessAction(pdId, activityId4, ProcessAction.OWNER_TYPE_ACTIVITY_GROUP, ProcessAction.TYPE_REJECT, roles2);
