@@ -39,16 +39,16 @@ public class MailTag extends TSEntity {
 	 */
 	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Byte status;
+	public Integer status;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
 
 	@AnnDicField(alias = "禁用")
-	public static final Byte STATUS_DISABLE = 0;
+	public static final Integer STATUS_DISABLE = 0;
 
 	@AnnDicField(alias = "启用")
-	public static final Byte STATUS_ENABLE = 1;
-
+	public static final Integer STATUS_ENABLE = 1;
+	
 }

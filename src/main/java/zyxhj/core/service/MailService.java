@@ -77,7 +77,8 @@ public class MailService extends Controller {
 	)
 	public JSONArray getMailTagList(//
 			@P(t = "模块编号") Long moduleId, //
-			Integer count, Integer offset//
+			Integer count,//
+			Integer offset//
 	) throws Exception {
 
 		String _id = TSUtils.get_id(moduleId);
@@ -97,7 +98,7 @@ public class MailService extends Controller {
 	public void setMailTagStatus(//
 			@P(t = "模块编号") Long moduleId, //
 			@P(t = "标签名称（关键字）") String name, //
-			@P(t = "标签状态") Byte status//
+			@P(t = "标签状态") Integer status//
 	) throws Exception {
 
 		MailTag mt = new MailTag();
@@ -157,7 +158,7 @@ public class MailService extends Controller {
 			m.text = text;
 			m.action = action;
 			m.ext = ext;
-
+			m.active = true;
 			try {
 				// 尝试Insert，插入不进去会冲突导致失败，继续下一个
 				mailRepository.insert(client, m, false);
@@ -176,11 +177,17 @@ public class MailService extends Controller {
 			@P(t = "邮件序列编号") Long sequenceId //
 	) throws Exception {
 
-		// TODO 先做逻辑删除，再做物理删除，要修改
-		PrimaryKey pk = new PrimaryKeyBuilder().add("moduleId", moduleId).add("receiver", receiver)
-				.add("sequenceId", sequenceId).build();
+//		// TODO 先做逻辑删除，再做物理删除，要修改
+//		PrimaryKey pk = new PrimaryKeyBuilder().add("moduleId", moduleId).add("receiver", receiver)
+//				.add("sequenceId", sequenceId).build();
 
-		mailRepository.delete(client, pk);
+		Mail m = new Mail();
+		m.moduleId = moduleId;
+		m.receiver = receiver;
+		m.sequenceId = sequenceId;
+		m.active  = false;
+		mailRepository.update(client, m, true);
+		//mailRepository.delete(client, pk);
 	}
 
 	@POSTAPI(//

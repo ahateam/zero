@@ -1,0 +1,8 @@
+diff a/src/main/java/zyxhj/core/domain/MailTag.java b/src/main/java/zyxhj/core/domain/MailTag.java	(rejected hunks)
+@@ -50,5 +50,5 @@
+ 
+ 	@AnnDicField(alias = "启用")
+ 	public static final Integer STATUS_ENABLE = 1;
+-
++	
+ }

@@ -28,7 +28,7 @@ public class Appraise extends TSEntity {
 	/**
 	 * 用户id
 	 */
-	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
+	@TSAnnID(key = TSAnnID.Key.PK3, type = PrimaryKeyType.INTEGER)
 	public Long userId;
 
 	/**
