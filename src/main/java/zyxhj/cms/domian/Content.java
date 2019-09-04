@@ -59,7 +59,7 @@ public class Content {
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte power;
-//	public Byte right;//mysql关键字，报错
+	// public Byte right;//mysql关键字，报错
 
 	/**
 	 * 标题
@@ -82,10 +82,8 @@ public class Content {
 	/**
 	 * 标签
 	 */
-//	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	@RDSAnnField(column = RDSAnnField.JSON)
-//	public JSONObject tags;
-	public String tags;
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public JSONObject tags;
 	/**
 	 * 数据
 	 */
