@@ -19,7 +19,6 @@ import zyxhj.utils.data.ts.TSEntity;
 @TSAnnEntity(alias = "core_reply", indexName = "core_reply_index")
 public class Reply extends TSEntity {
 
-
 	/**
 	 * 分片编号，MD5(id)，避免数据热点
 	 */
@@ -49,7 +48,7 @@ public class Reply extends TSEntity {
 	 */
 	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long status;
+	public Byte status;
 
 	/**
 	 * 上传用户编号
@@ -62,6 +61,12 @@ public class Reply extends TSEntity {
 	 */
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long atUserId;
+
+	/**
+	 * 被@的用户名称
+	 */
+	@TSAnnField(column = TSAnnField.ColumnType.STRING)
+	public String atUserName;
 
 	/**
 	 * 标题
@@ -86,11 +91,11 @@ public class Reply extends TSEntity {
 	/////////////////////////////////////////////
 
 	@AnnDicField(alias = "未审核")
-	public static final Long STATUS_UNEXAMINED = 0L;
+	public static final Byte STATUS_UNEXAMINED = 0;
 
 	@AnnDicField(alias = "已通过")
-	public static final Long STATUS_ACCEPT = 1L;
+	public static final Byte STATUS_ACCEPT = 1;
 
 	@AnnDicField(alias = "已回绝")
-	public static final Long STATUS_REJECT = 2L;
+	public static final Byte STATUS_REJECT = 2;
 }
