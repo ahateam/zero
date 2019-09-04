@@ -37,6 +37,13 @@ public class User {
 	public String idNumber;
 
 	/**
+	 * 	性别
+	 */
+	@RDSAnnIndex(type = RDSAnnIndex.NORMAL)
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte sex;
+	
+	/**
 	 * 手机号（索引）
 	 */
 	@RDSAnnIndex(type = RDSAnnIndex.NORMAL)
