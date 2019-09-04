@@ -36,16 +36,16 @@ public class Appraise extends TSEntity {
 	 */
 	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = false, store = false)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Long value;
+	public Byte value;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
 
 	@AnnDicField(alias = "赞")
-	public static final Long VALUE_PRAISE = 0L;
+	public static final Byte VALUE_PRAISE = 0;
 
 	@AnnDicField(alias = "踩")
-	public static final Long STATUS_DISS = 1L;
+	public static final Byte STATUS_DISS = 1;
 
 }

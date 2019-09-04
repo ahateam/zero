@@ -16,7 +16,7 @@ import zyxhj.utils.data.ts.TSEntity;
  * 回复
  *
  */
-@TSAnnEntity(alias = "core_reply", indexName = "core_reply_index")
+@TSAnnEntity(alias = "tb_core_reply", indexName = "tb_core_reply_index")
 public class Reply extends TSEntity {
 
 	/**
@@ -28,6 +28,7 @@ public class Reply extends TSEntity {
 	/**
 	 * 回复所属对象编号
 	 */
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
 	public Long ownerId;
 
@@ -40,6 +41,7 @@ public class Reply extends TSEntity {
 	/**
 	 * 创建时间
 	 */
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Date createTime;
 
@@ -53,6 +55,7 @@ public class Reply extends TSEntity {
 	/**
 	 * 上传用户编号
 	 */
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
 	public Long upUserId;
 
