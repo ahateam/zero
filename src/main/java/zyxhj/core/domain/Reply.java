@@ -16,7 +16,7 @@ import zyxhj.utils.data.ts.TSEntity;
  * 回复
  *
  */
-@TSAnnEntity(alias = "tb_core_reply", indexName = "tb_core_reply_index")
+@TSAnnEntity(alias = "tb_core_reply", indexName = "index_core_reply")
 public class Reply extends TSEntity {
 
 	/**

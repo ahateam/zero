@@ -36,6 +36,9 @@ public class Test {
 
 
 //			TSUtils.createTableByEntity(client, MailTag.class);
+//			TSUtils.createTableByEntity(client, Appraise.class);
+//			TSUtils.createTableByEntity(client, Reply.class);
+			
 //			TSUtils.drapTableByEntity(client, MailTag.class);
 			client.shutdown();
 

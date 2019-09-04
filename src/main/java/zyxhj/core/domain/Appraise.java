@@ -10,7 +10,7 @@ import zyxhj.utils.data.ts.TSAnnID;
 import zyxhj.utils.data.ts.TSAnnIndex;
 import zyxhj.utils.data.ts.TSEntity;
 
-@TSAnnEntity(alias = "core_appraise", indexName = "core_appraise_index")
+@TSAnnEntity(alias = "tb_core_appraise", indexName = "index_core_appraise")
 public class Appraise extends TSEntity {
 
 	/**
@@ -22,12 +22,14 @@ public class Appraise extends TSEntity {
 	/**
 	 * 回复所属对象编号
 	 */
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = false, store = false)
 	@TSAnnID(key = TSAnnID.Key.PK2, type = PrimaryKeyType.INTEGER)
 	public Long ownerId;
 
 	/**
 	 * 用户id
 	 */
+	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = false, store = false)
 	@TSAnnID(key = TSAnnID.Key.PK3, type = PrimaryKeyType.INTEGER)
 	public Long userId;
 

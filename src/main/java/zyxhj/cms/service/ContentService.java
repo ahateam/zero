@@ -1,5 +1,231 @@
 package zyxhj.cms.service;
 
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.alibaba.druid.pool.DruidDataSource;
+import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
+import zyxhj.cms.domian.Content;
+import zyxhj.cms.repository.ContentRepository;
+import zyxhj.utils.IDUtils;
+import zyxhj.utils.Singleton;
+import zyxhj.utils.api.APIResponse;
+import zyxhj.utils.api.Controller;
+import zyxhj.utils.api.ServerException;
+import zyxhj.utils.api.Controller;
+import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.EXP;
+
+public class ContentService extends Controller{
+
+	private static Logger log = LoggerFactory.getLogger(ContentService.class);
+	private DruidDataSource ds;
+	private ContentRepository contentRepository;
+
+	public ContentService(String node) {
+		super(node);
+		try {
+			ds = DataSource.getDruidDataSource("rdsDefault.prop");
+			contentRepository = Singleton.ins(ContentRepository.class);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+	}
+
+	@POSTAPI(
+		path = "addContent", //
+		des = "创建内容", //
+		ret = "所创建的对象"//
+	)
+	public Content addContent(
+		@P(t = "模块编号") String module, //
+		@P(t = "内容类型") Byte type, //
+		@P(t = "状态") Byte status, //
+		@P(t = "权力:付费，会员等") Byte power, //
+		@P(t = "上传用户编号") Long upUserId, //
+		@P(t = "上传专栏编号", r = false) Long upChannelId, //
+		@P(t = "标签" , r = false) String tags, //
+		@P(t = "标题") String title, //
+		@P(t = "数据") String data, //
+		@P(t = "私密信息",r = false) String proviteData, //
+		@P(t = "扩展信息",r = false) String ext //
+	)
+	throws Exception {
+		Content c = new Content();
+		c.moduleId = module;
+		c.id = IDUtils.getSimpleId();
+		c.createTime = new Date();
+		c.updateTime = c.createTime;
+		c.type = type;
+		c.status = status;
+		c.power = power;
+		c.title = title;
+		c.upUserId = upUserId;
+		c.upChannelId = upChannelId;
+		if(tags != null) {
+			c.tags = JSONObject.parseObject(tags);			
+		}
+		c.data = data;
+		c.proviteData = proviteData;
+		c.ext = ext;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			contentRepository.insert(conn, c);
+		}
+		return c;
+		
+	}
+	
+	
+	@POSTAPI(
+			path = "editContent", //
+			des = "修改内容", //
+			ret = "所创建的对象"//
+	)
+	public Content editContent(
+			@P(t = "内容编号") Long id, //
+			@P(t = "模块编号" ,r = false) String module, //
+			@P(t = "内容类型" ,r = false) Byte type, // 
+			@P(t = "状态" ,r = false) Byte status, //
+			@P(t = "权力:付费，会员等" ,r = false) Byte power, //
+			@P(t = "上传用户编号" ,r = false) Long upUserId, //
+			@P(t = "上传专栏编号", r = false) Long upChannelId, //
+			@P(t = "标签" , r = false) String tags, //
+			@P(t = "标题",r = false) String title, //
+			@P(t = "数据",r = false) String data, //
+			@P(t = "私密信息",r = false) String proviteData, //
+			@P(t = "扩展信息",r = false) String ext //
+	)
+	throws Exception {
+		Content c = new Content();
+		c.moduleId = module;
+		c.updateTime = new Date();
+		c.type = type;
+		c.status = status;
+		c.power = power;
+		c.title = title;
+		c.upUserId = upUserId;
+		c.upChannelId = upChannelId;
+		c.data = data;
+		c.proviteData = proviteData;
+		c.ext = ext;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			contentRepository.update(conn, EXP.INS().key("id", id), c, true);			
+		}
+		return c;
+	}
+
+	@POSTAPI(
+		path = "delContentById", //
+		des = "逻辑删除内容", //
+		ret = "所创建的对象"//
+	)
+	public void delContentById(
+		@P(t = "内容编号") Long id //
+	) throws Exception {
+		Content c = new Content();
+		c.id = id;
+		c.updateTime = new Date();
+		c.status = c.STATUS_DELETED;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			contentRepository.update(conn, EXP.INS().key("id", id), c, true);			
+		}
+	}
+
+	/**
+	 * 根据条件查询内容 获取用户发布内容  移除内容的标签  读取内容对应的标签  根据标签查询内容
+	 * 根据内容编号查询内容
+	 * 
+	 * @throws ServerException
+	 * @throws SQLException 
+	 */
+	@POSTAPI(
+		path = "getContents", //
+		des = "根据条件查询内容 获取用户发布内容  移除内容的标签  读取内容对应的标签  根据标签查询内容", //
+		ret = "所创建的对象"//
+	)
+	public List<Content> getContents(
+		@P(t = "模块")String moduleId, 
+		@P(t = "类型")Byte type, 
+		@P(t = "状态编号")Byte status,
+		@P(t = "权力")Byte power,
+		@P(t = "上传用户编号")Long upUserId,
+		@P(t = "上传专栏编号")Long upChannelId,
+		@P(t = "标签")String tags, 
+		int count, 
+		int offset
+	)
+	throws ServerException, SQLException {
+		JSONObject keys = null;
+		if(tags !=null) {
+			 keys = JSONObject.parseObject(tags);
+		}
+		EXP exp = EXP.INS(false).key("module_id", moduleId).andKey("type", type).andKey("status", status).andKey("power", power).andKey("up_user_id", upUserId).andKey("up_channel_id", upChannelId);
+		if(tags !=null && keys.size()>0) {
+			exp = exp.and(EXP.JSON_CONTAINS_JSONOBJECT(keys, "tags"));
+		}
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return contentRepository.getList(conn,exp, count, offset);			
+		}
+	}
+
+	/**
+	 * 根据id查询返回一个内容对象
+	 */
+	public Content getConntent(DruidPooledConnection conn, Long id) throws ServerException {
+		return contentRepository.get(conn, EXP.INS().key("id", id));
+	}
+	
+	/**
+	 * 根据标签查询内容
+	 */
+//	public JSONArray queryContentsByTags(DruidPooledConnection conn) {
+//		
+//		
+//	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//-----------------------------------------------------------------------------
+/*package zyxhj.cms.service;
+
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -112,7 +338,7 @@ public class ContentService extends Controller {
 	/**
 	 * 根据状态获取标签列表
 	 */
-	public List<ContentTag> getTagList(Long moduleId, Long groupId, //
+	/*public List<ContentTag> getTagList(Long moduleId, Long groupId, //
 			@P(t = "", r = false) Byte status, //
 			Integer count, Integer offset) throws Exception {
 
@@ -138,3 +364,4 @@ public class ContentService extends Controller {
 	
 
 }
+*/
