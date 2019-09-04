@@ -208,10 +208,11 @@ public class ProcessService extends Controller {
 
 			Process p = processRepository.get(conn, EXP.INS().key("id", processId));
 
-			System.out.println("-----------------"+p.currActivityId);
+			System.out.println("-----------------" + p.currActivityId);
 			// 获取对应Definition的信息
 			ProcessDefinition pd = definitionRepository.get(conn, EXP.INS().key("id", p.pdId));
 			JSONArray ja = new JSONArray();
+			System.out.println(targetType);
 			if (targetType != null && "activityGroup".equals(targetType)) {
 				ProcessActivityGroup pag = processActivityGroupRepository.get(conn,
 						EXP.INS().key("id", p.currActivityId));
@@ -237,7 +238,7 @@ public class ProcessService extends Controller {
 			json.put("action", paction);
 
 			return json;
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -260,7 +261,7 @@ public class ProcessService extends Controller {
 	}
 
 	/**
-	 * TODO 根据复杂条件查询Process列表</br>
+	 * 根据复杂条件查询Process列表</br>
 	 * 如：部门，个人，状态，等
 	 */
 
@@ -282,7 +283,7 @@ public class ProcessService extends Controller {
 			ret = "List<Process>") //
 	public List<Process> getProcessListByUserId(Long userId, Integer count, Integer offset) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			// TODO 临时策略 ，需要集成用户
+			// 临时策略 ，需要集成用户
 			return processRepository.getList(conn,
 					EXP.INS().key("active", DataConst.ACTIVE_NORMAL).append("ORDER BY timestamp DESC"), count, offset);
 		}
@@ -489,7 +490,6 @@ public class ProcessService extends Controller {
 					defaultTarget = target;
 				} else {
 					// 其它case，先判断表达式，然后执行
-					// TODO 暂时不支持
 				}
 			}
 			createProcessLog(p.id, "执行Action", user.id, user.name, action.type, action.label, activityId, "");
@@ -556,7 +556,6 @@ public class ProcessService extends Controller {
 		}
 	}
 
-	
 	@POSTAPI(//
 			path = "testAction", //
 			des = "执行action", //
@@ -567,7 +566,7 @@ public class ProcessService extends Controller {
 			@P(t = "节点行为编号，") Long activityId, //
 			@P(t = "action行为编号，") Long actionId, //
 			@P(t = "节点分组编号，", r = false) Long activityGroupId, //
-			@P(t = "使用者编号，") Long userId,//
+			@P(t = "使用者编号，") Long userId, //
 			@P(t = "行为类型，") String type//
 	) throws Exception {
 		int ret = 0;
@@ -584,21 +583,19 @@ public class ProcessService extends Controller {
 				JSONArray rules = action.rules;
 
 				for (int i = 0; i < rules.size(); i++) {
+
 					JSONObject jo = rules.getJSONObject(i);
 					String exp = jo.getString("exp");
 					String targetType = jo.getString("targetType");
 					String target = jo.getString("target");
 
-					System.out.println(StringUtils.join("exec rule>>> ", exp, " --- ", target));
-
-					
 					// 是节点还是节点分组
 					if (targetType.equals("activity")) {
-						
+
 						// 普通节点还是节点分组内节点
 						ProcessActivity activity = flowService.getPDActivityById(action.pdId, activityId);
 						if (activity != null) {
-							System.out.println("+++++++++++++"+activity.activityGroupId);
+							System.out.println("activity.activityGroupId+++++++++++++" + activity.activityGroupId);
 							if (activity.activityGroupId == 0 || activity.activityGroupId == null) {
 
 								System.out.println("进入普通节点");
@@ -608,7 +605,6 @@ public class ProcessService extends Controller {
 									defaultTarget = target;
 								} else {
 									// 其它case，先判断表达式，然后执行
-									// TODO 暂时不支持
 								}
 
 								// 修改action中的ext数据
@@ -617,61 +613,57 @@ public class ProcessService extends Controller {
 							} else {
 
 								System.out.println("进入节点分组内节点");
-								System.out.println(123456789);
 
 								// 修改action中的ext数据
 								List<ProcessAction> palist = getProcessActionsInActivity(activityId);
 								Long currId = null;
-								for(ProcessAction p: palist) {
-									if(p.type.equals(type)) {
+								for (ProcessAction p : palist) {
+									if (p.type.equals(type)) {
 										currId = p.id;
 										break;
 									}
 								}
-								System.out.println("currId"+currId);
-								
+								System.out.println("currId" + currId);
+
 								int edit = editActionExt(currId, activityId, new Byte("1"));
-								System.out.println("修改action状态"+edit);
+								System.out.println("修改action状态" + edit);
 
 								// 查询当前节点分组中所有节点是否全部执行完毕
 								ret = ifActivityAction(activityGroupId);
-								System.out.println("当前节点分组编号："+activityGroupId);
-								
+								System.out.println("当前节点分组编号：" + activityGroupId);
+
 								int subSize = flowService.getSubActivity(activityGroupId).size();
-								
-								System.out.println(ret+"==1111111111=="+subSize);
+
+								System.out.println(ret + "==------==" + subSize);
 								if (ret == subSize) {
 									System.out.println("所有操作均完成");
-									List<ProcessAction> paglist = processActionRepository.getList(conn, EXP.INS().key("owner_id", activityGroupId),10,0);
-									for(ProcessAction pag: paglist) {
-										if(pag.type.equals(type)) {
-											JSONArray ja = pag.rules;
-											for(int x = 0; x < ja.size(); x++) {
-												JSONObject jo1 = ja.getJSONObject(i);
-												String exp1 = jo1.getString("exp");
-												String target1 = jo1.getString("target");
-												if (exp1.equals("expDefault")) {
-													// 默认case
-													defaultTarget = target1;
-													break;
-												} else {
-													// 其它case，先判断表达式，然后执行
-													// TODO 暂时不支持
-												}
-											}
+									// 得到相应操作的节点分组action
+									ProcessAction paglist = processActionRepository.get(conn,
+											EXP.INS().key("owner_id", activityGroupId).andKey("type", type));
+									JSONArray ja = paglist.rules;
+									for (int x = 0; x < ja.size(); x++) {
+										JSONObject jo1 = ja.getJSONObject(i);
+										String exp1 = jo1.getString("exp");
+										String target1 = jo1.getString("target");
+										if (exp1.equals("expDefault")) {
+											// 默认case
+											defaultTarget = target1;
+											break;
+										} else {
+											// 其它case，先判断表达式，然后执行
 										}
 									}
 								} else {
 									System.out.println("操作未完成");
 									defaultTarget = activityGroupId.toString();
 								}
-								System.out.println("分组内节点跳转目标"+defaultTarget);
+								System.out.println("分组内节点跳转目标" + defaultTarget);
 							}
 						}
 
 					} else if (targetType.equals("activityGroup")) {
 //						target = jo.getString("target");
-						
+
 						System.out.println("进入节点分组");
 						// 执行表达式 得到下一目标节点
 						if (exp.equals("expDefault")) {
@@ -679,21 +671,20 @@ public class ProcessService extends Controller {
 							defaultTarget = target;
 						} else {
 							// 其它case，先判断表达式，然后执行
-							// TODO 暂时不支持
 						}
 						ret = 2;
 					}
 				}
 
-				System.out.println("------------------"+defaultTarget);
+				System.out.println("------------------" + defaultTarget);
 				// 流程实例跳转到下一目标节点
 				Process renew = new Process();
-				if(defaultTarget == null) {
+				if (defaultTarget == null) {
 					renew.currActivityId = 0L;
-				}else {
+				} else {
 					renew.currActivityId = Long.decode(defaultTarget);
 				}
-				
+
 				processRepository.update(conn, EXP.INS().key("id", processId), renew, true);
 
 				// 记录日志
@@ -720,12 +711,12 @@ public class ProcessService extends Controller {
 			@P(t = "流程节点编号") Long activityId, //
 			@P(t = "执行的行为编号") Long actionId, //
 			@P(t = "执行的行为类型") String actionType, //
-			@P(t = "用户编号") Long userId,//
+			@P(t = "用户编号") Long userId, //
 			@P(t = "行为类型，") String type//
 	) throws Exception {
 		int ret = 1;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			ProcessAction action = processActionIF(processId, activityId, actionId,type);
+			ProcessAction action = processActionIF(processId, activityId, actionId, type);
 			if (action != null) {
 				if (actionType.equals(ProcessAction.TYPE_ACCEPT)) {
 					// 判断role
@@ -744,7 +735,6 @@ public class ProcessService extends Controller {
 
 						} else if (targetType.equals("activityGroup")) {
 							target = jo.getString("target");
-							// TODO 未完善
 							ret = 2;
 						}
 
@@ -756,7 +746,6 @@ public class ProcessService extends Controller {
 							break;
 						} else {
 							// 其它case，先判断表达式，然后执行
-							// TODO 暂时不支持
 						}
 					}
 					// 记录日志
@@ -788,57 +777,9 @@ public class ProcessService extends Controller {
 			@P(t = "流程节点编号") Long activityId, //
 			@P(t = "执行的行为编号") Long actionId, //
 			@P(t = "执行的行为类型") String actionType, //
-			@P(t = "用户编号") Long userId,//
+			@P(t = "用户编号") Long userId, //
 			@P(t = "行为类型，") String type//
 	) throws Exception {
-//		int ret = 1;
-//		try (DruidPooledConnection conn = ds.getConnection()) {
-//			ProcessAction action = processActionIF(processId, activityId, actionId);
-//			if (action != null) {
-//				if (actionType.equals(ProcessAction.TYPE_REJECT)) {
-//					// 判断role
-//					User user = userRepository.get(conn, EXP.INS().key("id", userId));
-//					JSONArray rules = action.rules;
-//
-//					String defaultTarget = null;
-//					for (int i = 0; i < rules.size(); i++) {
-//						JSONObject jo = rules.getJSONObject(i);
-//						String exp = jo.getString("exp");
-//						String targetType = jo.getString("targetType");
-//						String target = null;
-//						// 判断是节点，还是节点分组
-//						if (targetType.equals("activity")) {
-//							target = jo.getString("target");
-//
-//						} else if (targetType.equals("activityGroup")) {
-//							target = jo.getString("target");
-//							// TODO 未完善
-//							ret = 2;
-//						}
-//
-//						System.out.println(StringUtils.join("exec rule>>> ", exp, " --- ", target));
-//
-//						if (exp.equals("expDefault")) {
-//							// 默认case
-//							defaultTarget = target;
-//						} else {
-//							// 其它case，先判断表达式，然后执行
-//							// TODO 暂时不支持
-//						}
-//					}
-//					createProcessLog(processId, "驳回", user.id, user.name, action.type, action.label + ",驳回原因：" + remark,
-//							activityId, "");
-//
-//					Process renew = new Process();
-//					renew.currActivityId = Long.decode(defaultTarget);
-//					processRepository.update(conn, EXP.INS().key("id", processId), renew, true);
-//				} else {
-//					throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "流程节点的行为Action类型错误");
-//				}
-//			} else {
-//				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
-//			}
-//		}
 		return 0;
 	}
 
@@ -848,23 +789,10 @@ public class ProcessService extends Controller {
 			@P(t = "流程节点编号") Long activityId, //
 			@P(t = "执行的行为编号") Long actionId, //
 			@P(t = "执行的行为类型") String actionType, //
-			@P(t = "用户编号") Long userId,//
+			@P(t = "用户编号") Long userId, //
 			@P(t = "行为类型，") String type//
 	) throws Exception {
-//		try (DruidPooledConnection conn = ds.getConnection()) {
-//			ProcessAction action = processActionIF(processId, activityId, actionId);
-//			if (action != null) {
-//				if (actionType.equals(ProcessAction.TYPE_TERMINATE)) {
-//					User user = userRepository.get(conn, EXP.INS().key("id", userId));
-//					// 修改process流程实例状态为废除/终结
-//					Process t = new Process();
-//					t.state = Process.STATE_TERMINATE;
-//					processRepository.update(conn, EXP.INS().key("id", processId), t, true);
-//					createProcessLog(processId, "废除Process流程实例", user.id, user.name, action.type,
-//							action.label + ",废除原因：" + remark, activityId, "");
-//				}
-//			}
-//		}
+
 	}
 
 	public void processActionTransfer() {
@@ -878,13 +806,12 @@ public class ProcessService extends Controller {
 	protected ProcessAction processActionIF(//
 			Long processId, //
 			Long ownerId, //
-			Long actionId,//
+			Long actionId, //
 			@P(t = "行为类型，") String type//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			// 判断流程实例是否存在
 			Process process = processRepository.get(conn, EXP.INS().key("id", processId));
-			System.out.println(ownerId);
 			if (process == null) {
 				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程实例");
 			} else {
@@ -920,18 +847,13 @@ public class ProcessService extends Controller {
 					}
 					if (ret == 1) {
 						// 当前节点是否含有action行为
-						List<ProcessAction> action = processActionRepository.getList(conn,
-								EXP.INS().key("owner_id", ownerId), 10, 0);
+						ProcessAction action = processActionRepository.get(conn,
+								EXP.INS().key("owner_id", ownerId).andKey("type", type));
 						if (action == null) {
 							throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
 						} else {
-							for(ProcessAction a: action) {
-								if(a.type.equals(type) ) {
-									return a;
-								}
-							}
+							return action;
 						}
-
 					} else {
 						throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR,
 								"没找到对应流程节点或节点分组Activity 或  ActivityGroup");
@@ -939,7 +861,6 @@ public class ProcessService extends Controller {
 				}
 			}
 		}
-		return null;
 	}
 
 	@POSTAPI(//
@@ -973,7 +894,6 @@ public class ProcessService extends Controller {
 							// } else {
 
 							// 暂时没有鉴权
-							// TODO 做鉴权
 
 							user = new User();
 							user.id = userId;
@@ -1031,37 +951,6 @@ public class ProcessService extends Controller {
 			return processActionRepository.getList(conn, EXP.INS().key("pd_id", pdId), 512, 0);
 		}
 	}
-
-	// @POSTAPI(//
-	// path = "getProcessAssetByDescIds", //
-	// des = "根据流程资产描述编号，获取对应的资产列表", //
-	// ret = "ProcessAsset列表"//
-	// )
-	// public JSONArray getProcessAssetByDescIds(//
-	// @P(t = "资产编号") Long processId, //
-	// @P(t = "资产描述编号列表") JSONArray descIds, //
-	// Integer count, //
-	// Integer offset//
-	// ) throws Exception {
-	//// TODO 换成 where in 语句，试一试
-	// try (DruidPooledConnection conn = ds.getConnection()) {
-	//
-	// JSONArray ret = new JSONArray();
-	// for (int i = 0; i < descIds.size(); i++) {
-	// Long id = descIds.getLong(i);
-	//
-	// ProcessAsset pa = processAssetRepository.get(conn,
-	// EXP.INS().key("process_id", processId).andKey("desc_id", id));
-	//
-	// JSONObject jo = new JSONObject();
-	// jo.put("descId", id);
-	// jo.put("asset", pa);
-	// ret.add(jo);
-	// }
-	//
-	// return ret;
-	// }
-	// }
 
 	///////////////////////////////
 	////// ProcessLog

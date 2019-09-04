@@ -171,6 +171,7 @@ public class FlowService extends Controller {
 					}
 				}
 				activityRepository.delete(conn, EXP.INS().key("pd_id", pdId));
+				activityGroupRepository.delete(conn, EXP.INS().key("pd_id", pdId));
 			}
 			return status;
 		}
@@ -724,6 +725,7 @@ public class FlowService extends Controller {
 	public List<ProcessActivity> getSubActivity(//
 			@P(t = "流程定义节点分组编号") Long activityGroupId//
 	) throws Exception {
+		System.out.println(activityGroupId);
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			ProcessActivityGroup pag = activityGroupRepository.get(conn, EXP.INS().key("id", activityGroupId));
 			List<Long> arges = new ArrayList<Long>();
