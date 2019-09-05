@@ -74,9 +74,8 @@ public class EXP implements Cloneable {
 	/**
 	 * 构造EXP实例
 	 * 
-	 * @param exact
-	 *            是否严谨，true则表达式右参不允许null，false则右参null时自动不添加该表达式</br>
-	 *            (常用于多条件查询，右参null时该表达式无效)
+	 * @param exact 是否严谨，true则表达式右参不允许null，false则右参null时自动不添加该表达式</br>
+	 *              (常用于多条件查询，右参null时该表达式无效)
 	 */
 	public static EXP INS(boolean exact) {
 		return new EXP(exact);
@@ -112,6 +111,10 @@ public class EXP implements Cloneable {
 		return new EXP(false).exp(sb.toString(), null, args);
 	}
 
+	public static EXP IN(String key, List<Object> args) {
+		return IN(key, args.toArray());
+	}
+
 	/**
 	 * SQL的 IN 语句（带排序）</br>
 	 */
@@ -137,6 +140,10 @@ public class EXP implements Cloneable {
 		return new EXP(false).exp(sb.toString(), null, args);
 	}
 
+	public static EXP IN_ORDERED(String key, List<Object> args) {
+		return IN_ORDERED(key, args.toArray());
+	}
+
 	private static boolean isNumber(Object obj) {
 		if (obj instanceof Integer || //
 				obj instanceof Short || //
@@ -153,12 +160,9 @@ public class EXP implements Cloneable {
 	/**
 	 * JSON操作，添加到数组
 	 * 
-	 * @param column
-	 *            字段列名（JSON数组字段）
-	 * @param value
-	 *            要添加的值，可以是数字或字符
-	 * @param duplicate
-	 *            数组是否允许重复
+	 * @param column    字段列名（JSON数组字段）
+	 * @param value     要添加的值，可以是数字或字符
+	 * @param duplicate 数组是否允许重复
 	 */
 	public static EXP JSON_ARRAY_APPEND(String column, Object value, boolean duplicate) {
 		String temp = null;
@@ -205,14 +209,10 @@ public class EXP implements Cloneable {
 	/**
 	 * JSON操作，添加到数组，数组值将添加到column.key对应的数组下
 	 * 
-	 * @param column
-	 *            字段列名（JSON数组字段）
-	 * @param key
-	 *            字段内的JSON key，数组值将添加到column.key对应的数组下
-	 * @param value
-	 *            要添加的值，可以是数字或字符
-	 * @param duplicate
-	 *            数组是否允许重复
+	 * @param column    字段列名（JSON数组字段）
+	 * @param key       字段内的JSON key，数组值将添加到column.key对应的数组下
+	 * @param value     要添加的值，可以是数字或字符
+	 * @param duplicate 数组是否允许重复
 	 */
 	public static EXP JSON_ARRAY_APPEND_ONKEY(String column, String key, Object value, boolean duplicate) {
 		String temp = null;
@@ -267,12 +267,9 @@ public class EXP implements Cloneable {
 	/**
 	 * 移除JSON数组元素
 	 * 
-	 * @param column
-	 *            JSON列
-	 * @param path
-	 *            JSON PATH
-	 * @param index
-	 *            数组索引编号，从0开始
+	 * @param column JSON列
+	 * @param path   JSON PATH
+	 * @param index  数组索引编号，从0开始
 	 */
 	public static EXP JSON_ARRAY_REMOVE(String column, String path, int index) {
 		String temp = StringUtils.join(column, " = JSON_REMOVE(", column, ",'", path, "[", index, "]')");
@@ -282,12 +279,9 @@ public class EXP implements Cloneable {
 	/**
 	 * 判断JSON中是否包含指定元素的语句
 	 * 
-	 * @param column
-	 *            字段名
-	 * @param path
-	 *            JSON Path，例如$.tags或$
-	 * @param value
-	 *            需要查找的值
+	 * @param column 字段名
+	 * @param path   JSON Path，例如$.tags或$
+	 * @param value  需要查找的值
 	 */
 	public static EXP JSON_CONTAINS(String column, String path, Object value) {
 		String temp = null;
@@ -300,16 +294,13 @@ public class EXP implements Cloneable {
 		}
 		return new EXP(false).exp(temp, null);
 	}
-	
+
 	/**
 	 * 判断JSON中是否包含指定元素的语句
 	 * 
-	 * @param keys
-	  *            需要查找的多个值
-	 * @param column
-	  *            字段名
-	 * @param path
-	 *      JSON Path，例如$.tags或$
+	 * @param keys   需要查找的多个值
+	 * @param column 字段名
+	 * @param path   JSON Path，例如$.tags或$
 	 */
 	public static EXP JSON_CONTAINS_KEYS(JSONArray keys, String column, String path) throws ServerException {
 		if (keys != null && keys.size() > 0) {
@@ -327,14 +318,12 @@ public class EXP implements Cloneable {
 		}
 		return EXP.INS().exp("FALSE", null);
 	}
-	
+
 	/**
 	 * 判断JSON中是否包含指定元素的语句
 	 * 
-	 * @param keys
-	  *            需要查找的分组，和分组中需要查询的值
-	 * @param column
-	  *            字段名
+	 * @param keys   需要查找的分组，和分组中需要查询的值
+	 * @param column 字段名
 	 */
 	public static EXP JSON_CONTAINS_JSONOBJECT(JSONObject keys, String column) throws ServerException {
 		if (keys.size() > 0 && keys != null) {
@@ -344,7 +333,7 @@ public class EXP implements Cloneable {
 			while (it.hasNext()) {
 				String tempPath = it.next();
 				Object obj = keys.getObject(tempPath, Object.class);
-				if(obj instanceof JSONArray) {
+				if (obj instanceof JSONArray) {
 					JSONArray tags = keys.getJSONArray(tempPath);
 					if (tags != null && tags.size() > 0) {
 						String path;
@@ -353,9 +342,9 @@ public class EXP implements Cloneable {
 							tagEXP.or(EXP.JSON_CONTAINS(column, path, tags.get(i)));
 						}
 					}
-				}else {
-					String objStr = (String)obj;
-					if (objStr.length()>0&&objStr!=null) {
+				} else {
+					String objStr = (String) obj;
+					if (objStr.length() > 0 && objStr != null) {
 						String path;
 						path = "$." + tempPath;
 						tagEXP.or(EXP.JSON_CONTAINS(column, path, objStr));
@@ -366,16 +355,13 @@ public class EXP implements Cloneable {
 		}
 		return EXP.INS().exp("FALSE", null);
 	}
-	
+
 	/**
-	 * 	替换数组中的单个值
+	 * 替换数组中的单个值
 	 * 
-	 * @param column
-	  *            字段名
-	 * @param index
-	  *            需要替换的值的下标
-	 * @param value
-	  *            替换后的值
+	 * @param column 字段名
+	 * @param index  需要替换的值的下标
+	 * @param value  替换后的值
 	 */
 	public static EXP JSON_SET(String column, int index, Object value) {
 
@@ -391,13 +377,12 @@ public class EXP implements Cloneable {
 				val = StringUtils.join("]', '", va, "')");
 			}
 			JSONSET = StringUtils.join(JSONSET, val);
-			
+
 			return EXP.INS(false).exp(JSONSET, null);
 		}
 		return EXP.INS().exp("FALSE", null);
 	}
-	
-	
+
 	/**
 	 * SQL的 key = value 语句（很常用）</br>
 	 * 
@@ -409,8 +394,7 @@ public class EXP implements Cloneable {
 	/**
 	 * 拷贝构造
 	 * 
-	 * @param exp
-	 *            需要拷贝的表达式
+	 * @param exp 需要拷贝的表达式
 	 */
 	public EXP exp(EXP exp) {
 		EXP c = exp.clone();
@@ -426,15 +410,12 @@ public class EXP implements Cloneable {
 	/**
 	 * 函数方法构造
 	 * 
-	 * @param str
-	 *            表达式函数文本
-	 * @param ps
-	 *            表达式操作数</br>
-	 *            例如二元表达式中，ps[0]为左参，ps[1]为右参</br>
-	 *            （同SQL一样，可用通配符 ? 表示需要被替换的参数，避免SQL注入）
-	 * @param args
-	 *            表达式参数（选填）</br>
-	 *            如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
+	 * @param str  表达式函数文本
+	 * @param ps   表达式操作数</br>
+	 *             例如二元表达式中，ps[0]为左参，ps[1]为右参</br>
+	 *             （同SQL一样，可用通配符 ? 表示需要被替换的参数，避免SQL注入）
+	 * @param args 表达式参数（选填）</br>
+	 *             如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
 	 */
 	public EXP exp(String str, List<Object> ps, Object... args) {
 		this.t = TYPE_METHOD;
@@ -448,16 +429,12 @@ public class EXP implements Cloneable {
 	/**
 	 * 二元表达式构造
 	 * 
-	 * @param left
-	 *            表达式左操作数</br>
-	 * @param op
-	 *            表达式操作符
-	 * @param right
-	 *            表达式右操作数</br>
-	 *            （同SQL一样，可用通配符 ? 表示需要被替换的参数，避免SQL注入）
-	 * @param args
-	 *            表达式参数（选填）</br>
-	 *            如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
+	 * @param left  表达式左操作数</br>
+	 * @param op    表达式操作符
+	 * @param right 表达式右操作数</br>
+	 *              （同SQL一样，可用通配符 ? 表示需要被替换的参数，避免SQL注入）
+	 * @param args  表达式参数（选填）</br>
+	 *              如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
 	 */
 	public EXP exp(Object left, String op, Object right, Object... args) throws ServerException {
 		if (isShit(exact, right, args)) {
@@ -556,7 +533,7 @@ public class EXP implements Cloneable {
 	 * AND 连接key表达式（很常用，相当于key = value表达式）
 	 */
 	public EXP andKey(String key, Object value) throws ServerException {
-		if(value == null) {
+		if (value == null) {
 			return this;
 		}
 		return and(key, "=", "?", value);
