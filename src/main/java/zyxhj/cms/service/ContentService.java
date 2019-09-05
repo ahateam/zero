@@ -3,6 +3,7 @@ package zyxhj.cms.service;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,23 +85,23 @@ public class ContentService extends Controller{
 	
 	
 	@POSTAPI(
-			path = "editContent", //
-			des = "修改内容", //
-			ret = "所创建的对象"//
+		path = "editContent", //
+		des = "修改内容", //
+		ret = "所创建的对象"//
 	)
 	public Content editContent(
-			@P(t = "内容编号") Long id, //
-			@P(t = "模块编号" ,r = false) String module, //
-			@P(t = "内容类型" ,r = false) Byte type, // 
-			@P(t = "状态" ,r = false) Byte status, //
-			@P(t = "权力:付费，会员等" ,r = false) Byte power, //
-			@P(t = "上传用户编号" ,r = false) Long upUserId, //
-			@P(t = "上传专栏编号", r = false) Long upChannelId, //
-			@P(t = "标签" , r = false) String tags, //
-			@P(t = "标题",r = false) String title, //
-			@P(t = "数据",r = false) String data, //
-			@P(t = "私密信息",r = false) String proviteData, //
-			@P(t = "扩展信息",r = false) String ext //
+		@P(t = "内容编号") Long id, //
+		@P(t = "模块编号" ,r = false) String module, //
+		@P(t = "内容类型" ,r = false) Byte type, // 
+		@P(t = "状态" ,r = false) Byte status, //
+		@P(t = "权力:付费，会员等" ,r = false) Byte power, //
+		@P(t = "上传用户编号" ,r = false) Long upUserId, //
+		@P(t = "上传专栏编号", r = false) Long upChannelId, //
+		@P(t = "标签" , r = false) String tags, //
+		@P(t = "标题",r = false) String title, //
+		@P(t = "数据",r = false) String data, //
+		@P(t = "私密信息",r = false) String proviteData, //
+		@P(t = "扩展信息",r = false) String ext //
 	)
 	throws Exception {
 		Content c = new Content();
@@ -112,6 +113,10 @@ public class ContentService extends Controller{
 		c.title = title;
 		c.upUserId = upUserId;
 		c.upChannelId = upChannelId;
+		if(tags != null) {
+			c.tags = JSONObject.parseObject(tags);			
+		}
+		c.title = title;
 		c.data = data;
 		c.proviteData = proviteData;
 		c.ext = ext;
@@ -139,11 +144,7 @@ public class ContentService extends Controller{
 	}
 
 	/**
-	 * 根据条件查询内容 获取用户发布内容  移除内容的标签  读取内容对应的标签  根据标签查询内容
-	 * 根据内容编号查询内容
-	 * 
-	 * @throws ServerException
-	 * @throws SQLException 
+	 * 根据条件查询内容 
 	 */
 	@POSTAPI(
 		path = "getContents", //
@@ -152,12 +153,12 @@ public class ContentService extends Controller{
 	)
 	public List<Content> getContents(
 		@P(t = "模块")String moduleId, 
-		@P(t = "类型")Byte type, 
-		@P(t = "状态编号")Byte status,
-		@P(t = "权力")Byte power,
-		@P(t = "上传用户编号")Long upUserId,
-		@P(t = "上传专栏编号")Long upChannelId,
-		@P(t = "标签")String tags, 
+		@P(t = "类型",r = false)Byte type, 
+		@P(t = "状态编号",r = false)Byte status,
+		@P(t = "权力",r = false)Byte power,
+		@P(t = "上传用户编号",r = false)Long upUserId,
+		@P(t = "上传专栏编号",r = false)Long upChannelId,
+		@P(t = "标签",r = false)String tags, 
 		int count, 
 		int offset
 	)
@@ -175,20 +176,49 @@ public class ContentService extends Controller{
 		}
 	}
 
-	/**
-	 * 根据id查询返回一个内容对象
-	 */
-	public Content getConntent(DruidPooledConnection conn, Long id) throws ServerException {
-		return contentRepository.get(conn, EXP.INS().key("id", id));
+	@POSTAPI(
+		path = "getConntent", //
+		des = "据内容id查询返回一个内容对象", //
+		ret = ""//
+	)
+	public Content getConntent(
+		@P(t = "内容编号") Long id
+	) throws ServerException, SQLException {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return contentRepository.get(conn, EXP.INS().key("id", id));			
+		}
 	}
 	
-	/**
-	 * 根据标签查询内容
-	 */
-//	public JSONArray queryContentsByTags(DruidPooledConnection conn) {
-//		
-//		
-//	}
+	@POSTAPI(
+		path = "setConntentTag", //
+		des = "设置要添加的内容标签", //
+		ret = ""//
+	)
+	public int setConntentTag(
+		@P(t = "内容id")Long id,
+		@P(t = "标签")String tags
+	) throws ServerException, SQLException {
+		EXP where = EXP.INS().key("id", id);
+		JSONObject keys = null;
+		if(tags !=null) {
+			 keys = JSONObject.parseObject(tags);
+		}
+		String tagGroup = getJsonObjectKey(keys);
+		//这里只考虑一次只能在当前分组中添加一个标签
+		EXP tagAppend = EXP.JSON_ARRAY_APPEND_ONKEY("tags", tagGroup, keys.getJSONArray((tagGroup)).get(0), true);
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return contentRepository.update(conn, tagAppend, where);			
+		}
+	}
+	//取JsonObject的key
+	public String getJsonObjectKey(JSONObject jo) {
+		Set<String> keySet= jo.keySet();
+        for (String key : keySet) {
+            return key;
+        }
+        return null;
+	}
+
 }
 
 

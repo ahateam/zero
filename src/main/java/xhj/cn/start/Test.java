@@ -3,6 +3,9 @@ package xhj.cn.start;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alicloud.openservices.tablestore.SyncClient;
 
+import zyxhj.cms.domian.Channel;
+import zyxhj.cms.domian.ChannelContentTag;
+import zyxhj.cms.domian.ChannelTag;
 import zyxhj.cms.domian.Content;
 import zyxhj.core.domain.Appraise;
 import zyxhj.core.domain.Mail;
@@ -31,8 +34,10 @@ public class Test {
 			SyncClient client = DataSource.getTableStoreSyncClient("tsDefault.prop");
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
-
-//			RDSUtils.createTableByEntity(dds, Content.class);
+//
+//			RDSUtils.createTableByEntity(dds, Channel.class);
+//			RDSUtils.createTableByEntity(dds, ChannelContentTag.class);
+//			RDSUtils.createTableByEntity(dds, ChannelTag.class);
 
 
 //			TSUtils.createTableByEntity(client, MailTag.class);
