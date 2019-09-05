@@ -24,7 +24,7 @@ public class ContentTag {
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
-	public String group;
+	public String conGroup;
 
 	/**
 	 * 标签名称（名称直接配合模块编号和持有者编号做主键，不重复）

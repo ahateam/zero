@@ -49,7 +49,7 @@ public class ContentTagService extends Controller{
 	) throws ServerException, SQLException {
 		ContentTag ct = new ContentTag();
 		ct.moduleId = moduleId;
-		ct.group = group;
+		ct.conGroup = group;
 		ct.name = name;
 		ct.status = ContentTag.STATUS_ENABLE;
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -96,8 +96,8 @@ public class ContentTagService extends Controller{
 			Integer offset
 			) throws ServerException, SQLException {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return contentTagRepository.getList(conn, EXP.INS().key("moduleId", moduleId).
-					andKey("group", group).andKey("status", status), count, offset);
+			return contentTagRepository.getList(conn, EXP.INS().key("module_id", moduleId).
+					andKey("con_group", group).andKey("status", status), count, offset);
 			
 		}
 	}
@@ -133,11 +133,11 @@ public class ContentTagService extends Controller{
 	}
 	
 	@POSTAPI(//
-			path = "editteContentTagGroup", //
+			path = "editContentTagGroup", //
 			des = "修改内容标签分组", //
 			ret = "" //
 	)
-	public void editteContentTagGroup(
+	public void editContentTagGroup(
 			@P(t = "模板编号") Long moduleId,
 			@P(t = "分组编号") String group, 
 			@P(t = "备注") String remark

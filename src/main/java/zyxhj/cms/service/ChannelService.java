@@ -10,10 +10,13 @@ import com.alibaba.fastjson.JSONObject;
 import zyxhj.cms.domian.Channel;
 import zyxhj.cms.domian.Content;
 import zyxhj.cms.repository.ChannelRepository;
+import zyxhj.cms.repository.ChannelUserRepository;
 import zyxhj.cms.repository.ContentRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.api.APIResponse;
 import zyxhj.utils.api.Controller;
+
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
 
@@ -23,7 +26,7 @@ public class ChannelService extends Controller{
 	private DruidDataSource ds;
 	private ChannelRepository channelRepository;
 	private ContentRepository contentRepository;
-
+	private ChannelUserRepository channelUserRepository;
 	public ChannelService(String node) {
 		super(node);
 		try {
@@ -34,11 +37,20 @@ public class ChannelService extends Controller{
 			log.error(e.getMessage(), e);
 		}
 	}
-	/**
-	 * 创建专栏
-	 */
-	public Channel createChannel(Long module,Byte status, String title, String tags, String data)
-			throws Exception {
+	
+	
+	@POSTAPI(
+		path = "createChannel", //
+		des = "创建专栏", //
+		ret = "所创建的对象"//
+	)
+	public Channel createChannel(
+		@P(t = "模块编号") Long module,
+		@P(t = "状态") Byte status, 
+		@P(t = "标题") String title, 
+		@P(t = "标签（json）") String tags, 
+		@P(t = "数据") String data
+	)throws Exception {
 		Channel channel = new Channel();
 		channel.id = IDUtils.getSimpleId();
 		channel.moduleId = module;
@@ -54,10 +66,19 @@ public class ChannelService extends Controller{
 	}
 	
 	
-	/**
-	 * 编辑专栏
-	 */
-	public Channel editChannel(Long id,Long module,Byte status, String title, String tags, String data) throws Exception {
+	@POSTAPI(
+		path = "editChannel", //
+		des = "修改专栏", //
+		ret = ""//
+	)
+	public Channel editChannel(
+		@P(t = "模块编号")Long module,
+		@P(t = "专栏编号")Long id,
+		@P(t = "状态",r = false)Byte status, 
+		@P(t = "标题",r = false)String title,
+		@P(t = "标签（json）",r = false)String tags, 
+		@P(t = "数据",r = false)String data
+	) throws Exception {
 		Channel channel = new Channel();
 		channel.moduleId = module;
 		channel.status = status;
@@ -73,10 +94,18 @@ public class ChannelService extends Controller{
 
 	}
 	
-	/**
-	 * 获取专栏
-	 */
-	public List<Channel> getChannels(Long id,Long module,Byte status,String tags, String data,int count,int offset) throws Exception {
+	@POSTAPI(
+		path = "getChannels", //
+		des = "根据条件查询获取专栏", //
+		ret = ""//
+	)
+	public List<Channel> getChannels(
+		@P(t = "模块编号")Long module,
+		@P(t = "状态",r = false)Byte status, 
+		@P(t = "标签（json）",r = false)String tags, 
+		int count,
+		int offset
+	) throws Exception {
 		JSONObject keys = null;
 		if(tags !=null) {
 			 keys = JSONObject.parseObject(tags);
@@ -91,16 +120,31 @@ public class ChannelService extends Controller{
 
 	}
 	
-	/**
-	 * 根据专栏编号获取内容
-	 */
-	public List<Content> getContentByChannelId(String module, Long channelId, Byte status,
-			Integer count, Integer offset) throws Exception {
+	@POSTAPI(
+		path = "getContentByChannelId", //
+		des = "根据专栏id获取内容", //
+		ret = ""//
+	)
+	public APIResponse getContentByChannelId(
+		@P(t = "模块编号")String module, 
+		@P(t = "专栏编号")Long channelId, 
+		@P(t = "内容状态",r = false)Byte status,
+		Integer count, 
+		Integer offset
+	) throws Exception {
 		EXP exp = EXP.INS(false).key("module_id", module).andKey("up_channel_id", channelId).andKey("status", status);
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return contentRepository.getList(conn,exp, count, offset);			
+			return APIResponse.getNewSuccessResp(contentRepository.getList(conn,exp, count, offset));			
 		}
 
+	}
+	
+	/**
+	 * 根据用户编号获取专栏内容
+	 */
+	public List<Content> getChannelByUserId(String module, Long channelId, Byte status,
+			Integer count, Integer offset) throws Exception {
+		return null;
 	}
 	
 }

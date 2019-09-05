@@ -15,12 +15,12 @@ import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.cms.domian.Content;
 import zyxhj.cms.repository.ContentRepository;
+import zyxhj.core.service.UserService;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.APIResponse;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
-import zyxhj.utils.api.Controller;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
 
@@ -28,6 +28,7 @@ public class ContentService extends Controller{
 
 	private static Logger log = LoggerFactory.getLogger(ContentService.class);
 	private DruidDataSource ds;
+	private UserService userService;
 	private ContentRepository contentRepository;
 
 	public ContentService(String node) {
@@ -35,6 +36,7 @@ public class ContentService extends Controller{
 		try {
 			ds = DataSource.getDruidDataSource("rdsDefault.prop");
 			contentRepository = Singleton.ins(ContentRepository.class);
+			userService = Singleton.ins(UserService.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -52,7 +54,7 @@ public class ContentService extends Controller{
 		@P(t = "权力:付费，会员等") Byte power, //
 		@P(t = "上传用户编号") Long upUserId, //
 		@P(t = "上传专栏编号", r = false) Long upChannelId, //
-		@P(t = "标签" , r = false) String tags, //
+		@P(t = "标签" , r = false) JSONObject tags, //
 		@P(t = "标题") String title, //
 		@P(t = "数据") String data, //
 		@P(t = "私密信息",r = false) String proviteData, //
@@ -70,9 +72,7 @@ public class ContentService extends Controller{
 		c.title = title;
 		c.upUserId = upUserId;
 		c.upChannelId = upChannelId;
-		if(tags != null) {
-			c.tags = JSONObject.parseObject(tags);			
-		}
+		c.tags = tags;
 		c.data = data;
 		c.proviteData = proviteData;
 		c.ext = ext;
@@ -97,7 +97,7 @@ public class ContentService extends Controller{
 		@P(t = "权力:付费，会员等" ,r = false) Byte power, //
 		@P(t = "上传用户编号" ,r = false) Long upUserId, //
 		@P(t = "上传专栏编号", r = false) Long upChannelId, //
-		@P(t = "标签" , r = false) String tags, //
+		@P(t = "标签" , r = false) JSONObject tags, //
 		@P(t = "标题",r = false) String title, //
 		@P(t = "数据",r = false) String data, //
 		@P(t = "私密信息",r = false) String proviteData, //
@@ -113,9 +113,7 @@ public class ContentService extends Controller{
 		c.title = title;
 		c.upUserId = upUserId;
 		c.upChannelId = upChannelId;
-		if(tags != null) {
-			c.tags = JSONObject.parseObject(tags);			
-		}
+		c.tags = tags;
 		c.title = title;
 		c.data = data;
 		c.proviteData = proviteData;
@@ -137,7 +135,7 @@ public class ContentService extends Controller{
 		Content c = new Content();
 		c.id = id;
 		c.updateTime = new Date();
-		c.status = c.STATUS_DELETED;
+		c.status = Content.STATUS_DELETED;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			contentRepository.update(conn, EXP.INS().key("id", id), c, true);			
 		}
@@ -148,31 +146,27 @@ public class ContentService extends Controller{
 	 */
 	@POSTAPI(
 		path = "getContents", //
-		des = "根据条件查询内容 获取用户发布内容  移除内容的标签  读取内容对应的标签  根据标签查询内容", //
+		des = "根据条件查询内容 获取用户发布内容 ", //
 		ret = "所创建的对象"//
 	)
-	public List<Content> getContents(
-		@P(t = "模块")String moduleId, 
+	public APIResponse getContents(
+		@P(t = "模块")String module, 
 		@P(t = "类型",r = false)Byte type, 
 		@P(t = "状态编号",r = false)Byte status,
 		@P(t = "权力",r = false)Byte power,
 		@P(t = "上传用户编号",r = false)Long upUserId,
 		@P(t = "上传专栏编号",r = false)Long upChannelId,
-		@P(t = "标签",r = false)String tags, 
+		@P(t = "标签",r = false)JSONObject tags, 
 		int count, 
 		int offset
 	)
 	throws ServerException, SQLException {
-		JSONObject keys = null;
-		if(tags !=null) {
-			 keys = JSONObject.parseObject(tags);
-		}
-		EXP exp = EXP.INS(false).key("module_id", moduleId).andKey("type", type).andKey("status", status).andKey("power", power).andKey("up_user_id", upUserId).andKey("up_channel_id", upChannelId);
-		if(tags !=null && keys.size()>0) {
-			exp = exp.and(EXP.JSON_CONTAINS_JSONOBJECT(keys, "tags"));
+		EXP exp = EXP.INS(false).key("module_id", module).andKey("type", type).andKey("status", status).andKey("power", power).andKey("up_user_id", upUserId).andKey("up_channel_id", upChannelId);
+		if(tags !=null && tags.size()>0) {
+			exp = exp.and(EXP.JSON_CONTAINS_JSONOBJECT(tags, "tags"));
 		}
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return contentRepository.getList(conn,exp, count, offset);			
+			return APIResponse.getNewSuccessResp(contentRepository.getList(conn,exp, count, offset));			
 		}
 	}
 
@@ -196,19 +190,20 @@ public class ContentService extends Controller{
 	)
 	public int setConntentTag(
 		@P(t = "内容id")Long id,
-		@P(t = "标签")String tags
+		@P(t = "标签")JSONObject tags
 	) throws ServerException, SQLException {
 		EXP where = EXP.INS().key("id", id);
-		JSONObject keys = null;
-		if(tags !=null) {
-			 keys = JSONObject.parseObject(tags);
-		}
-		String tagGroup = getJsonObjectKey(keys);
-		//这里只考虑一次只能在当前分组中添加一个标签
-		EXP tagAppend = EXP.JSON_ARRAY_APPEND_ONKEY("tags", tagGroup, keys.getJSONArray((tagGroup)).get(0), true);
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			return contentRepository.update(conn, tagAppend, where);			
-		}
+		int ret = 0;
+		Set<String> keySet= tags.keySet();
+        for (String key : keySet) {
+            for(int i=0;i<tags.getJSONArray(key).size();i++) {
+            	EXP tagAppend = EXP.JSON_ARRAY_APPEND_ONKEY("tags", key, tags.getJSONArray((key)).get(i), true);
+            	try (DruidPooledConnection conn = ds.getConnection()) {
+        			ret = contentRepository.update(conn, tagAppend, where);			
+        		}
+            }
+        }
+        return ret;
 	}
 	//取JsonObject的key
 	public String getJsonObjectKey(JSONObject jo) {
@@ -218,6 +213,108 @@ public class ContentService extends Controller{
         }
         return null;
 	}
+	
+	//微信登录
+
+		/**
+		 * 
+		 */
+		@POSTAPI(//
+				path = "loginByWxOpenId", //
+				des = " 微信号登录", //
+				ret = "用户信息"//
+		)
+		public APIResponse loginByWxOpenId(//
+				@P(t = "微信openId") String wxOpenId, //
+				@P(t = "用户名") String name, //
+				@P(t = "扩展信息") String ext //
+
+		) throws Exception {
+			try (DruidPooledConnection conn = ds.getConnection()) {
+
+				return APIResponse.getNewSuccessResp(userService.loginByWxOpenId(conn, wxOpenId, name, ext));
+			}
+		}
+
+		/**
+		 * 修改用户的身份证
+		 */
+		@POSTAPI(//
+				path = "editUserIdNumber", //
+				des = "修改用户的身份证", //
+				ret = "返回修改信息")
+		public APIResponse editUserIdNumber(//
+				@P(t = "管理员编号") Long adminUsreId, //
+				@P(t = "用户编号") Long userId, //
+				@P(t = "用户身份证号码(已添加索引，无需查重）") String IdNumber //
+		) throws Exception {
+			try (DruidPooledConnection conn = ds.getConnection()) {
+				return APIResponse.getNewSuccessResp(userService.editUserIdNumber(conn, adminUsreId, userId, IdNumber));
+			}
+		}
+
+		/**
+		 * 修改用户的身份证
+		 */
+		@POSTAPI(//
+				path = "editUserInfo", //
+				des = "修改用户的信息", //
+				ret = "返回修改信息")
+		public APIResponse editUserInfo(//
+				@P(t = "用户编号") Long userId, //
+				@P(t = "用户名", r = false) String name, //
+				@P(t = "电话号码", r = false) String mobile, //
+				@P(t = "邮箱", r = false) String email //
+		) throws Exception {
+			try (DruidPooledConnection conn = ds.getConnection()) {
+				return APIResponse.getNewSuccessResp(userService.editUserInfo(conn, userId, name, mobile, email));
+			}
+		}
+
+		/**
+		 * 获取用户
+		 */
+		@POSTAPI(//
+				path = "getUserById", //
+				des = "根据id用户的信息", //
+				ret = "返回用户信息")
+		public APIResponse getUserById(//
+				@P(t = "用户编号") Long userId //
+		) throws Exception {
+			try (DruidPooledConnection conn = ds.getConnection()) {
+				return APIResponse.getNewSuccessResp(userService.getUserById(conn, userId));
+			}
+		}
+		
+		/**
+		 * 获取发布信息
+		 */
+		@POSTAPI(//
+				path = "returnTabBar", //
+				des = "获取发布类型", //
+				ret = "")
+		public APIResponse returnTabBar(//
+		) throws Exception {
+			try (DruidPooledConnection conn = ds.getConnection()) {
+				
+				JSONArray json = new JSONArray();
+				JSONObject jo1 = new JSONObject();
+				jo1.put("iconPath", "/static/image/release.png");
+				jo1.put("selectedIconPath", "/static/image/release.png");
+				jo1.put("text", "发图文");
+				jo1.put("active", true);
+				jo1.put("url", "/pages/index/addContent/addContent?type=1");
+				json.add(jo1);
+				JSONObject jo2 = new JSONObject();
+				jo2.put("iconPath", "/static/image/video.png");
+				jo2.put("selectedIconPath", "/static/image/video.png");
+				jo2.put("text", "发视频");
+				jo2.put("active", false);
+				jo2.put("url", "/pages/index/addContent/addContent?type=0");
+				json.add(jo2);
+				return APIResponse.getNewSuccessResp(json);
+			}
+		}
 
 }
 

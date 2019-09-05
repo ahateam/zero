@@ -7,6 +7,7 @@ import zyxhj.cms.domian.Channel;
 import zyxhj.cms.domian.ChannelContentTag;
 import zyxhj.cms.domian.ChannelTag;
 import zyxhj.cms.domian.Content;
+import zyxhj.cms.domian.ContentTag;
 import zyxhj.core.domain.Appraise;
 import zyxhj.core.domain.Mail;
 import zyxhj.core.domain.MailTag;
@@ -35,12 +36,12 @@ public class Test {
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 //
-//			RDSUtils.createTableByEntity(dds, Channel.class);
+			RDSUtils.createTableByEntity(dds, ContentTag.class);
 //			RDSUtils.createTableByEntity(dds, ChannelContentTag.class);
 //			RDSUtils.createTableByEntity(dds, ChannelTag.class);
 
 
-//			TSUtils.createTableByEntity(client, MailTag.class);
+//			TSUtils.createTableByEntity(client, ContentTag.class);
 //			TSUtils.createTableByEntity(client, Appraise.class);
 //			TSUtils.createTableByEntity(client, Reply.class);
 			
