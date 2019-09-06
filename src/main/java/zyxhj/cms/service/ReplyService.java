@@ -57,8 +57,9 @@ public class ReplyService extends Controller {
 			@P(t = "@对象名称") String atUserName, //
 			@P(t = "标题") String title, //
 			@P(t = "正文") String text, //
-			@P(t = "扩展", r = false) String ext//
+			@P(t = "扩展") String ext//
 	) throws ServerException {
+		System.out.println(ownerId);
 		Reply reply = new Reply();
 		reply._id = TSUtils.get_id(ownerId);
 		reply.ownerId = ownerId;

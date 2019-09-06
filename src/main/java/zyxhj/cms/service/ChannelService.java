@@ -8,9 +8,8 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONObject;
 import zyxhj.cms.domian.Channel;
-import zyxhj.cms.domian.Content;
+import zyxhj.cms.repository.ChannelContentTagRepository;
 import zyxhj.cms.repository.ChannelRepository;
-import zyxhj.cms.repository.ChannelUserRepository;
 import zyxhj.cms.repository.ContentRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
@@ -25,14 +24,16 @@ public class ChannelService extends Controller{
 	private static Logger log = LoggerFactory.getLogger(ChannelService.class);
 	private DruidDataSource ds;
 	private ChannelRepository channelRepository;
+	private ChannelContentTagRepository channelContentTagRepository; 
 	private ContentRepository contentRepository;
-	private ChannelUserRepository channelUserRepository;
+	
 	public ChannelService(String node) {
 		super(node);
 		try {
 			ds = DataSource.getDruidDataSource("rdsDefault.prop");
 			channelRepository = Singleton.ins(ChannelRepository.class);
 			contentRepository = Singleton.ins(ContentRepository.class);
+			channelContentTagRepository = Singleton.ins(ChannelContentTagRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -120,31 +121,58 @@ public class ChannelService extends Controller{
 
 	}
 	
-	@POSTAPI(
-		path = "getContentByChannelId", //
-		des = "根据专栏id获取内容", //
-		ret = ""//
-	)
-	public APIResponse getContentByChannelId(
-		@P(t = "模块编号")String module, 
-		@P(t = "专栏编号")Long channelId, 
-		@P(t = "内容状态",r = false)Byte status,
-		Integer count, 
-		Integer offset
-	) throws Exception {
-		EXP exp = EXP.INS(false).key("module_id", module).andKey("up_channel_id", channelId).andKey("status", status);
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			return APIResponse.getNewSuccessResp(contentRepository.getList(conn,exp, count, offset));			
-		}
-
-	}
 	
-	/**
-	 * 根据用户编号获取专栏内容
-	 */
-	public List<Content> getChannelByUserId(String module, Long channelId, Byte status,
-			Integer count, Integer offset) throws Exception {
-		return null;
+	
+	@POSTAPI(
+			path = "getChannlContentTagByChannelId", //
+			des = "根据专栏id获取专栏内容标签(channlContentTag)", //
+			ret = ""//
+		)
+		public APIResponse getChannlContentTagByChannelId(
+			@P(t = "模块编号")Long module, 
+			@P(t = "专栏编号")Long channelId, 
+			@P(t = "内容状态",r = false)Byte status,
+			Integer count, 
+			Integer offset
+		) throws Exception {
+			EXP exp = EXP.INS(false).key("module_id", module).andKey("channel_id", channelId).andKey("status", status);
+			try (DruidPooledConnection conn = ds.getConnection()) {
+				return APIResponse.getNewSuccessResp(channelContentTagRepository.getList(conn, exp, count, offset));			
+			}
+
+		}
+	
+	
+	
+	@POSTAPI(
+			path = "getContentByChannelId", //
+			des = "根据专栏内容标签获取内容", //
+			ret = ""//
+		)
+		public APIResponse getContentByChannelId(
+			@P(t = "模块编号")String module, 
+			@P(t = "专栏编号")Long channelId, 
+			@P(t = "专栏内容标签")Long tagName, 
+			@P(t = "内容状态",r = false)Byte status,
+			Integer count, 
+			Integer offset
+		) throws Exception {
+			EXP exp = EXP.INS(false).key("module_id", module).andKey("up_channel_id", channelId).andKey("status", status);
+			try (DruidPooledConnection conn = ds.getConnection()) {
+				return APIResponse.getNewSuccessResp(contentRepository.getList(conn,exp, count, offset));			
+			}
+
+		}
+	
+	@POSTAPI(
+			path = "getChannlById", //
+			des = "根据专栏id获取专栏", //
+			ret = ""//
+		)
+	public Channel getChannlById(@P(t = "专栏id")Long id) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return channelRepository.get(conn, EXP.INS().key("id", id));
+		}
 	}
 	
 }

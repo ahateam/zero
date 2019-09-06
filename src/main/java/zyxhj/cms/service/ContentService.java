@@ -17,6 +17,7 @@ import zyxhj.cms.domian.Content;
 import zyxhj.cms.repository.ContentRepository;
 import zyxhj.core.service.UserService;
 import zyxhj.utils.IDUtils;
+import zyxhj.utils.ServiceUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.APIResponse;
 import zyxhj.utils.api.Controller;
@@ -166,7 +167,7 @@ public class ContentService extends Controller{
 			exp = exp.and(EXP.JSON_CONTAINS_JSONOBJECT(tags, "tags"));
 		}
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return APIResponse.getNewSuccessResp(contentRepository.getList(conn,exp, count, offset));			
+			return APIResponse.getNewSuccessResp(ServiceUtils.checkNull(contentRepository.getList(conn,exp, count, offset)));			
 		}
 	}
 

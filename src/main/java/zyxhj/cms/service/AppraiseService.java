@@ -82,7 +82,7 @@ public class AppraiseService extends Controller{
 	public void editAppraise(
 			@P(t = "内容编号") Long ownerId, 
 			@P(t = "用户编号") Long userId, 
-			@P(t = "状态 VALUE_PRAISE=0赞 ，STATUS_DISS=1踩") Byte value
+			@P(t = "状态 0赞 ，1踩") String value
 	) throws ServerException {
 		String _id = TSUtils.get_id(ownerId);
 		PrimaryKey pk = new PrimaryKeyBuilder().add("_id", _id).add("ownerId", ownerId).add("userId", userId).build();
@@ -99,7 +99,7 @@ public class AppraiseService extends Controller{
 	public JSONObject getAppraiseCount(
 			@P(t = "内容编号") Long ownerId, 
 			@P(t = "用户编号", r = false) Long userId, 
-			@P(t = "状态", r = false) Byte value
+			@P(t = "状态", r = false) String value
 	) throws Exception {
 		TSQL ts = new TSQL();
 		ts.Term(OP.AND, "ownerId", ownerId).Term(OP.AND, "userId", userId).Term(OP.AND, "value", value);
