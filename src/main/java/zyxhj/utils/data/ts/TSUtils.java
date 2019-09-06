@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.CapacityUnit;
 import com.alicloud.openservices.tablestore.model.CreateTableRequest;
@@ -100,7 +102,7 @@ public class TSUtils {
 		int pkCount = 0;
 
 		ArrayList<Field> normalColumns = new ArrayList<>();
-		HashMap<String, ArrayList<Field>> indexColumnsMap = new HashMap<>();
+		ArrayList<Field> indexColumns = new ArrayList<>();
 
 		if (null == annEntity) {
 			// 没有注解，建表错误
@@ -134,25 +136,15 @@ public class TSUtils {
 						}
 					} else {
 						// 字段列
-						if (null != annIndex) {
-							// 有索引的字段列
-							// 一个表可能有多组多元索引，需要按索引名区分
+					}
 
-							String name = annEntity.indexName();
-
-							ArrayList<Field> indexFields = indexColumnsMap.get(name);
-							if (indexFields != null) {
-								indexFields.add(cf);
-							} else {
-								// 新的一组索引
-								indexFields = new ArrayList<>();
-								indexFields.add(cf);
-								indexColumnsMap.put(name, indexFields);
-							}
-						} else {
-							// 普通的字段列
-							normalColumns.add(cf);
-						}
+					if (null != annIndex) {
+						// 有索引的字段列
+						// 一个表只能有一个index
+						indexColumns.add(cf);
+					} else {
+						// 普通的字段列
+						normalColumns.add(cf);
 					}
 				}
 			}
@@ -185,6 +177,7 @@ public class TSUtils {
 			// }
 
 			String tableName = annEntity.alias();
+			String indexName = annEntity.indexName();
 			int timeToLive = annEntity.timeToLive(); // 数据的过期时间，单位秒, -1代表永不过期，例如设置过期时间为一年, 即为 365 * 24 * 3600。
 			int maxVersions = annEntity.maxVersions(); // 保存的最大版本数，设置为3即代表每列上最多保存3个最新的版本。
 
@@ -219,19 +212,14 @@ public class TSUtils {
 			// 然后开始构造多元索引
 			// TableStore无需构造列（目前不支持二级索引，只支持多元索引）
 			// 因此跳过没有索引的列
-
-			Iterator<String> keys = indexColumnsMap.keySet().iterator();
-			while (keys.hasNext()) {
-				// 按分组名逐组创建多元索引
-				String key = keys.next();
-
+			if (StringUtils.isNotBlank(indexName) && indexColumns.size() > 0) {
+				// 创建多元索引
 				CreateSearchIndexRequest request = new CreateSearchIndexRequest();
 				request.setTableName(tableName); // 设置表名
-				request.setIndexName(key); // 设置索引名
+				request.setIndexName(indexName); // 设置索引名
 
 				ArrayList<FieldSchema> fieldSchemas = new ArrayList<>();
-				ArrayList<Field> fields = indexColumnsMap.get(key);
-				for (Field field : fields) {
+				for (Field field : indexColumns) {
 					TSAnnIndex annIndex = field.getAnnotation(TSAnnIndex.class);
 
 					FieldSchema fieldSchema = new FieldSchema(field.getName(), annIndex.type());

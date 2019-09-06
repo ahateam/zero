@@ -36,16 +36,17 @@ public class Test {
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 //
-			RDSUtils.createTableByEntity(dds, ContentTag.class);
+//			RDSUtils.createTableByEntity(dds, ContentTag.class);
 //			RDSUtils.createTableByEntity(dds, ChannelContentTag.class);
 //			RDSUtils.createTableByEntity(dds, ChannelTag.class);
 
 
 //			TSUtils.createTableByEntity(client, ContentTag.class);
-//			TSUtils.createTableByEntity(client, Appraise.class);
-//			TSUtils.createTableByEntity(client, Reply.class);
 			
-//			TSUtils.drapTableByEntity(client, MailTag.class);
+//			TSUtils.createTableByEntity(client, Appraise.class);
+			TSUtils.createTableByEntity(client, Reply.class);
+			
+//			TSUtils.drapTableByEntity(client, Reply.class);
 			client.shutdown();
 
 		} catch (Exception e) {
