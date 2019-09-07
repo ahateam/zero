@@ -1,6 +1,7 @@
 package zyxhj.cms.service;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.cms.domian.Content;
 import zyxhj.cms.repository.ContentRepository;
+import zyxhj.core.domain.User;
 import zyxhj.core.service.UserService;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.ServiceUtils;
@@ -144,6 +146,7 @@ public class ContentService extends Controller{
 
 	/**
 	 * 根据条件查询内容 
+	 * 
 	 */
 	@POSTAPI(
 		path = "getContents", //
@@ -161,13 +164,17 @@ public class ContentService extends Controller{
 		int count, 
 		int offset
 	)
-	throws ServerException, SQLException {
+	throws Exception {
 		EXP exp = EXP.INS(false).key("module_id", module).andKey("type", type).andKey("status", status).andKey("power", power).andKey("up_user_id", upUserId).andKey("up_channel_id", upChannelId);
 		if(tags !=null && tags.size()>0) {
 			exp = exp.and(EXP.JSON_CONTAINS_JSONOBJECT(tags, "tags"));
 		}
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			return APIResponse.getNewSuccessResp(ServiceUtils.checkNull(contentRepository.getList(conn,exp, count, offset)));			
+		try (DruidPooledConnection conn = ds.getConnection()) {			
+			List<Content> list = contentRepository.getList(conn,exp, count, offset);
+			for(Content c:list) {
+				c.user = userService.getUserById(conn, c.upUserId);
+			}
+			return APIResponse.getNewSuccessResp(ServiceUtils.checkNull(list));			
 		}
 	}
 
@@ -206,87 +213,7 @@ public class ContentService extends Controller{
         }
         return ret;
 	}
-	//取JsonObject的key
-	public String getJsonObjectKey(JSONObject jo) {
-		Set<String> keySet= jo.keySet();
-        for (String key : keySet) {
-            return key;
-        }
-        return null;
-	}
 	
-	//微信登录
-
-		/**
-		 * 
-		 */
-		@POSTAPI(//
-				path = "loginByWxOpenId", //
-				des = " 微信号登录", //
-				ret = "用户信息"//
-		)
-		public APIResponse loginByWxOpenId(//
-				@P(t = "微信openId") String wxOpenId, //
-				@P(t = "用户名") String name, //
-				@P(t = "扩展信息") String ext //
-
-		) throws Exception {
-			try (DruidPooledConnection conn = ds.getConnection()) {
-
-				return APIResponse.getNewSuccessResp(userService.loginByWxOpenId(conn, wxOpenId, name, ext));
-			}
-		}
-
-		/**
-		 * 修改用户的身份证
-		 */
-		@POSTAPI(//
-				path = "editUserIdNumber", //
-				des = "修改用户的身份证", //
-				ret = "返回修改信息")
-		public APIResponse editUserIdNumber(//
-				@P(t = "管理员编号") Long adminUsreId, //
-				@P(t = "用户编号") Long userId, //
-				@P(t = "用户身份证号码(已添加索引，无需查重）") String IdNumber //
-		) throws Exception {
-			try (DruidPooledConnection conn = ds.getConnection()) {
-				return APIResponse.getNewSuccessResp(userService.editUserIdNumber(conn, adminUsreId, userId, IdNumber));
-			}
-		}
-
-		/**
-		 * 修改用户的身份证
-		 */
-		@POSTAPI(//
-				path = "editUserInfo", //
-				des = "修改用户的信息", //
-				ret = "返回修改信息")
-		public APIResponse editUserInfo(//
-				@P(t = "用户编号") Long userId, //
-				@P(t = "用户名", r = false) String name, //
-				@P(t = "电话号码", r = false) String mobile, //
-				@P(t = "邮箱", r = false) String email //
-		) throws Exception {
-			try (DruidPooledConnection conn = ds.getConnection()) {
-				return APIResponse.getNewSuccessResp(userService.editUserInfo(conn, userId, name, mobile, email));
-			}
-		}
-
-		/**
-		 * 获取用户
-		 */
-		@POSTAPI(//
-				path = "getUserById", //
-				des = "根据id用户的信息", //
-				ret = "返回用户信息")
-		public APIResponse getUserById(//
-				@P(t = "用户编号") Long userId //
-		) throws Exception {
-			try (DruidPooledConnection conn = ds.getConnection()) {
-				return APIResponse.getNewSuccessResp(userService.getUserById(conn, userId));
-			}
-		}
-		
 		/**
 		 * 获取发布信息
 		 */

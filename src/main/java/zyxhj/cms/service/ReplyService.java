@@ -1,11 +1,17 @@
 package zyxhj.cms.service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alibaba.druid.pool.DruidDataSource;
+import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
@@ -13,15 +19,21 @@ import com.alicloud.openservices.tablestore.model.search.SearchQuery;
 import com.alicloud.openservices.tablestore.model.search.sort.FieldSort;
 import com.alicloud.openservices.tablestore.model.search.sort.SortOrder;
 
+import zyxhj.cms.domian.Content;
 import zyxhj.cms.repository.ReplyRepository;
 import zyxhj.core.domain.Reply;
+import zyxhj.core.domain.User;
+import zyxhj.core.service.UserService;
+import zyxhj.utils.ServiceUtils;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.api.APIResponse;
 import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
 import zyxhj.utils.data.ts.TSQL;
+import zyxhj.utils.data.ts.TSRepository;
 import zyxhj.utils.data.ts.TSQL.OP;
 import zyxhj.utils.data.ts.TSUtils;
 
@@ -30,16 +42,19 @@ public class ReplyService extends Controller {
 	private static Logger log = LoggerFactory.getLogger(ReplyService.class);
 
 	private SyncClient client;
+	private DruidDataSource ds;
 
+	private UserService userService;
 	private ReplyRepository replyRepository;
 
 	public ReplyService(String node) {
 		super(node);
 		try {
-
+			ds = DataSource.getDruidDataSource("rdsDefault.prop");
 			client = DataSource.getTableStoreSyncClient("tsDefault.prop");
 
 			replyRepository = Singleton.ins(ReplyRepository.class);
+			userService = Singleton.ins(UserService.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -162,6 +177,17 @@ public class ReplyService extends Controller {
 			ts.addSort(new FieldSort("createTime", SortOrder.ASC));
 		}
 		SearchQuery query = ts.build();
-		return replyRepository.search(client, query);
+		
+		JSONObject json = replyRepository.search(client, query);
+		JSONArray jsonarray = json.getJSONArray("list");
+		int index = jsonarray.size();
+		try(DruidPooledConnection conn = ds.getConnection()){
+			for(int i=0;i<index;i++) {
+				User user = userService.getUserById(conn, (Long)jsonarray.getJSONObject(i).get("upUserId"));
+				jsonarray.getJSONObject(i).put("user", user);
+			}
+			return json;
+		}
+		
 	}
 }

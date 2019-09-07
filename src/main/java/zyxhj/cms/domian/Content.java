@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.alibaba.fastjson.JSONObject;
 
+import zyxhj.core.domain.User;
 import zyxhj.utils.data.AnnDicField;
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
@@ -101,6 +102,9 @@ public class Content {
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String ext;
+	
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public User user;//用户信息
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
