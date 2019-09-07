@@ -74,8 +74,9 @@ public class EXP implements Cloneable {
 	/**
 	 * 构造EXP实例
 	 * 
-	 * @param exact 是否严谨，true则表达式右参不允许null，false则右参null时自动不添加该表达式</br>
-	 *              (常用于多条件查询，右参null时该表达式无效)
+	 * @param exact
+	 *            是否严谨，true则表达式右参不允许null，false则右参null时自动不添加该表达式</br>
+	 *            (常用于多条件查询，右参null时该表达式无效)
 	 */
 	public static EXP INS(boolean exact) {
 		return new EXP(exact);
@@ -160,9 +161,12 @@ public class EXP implements Cloneable {
 	/**
 	 * JSON操作，添加到数组
 	 * 
-	 * @param column    字段列名（JSON数组字段）
-	 * @param value     要添加的值，可以是数字或字符
-	 * @param duplicate 数组是否允许重复
+	 * @param column
+	 *            字段列名（JSON数组字段）
+	 * @param value
+	 *            要添加的值，可以是数字或字符
+	 * @param duplicate
+	 *            数组是否允许重复
 	 */
 	public static EXP JSON_ARRAY_APPEND(String column, Object value, boolean duplicate) {
 		String temp = null;
@@ -209,10 +213,14 @@ public class EXP implements Cloneable {
 	/**
 	 * JSON操作，添加到数组，数组值将添加到column.key对应的数组下
 	 * 
-	 * @param column    字段列名（JSON数组字段）
-	 * @param key       字段内的JSON key，数组值将添加到column.key对应的数组下
-	 * @param value     要添加的值，可以是数字或字符
-	 * @param duplicate 数组是否允许重复
+	 * @param column
+	 *            字段列名（JSON数组字段）
+	 * @param key
+	 *            字段内的JSON key，数组值将添加到column.key对应的数组下
+	 * @param value
+	 *            要添加的值，可以是数字或字符
+	 * @param duplicate
+	 *            数组是否允许重复
 	 */
 	public static EXP JSON_ARRAY_APPEND_ONKEY(String column, String key, Object value, boolean duplicate) {
 		String temp = null;
@@ -267,9 +275,12 @@ public class EXP implements Cloneable {
 	/**
 	 * 移除JSON数组元素
 	 * 
-	 * @param column JSON列
-	 * @param path   JSON PATH
-	 * @param index  数组索引编号，从0开始
+	 * @param column
+	 *            JSON列
+	 * @param path
+	 *            JSON PATH
+	 * @param index
+	 *            数组索引编号，从0开始
 	 */
 	public static EXP JSON_ARRAY_REMOVE(String column, String path, int index) {
 		String temp = StringUtils.join(column, " = JSON_REMOVE(", column, ",'", path, "[", index, "]')");
@@ -279,9 +290,12 @@ public class EXP implements Cloneable {
 	/**
 	 * 判断JSON中是否包含指定元素的语句
 	 * 
-	 * @param column 字段名
-	 * @param path   JSON Path，例如$.tags或$
-	 * @param value  需要查找的值
+	 * @param column
+	 *            字段名
+	 * @param path
+	 *            JSON Path，例如$.tags或$
+	 * @param value
+	 *            需要查找的值
 	 */
 	public static EXP JSON_CONTAINS(String column, String path, Object value) {
 		String temp = null;
@@ -298,9 +312,12 @@ public class EXP implements Cloneable {
 	/**
 	 * 判断JSON中是否包含指定元素的语句
 	 * 
-	 * @param keys   需要查找的多个值
-	 * @param column 字段名
-	 * @param path   JSON Path，例如$.tags或$
+	 * @param keys
+	 *            需要查找的多个值
+	 * @param column
+	 *            字段名
+	 * @param path
+	 *            JSON Path，例如$.tags或$
 	 */
 	public static EXP JSON_CONTAINS_KEYS(JSONArray keys, String column, String path) throws ServerException {
 		if (keys != null && keys.size() > 0) {
@@ -322,8 +339,10 @@ public class EXP implements Cloneable {
 	/**
 	 * 判断JSON中是否包含指定元素的语句
 	 * 
-	 * @param keys   需要查找的分组，和分组中需要查询的值
-	 * @param column 字段名
+	 * @param keys
+	 *            需要查找的分组，和分组中需要查询的值
+	 * @param column
+	 *            字段名
 	 */
 	public static EXP JSON_CONTAINS_JSONOBJECT(JSONObject keys, String column) throws ServerException {
 		if (keys.size() > 0 && keys != null) {
@@ -359,9 +378,12 @@ public class EXP implements Cloneable {
 	/**
 	 * 替换数组中的单个值
 	 * 
-	 * @param column 字段名
-	 * @param index  需要替换的值的下标
-	 * @param value  替换后的值
+	 * @param column
+	 *            字段名
+	 * @param index
+	 *            需要替换的值的下标
+	 * @param value
+	 *            替换后的值
 	 */
 	public static EXP JSON_SET(String column, int index, Object value) {
 
@@ -394,7 +416,8 @@ public class EXP implements Cloneable {
 	/**
 	 * 拷贝构造
 	 * 
-	 * @param exp 需要拷贝的表达式
+	 * @param exp
+	 *            需要拷贝的表达式
 	 */
 	public EXP exp(EXP exp) {
 		EXP c = exp.clone();
@@ -410,12 +433,15 @@ public class EXP implements Cloneable {
 	/**
 	 * 函数方法构造
 	 * 
-	 * @param str  表达式函数文本
-	 * @param ps   表达式操作数</br>
-	 *             例如二元表达式中，ps[0]为左参，ps[1]为右参</br>
-	 *             （同SQL一样，可用通配符 ? 表示需要被替换的参数，避免SQL注入）
-	 * @param args 表达式参数（选填）</br>
-	 *             如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
+	 * @param str
+	 *            表达式函数文本
+	 * @param ps
+	 *            表达式操作数</br>
+	 *            例如二元表达式中，ps[0]为左参，ps[1]为右参</br>
+	 *            （同SQL一样，可用通配符 ? 表示需要被替换的参数，避免SQL注入）
+	 * @param args
+	 *            表达式参数（选填）</br>
+	 *            如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
 	 */
 	public EXP exp(String str, List<Object> ps, Object... args) {
 		this.t = TYPE_METHOD;
@@ -429,12 +455,16 @@ public class EXP implements Cloneable {
 	/**
 	 * 二元表达式构造
 	 * 
-	 * @param left  表达式左操作数</br>
-	 * @param op    表达式操作符
-	 * @param right 表达式右操作数</br>
-	 *              （同SQL一样，可用通配符 ? 表示需要被替换的参数，避免SQL注入）
-	 * @param args  表达式参数（选填）</br>
-	 *              如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
+	 * @param left
+	 *            表达式左操作数</br>
+	 * @param op
+	 *            表达式操作符
+	 * @param right
+	 *            表达式右操作数</br>
+	 *            （同SQL一样，可用通配符 ? 表示需要被替换的参数，避免SQL注入）
+	 * @param args
+	 *            表达式参数（选填）</br>
+	 *            如果表达式中存在 ? 通配符，则参数与 ? 按顺序逐一匹配
 	 */
 	public EXP exp(Object left, String op, Object right, Object... args) throws ServerException {
 		if (isShit(exact, right, args)) {
@@ -857,13 +887,17 @@ public class EXP implements Cloneable {
 			Object left = ps.get(0);
 			Object right = ps.get(1);
 
+			// 左节点
 			if (left instanceof EXP) {
 				((EXP) left).toEXP(sb);
 			} else {
 				sb.append(left);
 			}
 
+			// 操作符
 			sb.append(fixOP(op));
+
+			// 右节点
 			if (right instanceof EXP) {
 				EXP er = (EXP) right;
 				boolean isEnd = EXP.isEndEXP(er);// 下一个节点是否最终节点
@@ -875,7 +909,6 @@ public class EXP implements Cloneable {
 					sb.append(")");
 				}
 			} else {
-
 				if (right instanceof String) {
 					if (StringUtils.trim((String) right).equals("?")) {
 						// 替换？，合并参数
@@ -886,11 +919,13 @@ public class EXP implements Cloneable {
 				} else {
 					sb.append(right);
 				}
-
-				if (StringUtils.isNotBlank(ext)) {
-					sb.append(" ").append(ext);
-				}
 			}
+
+			// 添加当前节点的ext
+			if (StringUtils.isNotBlank(ext)) {
+				sb.append(" ").append(ext);
+			}
+
 		} else {
 			// 函数或其它
 			sb.append(op);
@@ -910,10 +945,10 @@ public class EXP implements Cloneable {
 					}
 				}
 				sb.append(')');
+			}
 
-				if (StringUtils.isNotBlank(ext)) {
-					sb.append(" ").append(ext);
-				}
+			if (StringUtils.isNotBlank(ext)) {
+				sb.append(" ").append(ext);
 			}
 		}
 	}
@@ -1052,18 +1087,23 @@ public class EXP implements Cloneable {
 	}
 
 	public void toSQL(StringBuffer sb, List<Object> params) throws ServerException {
+		System.out.println("--->" + sb.toString());
 		if (t.equals(TYPE_EXP)) {
 			// 二元表达式
 			Object left = ps.get(0);
 			Object right = ps.get(1);
 
+			// 左节点
 			if (left instanceof EXP) {
 				((EXP) left).toSQL(sb, params);
 			} else {
 				sb.append(left);
 			}
 
+			// 操作符
 			sb.append(sqlFixOP(op));
+
+			// 右节点
 			if (right instanceof EXP) {
 				EXP er = (EXP) right;
 				boolean isEnd = EXP.isEndEXP(er);// 下一个节点是否最终节点
@@ -1075,7 +1115,6 @@ public class EXP implements Cloneable {
 					sb.append(")");
 				}
 			} else {
-
 				if (right instanceof String) {
 					if (StringUtils.trim((String) right).equals("?")) {
 						// 单个问号的字符不加单引号
@@ -1086,10 +1125,11 @@ public class EXP implements Cloneable {
 				} else {
 					sb.append(right);
 				}
+			}
 
-				if (StringUtils.isNotBlank(ext)) {
-					sb.append(" ").append(ext);
-				}
+			// 添加当前节点的ext
+			if (StringUtils.isNotBlank(ext)) {
+				sb.append(" ").append(ext);
 			}
 
 			// 添加到参数列表

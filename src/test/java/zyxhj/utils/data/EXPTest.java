@@ -2,6 +2,7 @@ package zyxhj.utils.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -152,7 +153,7 @@ public class EXPTest {
 			System.out.println("===" + str);
 			System.out.println(">>>" + pstr);
 
-			Assert.assertEquals(sb.toString(),
+			Assert.assertEquals(str,
 					"t1 = ? AND t2 = ? AND (this is shit OR this is fuck) AND (t1 = ? AND t2 = ? AND (this is shit OR this is fuck))");
 		} catch (ServerException e1) {
 			// TODO Auto-generated catch block
@@ -175,7 +176,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(), "id = ? AND name = ?");
+				Assert.assertEquals(str, "id = ? AND name = ?");
 			}
 
 			{
@@ -189,7 +190,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(), "name = ?");
+				Assert.assertEquals(str, "name = ?");
 			}
 
 		} catch (ServerException e1) {
@@ -213,7 +214,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(), "id = ? OR name = ?");
+				Assert.assertEquals(str, "id = ? OR name = ?");
 			}
 
 			{
@@ -227,7 +228,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(), "name = ?");
+				Assert.assertEquals(str, "name = ?");
 			}
 
 		} catch (ServerException e1) {
@@ -252,7 +253,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(),
+				Assert.assertEquals(str,
 						"arrays = IF((ISNULL(arrays) || LENGTH(trim(arrays))<1), JSON_ARRAY('tag4'), JSON_ARRAY_APPEND(arrays,'$','tag4'))");
 			}
 
@@ -269,7 +270,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(),
+				Assert.assertEquals(str,
 						"arrays = IF((ISNULL(arrays) || LENGTH(trim(arrays))<1), JSON_ARRAY('tag4'), IF(JSON_CONTAINS(arrays,'\"tag4\"','$'),arrays,JSON_ARRAY_APPEND(arrays,'$','tag4')))");
 			}
 
@@ -286,7 +287,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(),
+				Assert.assertEquals(str,
 						"arrays = IF((ISNULL(arrays) || LENGTH(trim(arrays))<1), JSON_ARRAY(123), JSON_ARRAY_APPEND(arrays,'$',123))");
 			}
 
@@ -303,7 +304,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(),
+				Assert.assertEquals(str,
 						"arrays = IF((ISNULL(arrays) || LENGTH(trim(arrays))<1), JSON_ARRAY(123), IF(JSON_CONTAINS(arrays,'123','$'),arrays,JSON_ARRAY_APPEND(arrays,'$',123)))");
 			}
 		} catch (ServerException e1) {
@@ -328,7 +329,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(),
+				Assert.assertEquals(str,
 						"tags = IF((ISNULL(tags) || LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY('tag4')),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),JSON_ARRAY_APPEND(tags, '$.type' ,'tag4'),JSON_SET(tags,'$.type',JSON_ARRAY('tag4'))))");
 			}
 
@@ -345,7 +346,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(),
+				Assert.assertEquals(str,
 						"tags = IF((ISNULL(tags) || LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY('tag4')),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),IF(JSON_CONTAINS(tags,'\"tag4\"','$.type'),tags,JSON_ARRAY_APPEND(tags, '$.type' ,'tag4')),JSON_SET(tags,'$.type',JSON_ARRAY('tag4'))))");
 			}
 
@@ -362,7 +363,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(),
+				Assert.assertEquals(str,
 						"tags = IF((ISNULL(tags) || LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY(123)),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),JSON_ARRAY_APPEND(tags, '$.type' ,123),JSON_SET(tags,'$.type',JSON_ARRAY(123))))");
 			}
 
@@ -379,7 +380,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(),
+				Assert.assertEquals(str,
 						"tags = IF((ISNULL(tags) || LENGTH(trim(tags))<1),JSON_OBJECT('type',JSON_ARRAY(123)),IF(JSON_CONTAINS_PATH(tags,'one','$.type'),IF(JSON_CONTAINS(tags,'123','$.type'),tags,JSON_ARRAY_APPEND(tags, '$.type' ,123)),JSON_SET(tags,'$.type',JSON_ARRAY(123))))");
 			}
 
@@ -403,7 +404,7 @@ public class EXPTest {
 			System.out.println("===" + str);
 			System.out.println(">>>" + pstr);
 
-			Assert.assertEquals(sb.toString(), "arrays = JSON_REMOVE(arrays,'$[1]')");
+			Assert.assertEquals(str, "arrays = JSON_REMOVE(arrays,'$[1]')");
 
 		} catch (ServerException e1) {
 			// TODO Auto-generated catch block
@@ -425,7 +426,7 @@ public class EXPTest {
 			System.out.println("===" + str);
 			System.out.println(">>>" + pstr);
 
-			Assert.assertEquals(sb.toString(), "id = ? AND (name = ? OR age < 18)");
+			Assert.assertEquals(str, "id = ? AND (name = ? OR age < 18)");
 
 		} catch (ServerException e1) {
 			// TODO Auto-generated catch block
@@ -465,7 +466,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(), "JSON_CONTAINS(tags, '\"temp\"','$.group1')");
+				Assert.assertEquals(str, "JSON_CONTAINS(tags, '\"temp\"','$.group1')");
 			}
 
 			{
@@ -479,7 +480,7 @@ public class EXPTest {
 				System.out.println("===" + str);
 				System.out.println(">>>" + pstr);
 
-				Assert.assertEquals(sb.toString(), "JSON_CONTAINS(tags, '234','$.group1')");
+				Assert.assertEquals(str, "JSON_CONTAINS(tags, '234','$.group1')");
 			}
 
 		} catch (ServerException e) {
@@ -503,7 +504,7 @@ public class EXPTest {
 			String str = sb.toString();
 			System.out.println("===" + str);
 
-			Assert.assertEquals(sb.toString(),
+			Assert.assertEquals(str,
 					"getTableField(tableId,fieldName) > 3 && (getTableField(tableId,fieldName) LIKE 4)");
 			Assert.assertEquals(0, ret);
 		}
@@ -520,7 +521,7 @@ public class EXPTest {
 			String str = sb.toString();
 			System.out.println("===" + str);
 
-			Assert.assertEquals(sb.toString(),
+			Assert.assertEquals(str,
 					"getTableField(tableId,fieldName) > 3 && (getTableField(tableId,fieldName) LIKE 23)");
 			Assert.assertEquals(1, ret);
 		}
@@ -538,6 +539,22 @@ public class EXPTest {
 		System.out.println("===" + str);
 		System.out.println(">>>" + pstr);
 
-		Assert.assertEquals(sb.toString(), "id = ? ORDER BY timestamp DESC");
+		Assert.assertEquals(str, "id = ? ORDER BY timestamp DESC");
+	}
+
+	@Test
+	public void testAppend2() throws Exception {
+		StringBuffer sb = new StringBuffer();
+		List<Object> params = new ArrayList<Object>();
+		EXP e = EXP.INS().key("123", "456").andKey("456", "456").append("group by name");
+		e.toSQL(sb, params);
+
+		String str = sb.toString();
+		String pstr = JSON.toJSONString(params);
+		System.out.println("===" + str);
+		System.out.println(">>>" + pstr);
+
+		Assert.assertEquals(str, "123 = ? AND 456 = ? group by name");
+
 	}
 }

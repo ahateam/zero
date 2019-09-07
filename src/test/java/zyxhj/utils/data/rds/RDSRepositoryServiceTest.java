@@ -469,16 +469,6 @@ public class RDSRepositoryServiceTest {
 		}
 	}
 	
-	@Test 
-	public void testJSONREMOVE() throws Exception {
-		StringBuffer sb = new StringBuffer();
-		List<Object> params = new ArrayList<Object>();
-		EXP where = EXP.INS().key("123", "456").andKey("456", "456");
-		where.append(" group by name ");
-		where.toSQL(sb, params);
-		System.out.println(sb.toString());
-		
 
-	}
 	
 }
