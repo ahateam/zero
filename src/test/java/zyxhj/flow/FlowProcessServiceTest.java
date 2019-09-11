@@ -16,7 +16,6 @@ import zyxhj.core.domain.User;
 import zyxhj.flow.domain.ProcessAction;
 import zyxhj.flow.domain.ProcessActivity;
 import zyxhj.flow.domain.ProcessActivityGroup;
-import zyxhj.flow.domain.ProcessActivity.Action;
 import zyxhj.flow.domain.ProcessActivity.Receiver;
 import zyxhj.flow.domain.ProcessActivityGroup.SubActivity;
 import zyxhj.flow.domain.ProcessAssetDesc;
@@ -162,7 +161,7 @@ public class FlowProcessServiceTest {
 	public void testEditPDActivity() {
 		List<Receiver> receivers = new ArrayList<ProcessActivity.Receiver>();
 
-		List<Action> actions = new ArrayList<ProcessActivity.Action>();
+		List<ProcessAction> actions = new ArrayList<ProcessAction>();
 
 		try {
 			int state = flowService.editPDActivity(pdId, activityId, "修改流程节点标题", "修改part", "", "");

@@ -20,7 +20,6 @@ import zyxhj.core.repository.UserRepository;
 import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessAction;
 import zyxhj.flow.domain.ProcessActivity;
-import zyxhj.flow.domain.ProcessActivity.Action;
 import zyxhj.flow.domain.ProcessActivityGroup;
 import zyxhj.flow.domain.ProcessActivityGroup.SubActivity;
 import zyxhj.flow.domain.ProcessAsset;
@@ -465,12 +464,12 @@ public class ProcessService extends Controller {
 	 */
 
 	private void execAction(DruidPooledConnection conn, User user, Process p, ProcessActivity pa,
-			ProcessActivity.Action action, Long activityId) throws Exception {
+			ProcessAction action, Long activityId) throws Exception {
 
 		// 判断type
-		if (action.type.equals(ProcessActivity.Action.TYPE_REJECT)) {
+		if (action.type.equals(ProcessAction.TYPE_REJECT)) {
 			// 驳回，暂时没做
-		} else if (action.type.equals(ProcessActivity.Action.TYPE_TERMINATE)) {
+		} else if (action.type.equals(ProcessAction.TYPE_TERMINATE)) {
 			// 终结，暂时没做
 		} else {
 			// 其它情况都当同意做
@@ -899,14 +898,15 @@ public class ProcessService extends Controller {
 							user.id = userId;
 							user.name = "临时用户";
 
-							List<ProcessActivity.Action> list = JSON.parseArray(pa.actions,
-									ProcessActivity.Action.class);
+							List<ProcessAction> list = JSON.parseArray(pa.actions,
+									ProcessAction.class);
 							if (list.size() > 0) {
-								HashMap<String, Action> actions = new HashMap<>();
+								HashMap<String, ProcessAction> actions = new HashMap<>();
 								list.forEach(item -> {
-									actions.put(item.id, item);
+									//TODO item.id
+									actions.put(item.id.toString(), item);
 								});
-								ProcessActivity.Action act = actions.get(actionId);
+								ProcessAction act = actions.get(actionId);
 								if (act == null) {
 									throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
 								} else {

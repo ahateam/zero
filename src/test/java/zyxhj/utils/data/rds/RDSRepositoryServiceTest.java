@@ -468,7 +468,13 @@ public class RDSRepositoryServiceTest {
 			System.out.println(t.id);
 		}
 	}
-	
+	@Test
+	public void intest() throws Exception {
 
+		EXP set = EXP.JSON_ARRAY_REMOVE("arrays", "$", 0);
+		EXP where = EXP.INS().key("id", 400992806774166L);
+		testRepository.update(conn, set, where);
+		
+	}
 	
 }
