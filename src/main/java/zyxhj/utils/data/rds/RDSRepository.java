@@ -884,7 +884,7 @@ public abstract class RDSRepository<T> {
 		}
 	}
 
-	private static int executeUpdateSQL(DruidPooledConnection conn, String sql, List<Object> whereParams)
+	protected static int executeUpdateSQL(DruidPooledConnection conn, String sql, List<Object> whereParams)
 			throws ServerException {
 		PreparedStatement ps = prepareStatement(conn, sql, whereParams);
 		int count = 0;

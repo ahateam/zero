@@ -1,6 +1,7 @@
 package zyxhj.cms.domian;
 
 import zyxhj.utils.api.Controller.ENUMVALUE;
+import zyxhj.utils.data.AnnDicField;
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
@@ -11,58 +12,27 @@ import zyxhj.utils.data.rds.RDSAnnID;
  */
 @RDSAnnEntity(alias = "tb_content_template")
 public class Template {
+	
+	
+	@AnnDicField(alias = "视频")
+	public static final Byte TYPE_MAKETASK = 0;
+	@AnnDicField(alias = "图文")
+	public static final Byte TYPE_SHARETASK = 1;
+	@AnnDicField(alias = "音频")
+	public static final Byte TYPE_NEARBYTASK = 2;
+	@AnnDicField(alias = "万众瞩目")
+	public static final Byte TYPE_GROUPPRAISE= 3;
+	@AnnDicField(alias = "本地")
+	public static final Byte TYPE_LOCAL = 4;
+	@AnnDicField(alias = "分享")
+	public static final Byte TYPE_SHARE = 5;
 
-	public static enum TYPE implements ENUMVALUE {
-		MAKETASK((byte) 0, "视频"), //
-		SHARETASK((byte) 1, "图文"), //
-		NEARBYTASK((byte) 2, "声音"), //
-		GROUPPRAISE((byte) 3, "万众瞩目"), //
-		LOCAL((byte) 4, "本地"), //
-		SHARE((byte) 5, "分享"), //
-		;
+	@AnnDicField(alias = "打开")
+	public static final Byte OPEN = 0;
+	@AnnDicField(alias = "关闭")
+	public static final Byte CLOSE = 1;
 
-		public String txt;
-		public byte v;
-
-		private TYPE(byte v, String txt) {
-			this.v = v;
-			this.txt = txt;
-		}
-
-		@Override
-		public byte v() {
-			return v;
-		}
-
-		@Override
-		public String txt() {
-			return txt;
-		}
-	}
-
-	public static enum STATUS implements ENUMVALUE {
-		OPEN((byte) 0, "打开"), //
-		CLOSE((byte) 1, "关闭"), //
-		;
-
-		public String txt;
-		public byte v;
-
-		private STATUS(byte v, String txt) {
-			this.v = v;
-			this.txt = txt;
-		}
-
-		@Override
-		public byte v() {
-			return v;
-		}
-
-		@Override
-		public String txt() {
-			return txt;
-		}
-	}
+	
 
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
