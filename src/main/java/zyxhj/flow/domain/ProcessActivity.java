@@ -82,49 +82,4 @@ public class ProcessActivity {
 
 	}
 
-	public static class Action {
-
-		/**
-		 * 支持的条件类型</br>
-		 * 1，判断是否提交了不同的资产</br>
-		 * 2，判断表单中的字段值</br>
-		 * 3，人为设定的选项</br>
-		 * 4，时间超时</br>
-		 */
-
-		public static final String TYPE_ACCEPT = "accept";// 同意，有多重rule case
-		public static final String TYPE_REJECT = "reject";// 驳回
-		public static final String TYPE_TERMINATE = "terminate";// 终结，废除
-		public static final String TYPE_TRANSFER = "transfer";// 转办
-		public static final String TYPE_CIRCULATION = "circulation";// 传阅
-
-		public String id;
-
-		public String type;
-
-		public String label;
-
-		/**
-		 * 规则引擎脚本 </br>
-		 * [ </br>
-		 * {exp:"expDefault",target:"activityId"}, </br>
-		 * {exp:(EXP...),target:"activityId"}, </br>
-		 * {exp:(EXP...),target:"activityId"}, </br>
-		 * ]</br>
-		 */
-		public JSONArray rules;
-
-		/**
-		 * 转办人信息</br>
-		 * TODO 目前不支持
-		 */
-		public JSONArray transfers;
-
-		/**
-		 * 传阅人信息</br>
-		 * TODO 目前不支持
-		 */
-		public JSONArray circulations;
-	}
-
 }

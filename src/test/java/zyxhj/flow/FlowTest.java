@@ -18,7 +18,6 @@ import zyxhj.core.domain.Tag;
 import zyxhj.flow.domain.Process;
 import zyxhj.flow.domain.ProcessAction;
 import zyxhj.flow.domain.ProcessActivity;
-import zyxhj.flow.domain.ProcessActivity.Action;
 import zyxhj.flow.domain.ProcessActivity.Receiver;
 import zyxhj.flow.domain.ProcessActivityGroup.SubActivity;
 import zyxhj.flow.domain.ProcessActivityGroup;
@@ -177,12 +176,12 @@ public class FlowTest {
 	@Test
 	public void testCreatAssetDescANDAction() throws Exception {
 
-		List<Action> actions = new ArrayList<ProcessActivity.Action>();
+		List<ProcessAction> actions = new ArrayList<ProcessAction>();
 
-		Action a = new Action();
-		a.id = IDUtils.getHexSimpleId();
+		ProcessAction a = new ProcessAction();
+		a.id = IDUtils.getSimpleId();
 		a.label = "测试提交";
-		a.type = Action.TYPE_ACCEPT;
+		a.type = ProcessAction.TYPE_ACCEPT;
 
 		JSONArray arr = new JSONArray();
 

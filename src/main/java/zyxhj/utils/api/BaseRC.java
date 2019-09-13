@@ -153,5 +153,7 @@ public interface BaseRC {
 	static final RC ACC_TASK_LIST = new RC("ecm-0026", "请勿重复领取任务");
 
 	static final RC CONTENT_BY_ERROR = new RC("ecm-0027", "您已购买,请勿重复购买");
+	
+	static final RC STOCK_BY_ERROR = new RC("ecm-0028", "此商品库存不足");
 
 }
