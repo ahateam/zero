@@ -7,8 +7,8 @@ import zyxhj.utils.data.rds.RDSAnnID;
 /**
  * 表格可视化样式
  */
-@RDSAnnEntity(alias = "tb_table_virtual")
-public class TableVirtual {
+@RDSAnnEntity(alias = "tb_table_view")
+public class TableView {
 
 	/**
 	 * 表ID

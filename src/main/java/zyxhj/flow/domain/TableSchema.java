@@ -33,7 +33,7 @@ public class TableSchema {
 	/**
 	 * 数据列
 	 */
-	@RDSAnnField(column = RDSAnnField.JSON)
+	@RDSAnnField(column = RDSAnnField.TEXT)
 	public JSONArray columns;
 
 	/**
@@ -67,6 +67,7 @@ public class TableSchema {
 		public static final String DATA_TYPE_TIME = "time";
 		public static final String DATA_TYPE_MONEY = "money";
 		public static final String DATA_TYPE_BOOL = "bool";
+		public static final String DATA_TYPE_SUBTABLE = "subtable";
 
 		public String name;// 同一个TableSchema中，不同列的name应该不同（name用于从map中取出对应column）
 		public String alias;// 显示别名

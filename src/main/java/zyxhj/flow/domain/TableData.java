@@ -29,5 +29,24 @@ public class TableData {
 	 */
 	@RDSAnnField(column = RDSAnnField.JSON)
 	public JSONObject data;
+	
+	
+	/**
+	 * 批次（任务）编号
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public String batchId;
+
+	/**
+	 * 批次（任务）数据版本号
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String batchVer;
+
+	/**
+	 * 用户编号
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long userId;
 
 }

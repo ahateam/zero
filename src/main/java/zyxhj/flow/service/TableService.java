@@ -24,7 +24,7 @@ import zyxhj.flow.domain.TableData;
 import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.domain.TableSchema.Column;
-import zyxhj.flow.domain.TableVirtual;
+import zyxhj.flow.domain.TableView;
 import zyxhj.flow.repository.TableDataRepository;
 import zyxhj.flow.repository.TableQueryRepository;
 import zyxhj.flow.repository.TableSchemaRepository;
@@ -456,7 +456,7 @@ public class TableService extends Controller {
 			@P(t = " 可视化定义（具体前端定）") String virtual//
 	) throws ServerException, SQLException {
 
-		TableVirtual tv = new TableVirtual();
+		TableView tv = new TableView();
 		tv.tableSchemaId = tableSchemaId;
 		tv.id = IDUtils.getSimpleId();
 		tv.virtual = virtual;
@@ -477,7 +477,7 @@ public class TableService extends Controller {
 			des = "通过表结构编号（tableSchemaId）查询表格可视化样式数据", //
 			ret = "List<TableVirtual>"//
 	)
-	public List<TableVirtual> getTableVirtualList(@P(t = "表结构编号") Long tableSchemaId, //
+	public List<TableView> getTableVirtualList(@P(t = "表结构编号") Long tableSchemaId, //
 			Integer count, //
 			Integer offset//
 	) throws Exception {
@@ -498,7 +498,7 @@ public class TableService extends Controller {
 			des = " 编辑表可视化样式数据(TableVirtual)", ret = "state -- int")
 	public int editTableVirtual(@P(t = "表结构编号") Long tableSchemaId, @P(t = "表可视化样式编号") Long id,
 			@P(t = "表可视化样式数据") String virtual) throws Exception {
-		TableVirtual tv = new TableVirtual();
+		TableView tv = new TableView();
 		tv.virtual = virtual;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
