@@ -21,10 +21,12 @@ import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.domain.Tag;
 import zyxhj.flow.domain.TableData;
+import zyxhj.flow.domain.TableDataBatch;
 import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.domain.TableSchema.Column;
 import zyxhj.flow.domain.TableView;
+import zyxhj.flow.repository.TableDataBatchRepository;
 import zyxhj.flow.repository.TableDataRepository;
 import zyxhj.flow.repository.TableQueryRepository;
 import zyxhj.flow.repository.TableSchemaRepository;
@@ -47,6 +49,7 @@ public class TableService extends Controller {
 	private TableDataRepository tableDataRepository;
 	private TableQueryRepository tableQueryRepository;
 	private TableVirtualRepository tableVirtualRepository;
+	private TableDataBatchRepository tableDataBatchRepository;
 	private ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
 
 	public static void main(String[] args) throws Exception {
@@ -68,6 +71,7 @@ public class TableService extends Controller {
 			tableDataRepository = Singleton.ins(TableDataRepository.class);
 			tableQueryRepository = Singleton.ins(TableQueryRepository.class);
 			tableVirtualRepository = Singleton.ins(TableVirtualRepository.class);
+			tableDataBatchRepository = Singleton.ins(TableDataBatchRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -523,4 +527,101 @@ public class TableService extends Controller {
 		}
 
 	}
+
+	/////////////////////////////////////////////
+	//// TableDataBatch
+	/////////////////////////////////////////////
+
+	/**
+	 * 创建数据导入批次（任务）
+	 * 
+	 */
+	public TableDataBatch createTableDataBatch(//
+			Long userId,//
+			String batchVer,//
+			JSONArray data//
+			) throws Exception {
+		TableDataBatch tdb = new TableDataBatch();
+		tdb.batchId = IDUtils.getSimpleId();
+		tdb.batchVer = batchVer;
+		tdb.userId = userId;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			tableDataBatchRepository.insert(conn, tdb);
+		}
+		return tdb;
+	}
+
+	/**
+	 * 导入数据
+	 * 确实数据导入功能，并对应存入data（JSONArray）中
+	 */
+	public JSONObject improtData(//
+			Long batchId,//
+			Long tableSchemaId,//
+			Long userId,//
+			String batchVer,//
+			JSONArray data//
+			) throws Exception {
+		int count = 0;
+		TableDataBatch tdb = new TableDataBatch();
+		tdb.data = data;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			for (int i = 0; i < data.size(); i++) {
+				insertTableData(tableSchemaId, data.getJSONObject(i),userId,batchId);
+				count++;
+			}
+			tableDataBatchRepository.update(conn, EXP.INS().key("batch_id", batchId), tdb, true);
+		}
+		JSONObject ret = new JSONObject();
+		ret.put("size", data.size());
+		ret.put("succ", count);
+		return ret;
+	}
+
+	/**
+	 * 添加数据到tableData表中（新建方法）
+	 */
+	public TableData insertTableData(//
+			@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "运算表数据") JSONObject data,//
+			Long userId,
+			Long batchId
+	) throws Exception {
+
+		TableData td = new TableData();
+		td.tableSchemaId = tableSchemaId;
+		td.id = IDUtils.getSimpleId();
+		td.data = data;
+		td.userId =userId;
+		td.batchId = batchId;
+
+		// 取出计算列，进行计算
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			TableSchema ts = tableSchemaRepository.get(conn, EXP.INS().key("id", tableSchemaId));
+
+			if (ts == null || ts.columns == null || ts.columns.size() <= 0) {
+				// 表结构不存在，抛异常
+				throw new ServerException(BaseRC.FLOW_FORM_TABLE_SCHEMA_NOT_FOUND);
+			} else {
+
+				for (int i = 0; i < ts.columns.size(); i++) {
+					JSONObject jo = ts.columns.getJSONObject(i);
+					String key = jo.keySet().iterator().next();
+
+					Column c = jo.toJavaObject(Column.class);
+					if (c.columnType.equals(TableSchema.Column.COLUMN_TYPE_COMPUTE)) {
+						// 计算列,开始计算
+						System.out.println("开始计算");
+						Object ret = compute(c.computeFormula, data);
+						System.out.println(JSON.toJSONString(ret));
+						td.data.put(key, ret);
+					}
+				}
+				tableDataRepository.insert(conn, td);
+				return td;
+			}
+		}
+	}
+	
+	
 }

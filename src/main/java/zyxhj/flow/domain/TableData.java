@@ -14,12 +14,15 @@ import zyxhj.utils.data.rds.RDSAnnID;
 public class TableData {
 
 	/**
-	 * 表ID
+	 * 表结构ID
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long tableSchemaId;
 
+	/**
+	 * 表数据编号
+	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long id;
@@ -30,13 +33,12 @@ public class TableData {
 	@RDSAnnField(column = RDSAnnField.JSON)
 	public JSONObject data;
 	
-	
 	/**
 	 * 批次（任务）编号
 	 */
 	@RDSAnnField(column = RDSAnnField.ID)
-	public String batchId;
-
+	public Long batchId;
+	
 	/**
 	 * 批次（任务）数据版本号
 	 */
