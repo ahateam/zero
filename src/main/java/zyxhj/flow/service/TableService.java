@@ -594,6 +594,7 @@ public class TableService extends Controller {
 		td.data = data;
 		td.userId =userId;
 		td.batchId = batchId;
+		td.errorData = false;
 
 		// 取出计算列，进行计算
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -622,6 +623,39 @@ public class TableService extends Controller {
 			}
 		}
 	}
+	
+	/**
+	 * 标记错误数据
+	 */
+	public int setErrorData(//
+			Long dataId,//
+			Long tableSchemaId//
+			) throws Exception {
+		TableData td = new TableData();
+		td.errorData = true;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableDataRepository.update(conn, EXP.INS().key("id", dataId).andKey("table_schema_id", tableSchemaId), td, true);
+		}
+	}
+	
+	/**
+	 * 将错误数据驳回到上传者
+	 */
+	public void rejectErrorData(//
+			Long tableSchemaId//
+			) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			//得到表结构编号得到所有错误数据所在批次（任务）编号
+			List<Long> batchIdList = tableDataRepository.getErrorDataBatch(conn,tableSchemaId);
+			
+			
+			
+			
+			
+		}
+		
+	}
+	
 	
 	
 }

@@ -40,7 +40,7 @@ public class TableData {
 	public Long batchId;
 	
 	/**
-	 * 批次（任务）数据版本号
+	 * 批次（任务）数据版本号（数据错误时只替换错误数据就保留，数据全部替换就不用版本号）
 	 */
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String batchVer;
@@ -50,5 +50,11 @@ public class TableData {
 	 */
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long userId;
-
+	
+	/**
+	 * 错误数据标识
+	 */
+	@RDSAnnField(column = RDSAnnField.BOOLEAN)
+	public Boolean errorData;
+	
 }
