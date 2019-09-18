@@ -20,13 +20,15 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.domain.Tag;
-import zyxhj.flow.domain.TableData;
+import zyxhj.flow.domain.TableBatch;
 import zyxhj.flow.domain.TableBatchData;
+import zyxhj.flow.domain.TableData;
 import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.domain.TableSchema.Column;
 import zyxhj.flow.domain.TableView;
-import zyxhj.flow.repository.TableDataBatchRepository;
+import zyxhj.flow.repository.TableBatchDataRepository;
+import zyxhj.flow.repository.TableBatchRepository;
 import zyxhj.flow.repository.TableDataRepository;
 import zyxhj.flow.repository.TableQueryRepository;
 import zyxhj.flow.repository.TableSchemaRepository;
@@ -49,7 +51,8 @@ public class TableService extends Controller {
 	private TableDataRepository tableDataRepository;
 	private TableQueryRepository tableQueryRepository;
 	private TableVirtualRepository tableVirtualRepository;
-	private TableDataBatchRepository tableDataBatchRepository;
+	private TableBatchDataRepository tableBatchDataRepository;
+	private TableBatchRepository tableBatchRepository;
 	private ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
 
 	public static void main(String[] args) throws Exception {
@@ -71,7 +74,8 @@ public class TableService extends Controller {
 			tableDataRepository = Singleton.ins(TableDataRepository.class);
 			tableQueryRepository = Singleton.ins(TableQueryRepository.class);
 			tableVirtualRepository = Singleton.ins(TableVirtualRepository.class);
-			tableDataBatchRepository = Singleton.ins(TableDataBatchRepository.class);
+			tableBatchRepository = Singleton.ins(TableBatchRepository.class);
+			tableBatchDataRepository = Singleton.ins(TableBatchDataRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -533,59 +537,75 @@ public class TableService extends Controller {
 	/////////////////////////////////////////////
 
 	/**
-	 * 创建数据导入批次（任务）
+	 * 创建批次（任务）
 	 * 
 	 */
-	public TableBatchData createTableDataBatch(//
+	public TableBatch createTableBatch(//
 			Long userId,//
-			String batchVer,//
+			String batchName,//
 			JSONArray data//
 			) throws Exception {
-		TableBatchData tdb = new TableBatchData();
-		tdb.batchId = IDUtils.getSimpleId();
-		tdb.batchVer = batchVer;
-		tdb.userId = userId;
+		TableBatch tb = new TableBatch();
+		tb.batchId = IDUtils.getSimpleId();
+		tb.name = batchName;
+		tb.userId = userId;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			tableDataBatchRepository.insert(conn, tdb);
+			tableBatchRepository.insert(conn, tb);
 		}
-		return tdb;
+		return tb;
 	}
 
 	/**
 	 * 导入数据
 	 * 确实数据导入功能，并对应存入data（JSONArray）中
 	 */
-	public JSONObject improtData(//
+	public void improtBatchData(//
 			Long batchId,//
 			Long tableSchemaId,//
 			Long userId,//
 			String batchVer,//
-			JSONArray data//
+			JSONObject data,//
+			String remark//
 			) throws Exception {
-		int count = 0;
-		TableBatchData tdb = new TableBatchData();
-		tdb.data = data;
+		TableBatchData batchData = new TableBatchData();
+		batchData.data = data;
+		batchData.batchId = batchId;
+		batchData.tableSchemaId = tableSchemaId;
+		batchData.batchVer = batchVer;
+		batchData.userId = userId;
+		batchData.remark = remark;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			for (int i = 0; i < data.size(); i++) {
-				insertTableData(tableSchemaId, data.getJSONObject(i),userId,batchId);
-				count++;
-			}
-			tableDataBatchRepository.update(conn, EXP.INS().key("batch_id", batchId), tdb, true);
+			tableBatchDataRepository.insert(conn, batchData);;
 		}
-		JSONObject ret = new JSONObject();
-		ret.put("size", data.size());
-		ret.put("succ", count);
-		return ret;
 	}
 
 	/**
-	 * 添加数据到tableData表中（新建方法）
+	 * 修改错误数据
+	 */
+	public int editBatchData(//
+			Long batchId,//
+			Integer batchDataId,//
+			String batchVer,//
+			JSONObject data//
+			) throws Exception {
+		TableBatchData batchData = new TableBatchData();
+		batchData.batchVer = batchVer;
+		batchData.data = data;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableBatchDataRepository.update(conn, EXP.INS().key("batch_id", batchId).andKey("data_id", batchDataId), batchData , true);
+		}
+	}
+	
+	
+	/**
+	 * 添加batchData数据到tableData表中（新建方法）
 	 */
 	public TableData insertTableData(//
 			@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "运算表数据") JSONObject data,//
-			Long userId,
-			Long batchId
+			@P(t = "上传者编号") Long userId,
+			@P(t = "批次数据编号") Long batchDataId,
+			@P(t = "数据状态说明") String desc//
 	) throws Exception {
 
 		TableData td = new TableData();
@@ -593,8 +613,9 @@ public class TableService extends Controller {
 		td.id = IDUtils.getSimpleId();
 		td.data = data;
 		td.userId =userId;
-		td.batchId = batchId;
-		td.errorStatus = false;
+		td.batchDataId = batchDataId;
+		td.errorStatus = TableData.ERROR_STATUS_CORRECT;
+		td.errorDesc = desc;
 
 		// 取出计算列，进行计算
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -632,30 +653,65 @@ public class TableService extends Controller {
 			Long tableSchemaId//
 			) throws Exception {
 		TableData td = new TableData();
-		td.errorStatus = true;
+		td.errorStatus = TableData.ERROR_STATUS_WRONG;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableDataRepository.update(conn, EXP.INS().key("id", dataId).andKey("table_schema_id", tableSchemaId), td, true);
 		}
 	}
-	
+	/**
+	 * 标记异常数据
+	 */
+	public int setAbnormalData(//
+			Long dataId,//
+			Long tableSchemaId//
+			) throws Exception {
+		TableData td = new TableData();
+		td.errorStatus = TableData.ERROR_STATUS_ABNORMAL;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableDataRepository.update(conn, EXP.INS().key("id", dataId).andKey("table_schema_id", tableSchemaId), td, true);
+		}
+	}
 	/**
 	 * 将错误数据驳回到上传者
 	 */
-	public void rejectErrorData(//
+	public JSONArray getErrorDataByBatch(//
 			Long tableSchemaId//
 			) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			//得到表结构编号得到所有错误数据所在批次（任务）编号
-			List<Long> batchIdList = tableDataRepository.getErrorDataBatch(conn,tableSchemaId);
+			//查找正式表TableData中的错误数据
+			List<Long> batchDataIds = tableDataRepository.getErrorBatchDataIds(conn,tableSchemaId);
 			
+			//通過batchDataId得到所有错误数据所在批次（任务）编号
+			List<Long> batchIdList = tableBatchDataRepository.getErrorDataBatch(conn,tableSchemaId,batchDataIds);
+			//得到任務批次列表
+			List<TableBatch> tbList = tableBatchRepository.getList(conn, EXP.IN("batch_id", batchIdList), null, null);
+			 
+			//存放未找到批次的数据
+			JSONArray noBatch = new JSONArray();
 			
-			
-			
-			
+			//通过批次编号得到各个批次的错误数据
+			for(Long batchId : batchIdList) {
+				Boolean c = false;
+				for(TableBatch tdb: tbList) {
+					if(batchId == tdb.batchId) {
+						//获取到该批次的错误数据
+						List<TableBatchData> errorDataList = tableBatchDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId).andKey("batch_id",batchId).and(EXP.IN("data_id", batchDataIds)),null , null);
+						c = true;
+						//驳回该批次的错误数据到上传者
+						//TODO 暂未实现
+						break;
+					}
+				}
+				//判断是否找到批次
+				if(c) {
+					continue;
+				}else {
+					List<TableBatchData> noBatchErrorDataList = tableBatchDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId).andKey("batch_id",batchId).and(EXP.IN("data_id", batchDataIds)),null , null);
+					noBatch.add(noBatchErrorDataList);
+				}
+			}
+			return noBatch;
 		}
-		
 	}
-	
-	
 	
 }

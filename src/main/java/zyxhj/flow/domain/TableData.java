@@ -57,4 +57,12 @@ public class TableData {
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String errorDesc;
 
+
+	//正确CORRECT
+	public static Byte ERROR_STATUS_CORRECT = 0;
+	//错误WRONG
+	public static Byte ERROR_STATUS_WRONG = 1;
+	//异常abnormal
+	public static Byte ERROR_STATUS_ABNORMAL = 2;
+	
 }

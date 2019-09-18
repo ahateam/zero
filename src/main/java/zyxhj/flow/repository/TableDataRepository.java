@@ -26,23 +26,23 @@ public class TableDataRepository extends RDSRepository<TableData> {
 
 		return this.getList(conn, sb.toString(), Arrays.asList(tableSchemaId), count, offset);
 	}
-
-	public List<Long> getErrorDataBatch(DruidPooledConnection conn, Long tableSchemaId) throws Exception {
-		String sql = "select batch_id from tb_table_data where table_schema_id = "+tableSchemaId+" and error_data = true  GROUP BY batch_id";
+	public List<Long> getErrorBatchDataIds(DruidPooledConnection conn, Long tableSchemaId) throws Exception {
+		String sql = "select batch_data_id from tb_table_data where table_schema_id = "+tableSchemaId+" and error_data = 1  GROUP BY batch_data_id";
 		List<Object[]> idList = this.sqlGetObjectsList(conn, sql, null, null, null);
-		List<Long> batchIdList = new ArrayList<Long>();
+		
+		List<Long> batchDataIdList = new ArrayList<Long>();
 		for(int i = 0; i < idList.size(); i++) {
 			Object[] s = idList.get(i);
+			
 			for(int j = 0; j < s.length; j++) {
 				if(s[j]!=null) {
 					String is = s[j].toString();
 					System.out.println(is);
-				}else {
-					System.out.println("null");
+					batchDataIdList.add(new Long(s[j].toString()));
 				}
 			}
 		}
-		return null;
+		return batchDataIdList;
 	}
 
 }

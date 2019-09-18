@@ -17,6 +17,7 @@ public class TableBatch {
 	/**
 	 * 批次（任务）编号
 	 */
+	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long batchId;
 
