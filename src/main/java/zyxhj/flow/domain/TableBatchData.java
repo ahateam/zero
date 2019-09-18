@@ -1,17 +1,14 @@
 package zyxhj.flow.domain;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
 import zyxhj.utils.data.rds.RDSAnnID;
 
-/**
- * 表数据
- *
- */
-@RDSAnnEntity(alias = "tb_table_data")
-public class TableData {
+@RDSAnnEntity(alias = "tb_table_batch_data")
+public class TableBatchData {
 
 	/**
 	 * 表结构ID
@@ -21,23 +18,22 @@ public class TableData {
 	public Long tableSchemaId;
 
 	/**
-	 * 表数据编号
-	 */
-	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.ID)
-	public Long id;
-
-	/**
-	 * 表数据
-	 */
-	@RDSAnnField(column = RDSAnnField.JSON)
-	public JSONObject data;
-
-	/**
-	 * 批次（任务）数据编号
+	 * 批次（任务）编号
 	 */
 	@RDSAnnField(column = RDSAnnField.ID)
-	public Long batchDataId;
+	public Long batchId;
+
+	/**
+	 * 数据编号（行号）
+	 */
+	@RDSAnnField(column = RDSAnnField.INTEGER)
+	public Integer dataId;
+
+	/**
+	 * 批次（任务）数据版本号
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String batchVer;
 
 	/**
 	 * 用户编号
@@ -46,15 +42,15 @@ public class TableData {
 	public Long userId;
 
 	/**
-	 * 错误数据标识
+	 * 表数据
 	 */
-	@RDSAnnField(column = RDSAnnField.BYTE)
-	public Byte errorStatus;
+	@RDSAnnField(column = RDSAnnField.JSON)
+	public JSONObject data;
 
 	/**
-	 * 错误数据标识
+	 * 备注
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public String errorDesc;
+	public String remark;
 
 }

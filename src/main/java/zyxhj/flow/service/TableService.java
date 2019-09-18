@@ -21,7 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.domain.Tag;
 import zyxhj.flow.domain.TableData;
-import zyxhj.flow.domain.TableDataBatch;
+import zyxhj.flow.domain.TableBatchData;
 import zyxhj.flow.domain.TableQuery;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.domain.TableSchema.Column;
@@ -536,12 +536,12 @@ public class TableService extends Controller {
 	 * 创建数据导入批次（任务）
 	 * 
 	 */
-	public TableDataBatch createTableDataBatch(//
+	public TableBatchData createTableDataBatch(//
 			Long userId,//
 			String batchVer,//
 			JSONArray data//
 			) throws Exception {
-		TableDataBatch tdb = new TableDataBatch();
+		TableBatchData tdb = new TableBatchData();
 		tdb.batchId = IDUtils.getSimpleId();
 		tdb.batchVer = batchVer;
 		tdb.userId = userId;
@@ -563,7 +563,7 @@ public class TableService extends Controller {
 			JSONArray data//
 			) throws Exception {
 		int count = 0;
-		TableDataBatch tdb = new TableDataBatch();
+		TableBatchData tdb = new TableBatchData();
 		tdb.data = data;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			for (int i = 0; i < data.size(); i++) {
@@ -594,7 +594,7 @@ public class TableService extends Controller {
 		td.data = data;
 		td.userId =userId;
 		td.batchId = batchId;
-		td.errorData = false;
+		td.errorStatus = false;
 
 		// 取出计算列，进行计算
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -632,7 +632,7 @@ public class TableService extends Controller {
 			Long tableSchemaId//
 			) throws Exception {
 		TableData td = new TableData();
-		td.errorData = true;
+		td.errorStatus = true;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableDataRepository.update(conn, EXP.INS().key("id", dataId).andKey("table_schema_id", tableSchemaId), td, true);
 		}

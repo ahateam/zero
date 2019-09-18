@@ -1,12 +1,18 @@
 package zyxhj.flow.domain;
 
-import com.alibaba.fastjson.JSONArray;
-
 import zyxhj.utils.data.rds.RDSAnnEntity;
 import zyxhj.utils.data.rds.RDSAnnField;
+import zyxhj.utils.data.rds.RDSAnnID;
 
-@RDSAnnEntity(alias = "tb_table_data_batch")
-public class TableDataBatch {
+@RDSAnnEntity(alias = "tb_table_batch")
+public class TableBatch {
+
+	/**
+	 * 表结构ID
+	 */
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long tableSchemaId;
 
 	/**
 	 * 批次（任务）编号
@@ -15,22 +21,15 @@ public class TableDataBatch {
 	public Long batchId;
 
 	/**
-	 * 批次（任务）数据版本号
+	 * 批次（任务）名称
 	 */
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
-	public String batchVer;
+	public String name;
 
 	/**
 	 * 用户编号
 	 */
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long userId;
-	
-	/**
-	 * 当前批次（任务）运算表数据
-	 */
-	@RDSAnnField(column = RDSAnnField.JSON)
-	public JSONArray data;
-	
-	
+
 }
