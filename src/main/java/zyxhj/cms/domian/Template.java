@@ -14,18 +14,16 @@ import zyxhj.utils.data.rds.RDSAnnID;
 public class Template {
 	
 	
-	@AnnDicField(alias = "视频")
-	public static final Byte TYPE_MAKETASK = 0;
 	@AnnDicField(alias = "图文")
-	public static final Byte TYPE_SHARETASK = 1;
+	public static final Byte TYPE_H5 = 0;
+	@AnnDicField(alias = "视频")
+	public static final Byte TYPE_VIDEO = 1;
+	@AnnDicField(alias = "GIF表情")
+	public static final Byte TYPE_GIF = 2;
 	@AnnDicField(alias = "音频")
-	public static final Byte TYPE_NEARBYTASK = 2;
-	@AnnDicField(alias = "万众瞩目")
-	public static final Byte TYPE_GROUPPRAISE= 3;
-	@AnnDicField(alias = "本地")
-	public static final Byte TYPE_LOCAL = 4;
-	@AnnDicField(alias = "分享")
-	public static final Byte TYPE_SHARE = 5;
+	public static final Byte TYPE_AUDIO = 3;
+	@AnnDicField(alias = "描述")
+	public static final Byte TYPE_DESC = 4;
 
 	@AnnDicField(alias = "打开")
 	public static final Byte OPEN = 0;
@@ -55,8 +53,11 @@ public class Template {
 
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte type;
-
+	
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte status;
+	
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public String text;
 
 }

@@ -167,7 +167,7 @@ public class ContentService extends Controller{
 	throws Exception {
 		EXP exp = EXP.INS(false).key("module_id", module).andKey("type", type).andKey("status", status).andKey("power", power).andKey("up_user_id", upUserId).andKey("up_channel_id", upChannelId);
 		if(tags !=null && tags.size()>0) {
-			exp = exp.and(EXP.JSON_CONTAINS_JSONOBJECT(tags, "tags"));
+			exp.and(EXP.JSON_CONTAINS_JSONOBJECT(tags, "tags"));
 		}
 		try (DruidPooledConnection conn = ds.getConnection()) {			
 			List<Content> list = contentRepository.getList(conn,exp, count, offset);
@@ -233,13 +233,13 @@ public class ContentService extends Controller{
 				jo1.put("active", true);
 				jo1.put("url", "/pages/index/addContent/addContent?type=1");
 				json.add(jo1);
-				JSONObject jo2 = new JSONObject();
-				jo2.put("iconPath", "/static/image/video.png");
-				jo2.put("selectedIconPath", "/static/image/video.png");
-				jo2.put("text", "发视频");
-				jo2.put("active", false);
-				jo2.put("url", "/pages/index/addContent/addContent?type=0");
-				json.add(jo2);
+//				JSONObject jo2 = new JSONObject();
+//				jo2.put("iconPath", "/static/image/video.png");
+//				jo2.put("selectedIconPath", "/static/image/video.png");
+//				jo2.put("text", "发视频");
+//				jo2.put("active", false);
+//				jo2.put("url", "/pages/index/addContent/addContent?type=0");
+//				json.add(jo2);
 				return APIResponse.getNewSuccessResp(json);
 			}
 		}
