@@ -541,6 +541,7 @@ public class FlowService extends Controller {
 		pa.id = IDUtils.getSimpleId();
 		pa.type = type;
 		pa.rules = rules;
+		pa.ext = 0;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			processActionRepository.insert(conn, pa);

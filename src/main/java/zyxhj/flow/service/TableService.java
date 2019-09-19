@@ -540,7 +540,7 @@ public class TableService extends Controller {
 	 * 创建批次（任务）
 	 * 
 	 */
-	public TableBatch createTableBatch(//
+	public TableBatch createBatch(//
 			Long userId,//
 			String batchName,//
 			JSONArray data//
@@ -598,54 +598,6 @@ public class TableService extends Controller {
 	
 	
 	/**
-	 * 添加batchData数据到tableData表中（新建方法）
-	 */
-	public TableData insertTableData(//
-			@P(t = "表结构编号") Long tableSchemaId, //
-			@P(t = "运算表数据") JSONObject data,//
-			@P(t = "上传者编号") Long userId,
-			@P(t = "批次数据编号") Long batchDataId,
-			@P(t = "数据状态说明") String desc//
-	) throws Exception {
-
-		TableData td = new TableData();
-		td.tableSchemaId = tableSchemaId;
-		td.id = IDUtils.getSimpleId();
-		td.data = data;
-		td.userId =userId;
-		td.batchDataId = batchDataId;
-		td.errorStatus = TableData.ERROR_STATUS_CORRECT;
-		td.errorDesc = desc;
-
-		// 取出计算列，进行计算
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			TableSchema ts = tableSchemaRepository.get(conn, EXP.INS().key("id", tableSchemaId));
-
-			if (ts == null || ts.columns == null || ts.columns.size() <= 0) {
-				// 表结构不存在，抛异常
-				throw new ServerException(BaseRC.FLOW_FORM_TABLE_SCHEMA_NOT_FOUND);
-			} else {
-
-				for (int i = 0; i < ts.columns.size(); i++) {
-					JSONObject jo = ts.columns.getJSONObject(i);
-					String key = jo.keySet().iterator().next();
-
-					Column c = jo.toJavaObject(Column.class);
-					if (c.columnType.equals(TableSchema.Column.COLUMN_TYPE_COMPUTE)) {
-						// 计算列,开始计算
-						System.out.println("开始计算");
-						Object ret = compute(c.computeFormula, data);
-						System.out.println(JSON.toJSONString(ret));
-						td.data.put(key, ret);
-					}
-				}
-				tableDataRepository.insert(conn, td);
-				return td;
-			}
-		}
-	}
-	
-	/**
 	 * 标记错误数据
 	 */
 	public int setErrorData(//
@@ -657,6 +609,13 @@ public class TableService extends Controller {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableDataRepository.update(conn, EXP.INS().key("id", dataId).andKey("table_schema_id", tableSchemaId), td, true);
 		}
+	}
+	/**
+	 * 标记批次错误数据
+	 */
+	public int setErrorBatchData() throws Exception {
+		
+		 return 0;
 	}
 	/**
 	 * 标记异常数据
@@ -671,10 +630,20 @@ public class TableService extends Controller {
 			return tableDataRepository.update(conn, EXP.INS().key("id", dataId).andKey("table_schema_id", tableSchemaId), td, true);
 		}
 	}
+	
 	/**
-	 * 将错误数据驳回到上传者
+	 * 标记批次异常数据
 	 */
-	public JSONArray getErrorDataByBatch(//
+	public int setAbnormalBatchData() throws Exception {
+		
+		 return 0;
+	}
+	
+	
+	/**
+	 * 驳回错误批次数据
+	 */
+	public JSONArray rejectErrorBatchData(//
 			Long tableSchemaId//
 			) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -713,5 +682,85 @@ public class TableService extends Controller {
 			return noBatch;
 		}
 	}
+	
+	/**
+	 * 上传数据到批次数据表
+	 */
+	public void importDataIntoBatchData(//
+			Long batchId//
+			) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			
+			//获取批次数据，最新版本
+			List<TableBatchData> batchDataList = tableBatchDataRepository.getList(conn, EXP.INS().key("batch_id", batchId), null, null);
+			int size = batchDataList.size()/100;
+			if(batchDataList.size()%100>0) {
+				size++;
+			}
+			for(int i = 1; i < size; i++ ) {
+				for(int j = 1; j < 10; j++ ) {
+					
+				}
+			}
+			
+			List<TableData> tdlist = new ArrayList<TableData>();
+		}
+	}
+	/**
+	 * 获取批次数据
+	 */
+	public List<TableBatchData> getBatchDataByBatchId() throws Exception{
+		
+		
+		return null;
+	}
+	
+	/**
+	 * 获取错误批次数据
+	 */
+	
+	public List<TableBatchData> getErrorBatchData() throws Exception{
+		
+		return null;
+	}
+	/**
+	 * 修改错误批次数据
+	 */
+	public int editErrorBatchData() throws Exception {
+		
+		return 0;
+	}
+	
+	/**
+	 * 将错误数据导入到Excel表中
+	 */
+	public int importErrorDataIntoExcel() {
+		
+		return 0;
+	}
+	/**
+	 * 将修改后的错误数据导入到批次表
+	 */
+	public int importErrorDataIntoBatchData() throws Exception {
+		
+		return 0;
+	}
+	
+	/**
+	 * 上传批次数据到正式数据表
+	 */
+	public int BatchDataMoveTableData() throws Exception{
+		
+		return 0;
+	}
+	/**
+	 * 驳回正式数据表中的错误数据
+	 */
+	public int rejectErrorData()throws Exception{
+		
+		return 0;
+	}
+	
+	
 	
 }

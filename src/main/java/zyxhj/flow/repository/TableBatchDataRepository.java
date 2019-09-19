@@ -11,7 +11,7 @@ import zyxhj.utils.data.rds.RDSRepository;
 
 public class TableBatchDataRepository extends RDSRepository<TableBatchData> {
 
-	protected TableBatchDataRepository() {
+	public TableBatchDataRepository() {
 		super(TableBatchData.class);
 	}
 

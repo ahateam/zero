@@ -12,6 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -470,9 +471,23 @@ public class RDSRepositoryServiceTest {
 	}
 	@Test
 	public void intest() throws Exception {
-
-		EXP set = EXP.JSON_ARRAY_REMOVE("arrays", "$", 0);
-		EXP where = EXP.INS().key("id", 400992806774166L);
+		TestDomain1 t1 = new TestDomain1();
+		t1.id = 123456L;
+		t1.name = "123456";
+		TestDomain1 t2 = new TestDomain1();
+		t2.id = 1234545466L;
+		t2.name = "12345445456466";
+		List<TestDomain1> list = new ArrayList<TestDomain1>();
+		list.add(t1);
+		list.add(t2);
+		String str = JSON.toJSONString(list);
+		System.out.println(str);
+		JSONArray ja = JSON.parseArray(str);
+		System.out.println(ja.toJSONString());
+		
+		
+		EXP set = EXP.JSON_ARRAY_APPEND("arrays", ja, false);
+		EXP where = EXP.INS().key("id", 123456789);
 		testRepository.update(conn, set, where);
 		
 	}
