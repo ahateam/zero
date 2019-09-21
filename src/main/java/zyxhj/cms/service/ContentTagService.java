@@ -90,12 +90,15 @@ public class ContentTagService extends Controller{
 	)
 	public List<ContentTag> getContentTag(
 			@P(t = "模板编号") Long moduleId, 
-			@P(t = "分组") String group, 
+			@P(t = "分组") String group,
 			@P(t = "状态") Byte status,
 			Integer count,
 			Integer offset
 			) throws ServerException, SQLException {
 		try (DruidPooledConnection conn = ds.getConnection()) {
+			if(status ==null) {
+				status = ContentTag.STATUS_ENABLE;
+			}
 			return contentTagRepository.getList(conn, EXP.INS().key("module_id", moduleId).
 					andKey("con_group", group).andKey("status", status), count, offset);
 			

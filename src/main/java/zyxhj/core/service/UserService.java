@@ -227,8 +227,45 @@ public class UserService {
 			return user;
 		}
 	}
+	
+	// 其他方式登录：头条/百度/支付宝
+	public User otherLoginOpenId(DruidPooledConnection conn, String openId, String name, String ext,String loginInfo) throws Exception {
+		User user = null;
+		if("tt".equals(loginInfo)) {
+			user = userRepository.get(conn, EXP.INS().key("tt_open_id", openId));
+		}else if("baidu".equals(loginInfo)) {
+			user = userRepository.get(conn, EXP.INS().key("bd_open_id", openId));
+		}else if("alipay".equals(loginInfo)) {
+			user = userRepository.get(conn, EXP.INS().key("alipay_open_id", openId));
+		}
+		if (user == null) {
+			// 创建用户
+			return createUserByOther(conn, openId, name, ext,loginInfo);
+		} else {
+			// 用户登录
+			return user;
+		}
+	}
+	
+	//  其他创建头条/百度/支付宝用户
+	private User createUserByOther(DruidPooledConnection conn, String openId, String name, String ext,String loginInfo) throws Exception {
+		User u = new User();
+		u.id = IDUtils.getSimpleId();
+		u.name = name;
+		u.createDate = new Date();
+		u.ext = ext;
+		if("tt".equals(loginInfo)) {
+			u.ttOpenId = openId;
+		}else if("baidu".equals(loginInfo)) {
+			u.bdOpenId = openId;
+		}else if("alipay".equals(loginInfo)) {
+			u.alipayOpenId = openId;
+		}
+		userRepository.insert(conn, u);
+		return u;	
+	}
 
-	// 创建用户
+	// 创建微信用户
 	private User createUser(DruidPooledConnection conn, String wxOpenId, String name, String ext) throws Exception {
 		User u = new User();
 		u.id = IDUtils.getSimpleId();

@@ -33,7 +33,7 @@ import zyxhj.utils.data.ts.ColumnBuilder;
  * 
  * 表达式中的变量用{{}}包裹</br>
  */
-public class TEXP implements Cloneable {
+public class TEXP  {
 
 	/**
 	 * TermQuery，单值精确匹配</br>
