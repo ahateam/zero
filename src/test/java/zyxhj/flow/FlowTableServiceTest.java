@@ -23,6 +23,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.domain.Tag;
 import zyxhj.core.domain.TagGroup;
+import zyxhj.flow.domain.TableBatchData;
 import zyxhj.flow.domain.TableData;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.repository.TableSchemaRepository;
@@ -220,6 +221,155 @@ public class FlowTableServiceTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
+	
+	
+	
+	
+	/**
+	 * 数据导入
+	 */
+	private static Long tableSchemaId = 401655491082651L;
+	private static Long userId = 10010L;
+	private static Long batchId = 401656058367382L;
+	private static String batchVer1 = "TEST_1";
+	private static String batchVer2 = "TEST_2";
+	private static String batchVer3 = "TEST_3";
+	//创建批次
+	@Test
+	public void testcreateBatch() {
+		try {
+			tableService.createBatch(userId, "测试批次", tableSchemaId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//导入数据到批次数据表
+	@Test
+	public void testImprotDataIntoBatchData() {
+		try {
+			//导入数据
+			JSONObject data1 = JSON.parseObject("{\"name\":\"testName1\",\"sex\":\"人妖\"}");
+			JSONObject data2 = JSON.parseObject("{\"name\":\"testName2\",\"sex\":\"女\"}");
+			JSONObject data3 = JSON.parseObject("{\"name\":\"testName3\",\"sex\":\"女\"}");
+			JSONObject data4 = JSON.parseObject("{\"name\":\"testName4\",\"sex\":\"女\"}");
+			JSONObject data5 = JSON.parseObject("{\"name\":\"testName5\",\"sex\":\"男\"}");
+			JSONObject data6 = JSON.parseObject("{\"name\":\"testName6\",\"sex\":\"男\"}");
+			
+			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data1, "测试数据 ");
+			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data2, "测试数据 ");
+			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data3, "测试数据 ");
+			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data4, "测试数据 ");
+			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data5, "测试数据 ");
+			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data6, "测试数据 ");
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	//获取批次数据
+	@Test
+	public void testGetBatchDataByBatchId() {
+		try {
+			List<TableBatchData> tdbList = tableService.getBatchDataByBatchId(tableSchemaId, batchId);
+			for(TableBatchData t: tdbList) {
+				System.out.println(t.dataId +"\t"+t.data.toJSONString()+"\t"+t.batchVer+"\t"+t.errorStatus);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	//标记错误批次数据
+	@Test
+	public void testSetErrorBatchData() {
+		try {
+			tableService.setErrorBatchData(10000013, tableSchemaId,"");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//获取错误批次数据
+	@Test
+	public void testGetErrorBatchData() {
+		try {
+			List<TableBatchData> tdbList = tableService.getErrorBatchData(batchId, tableSchemaId);
+			for(TableBatchData t: tdbList) {
+				System.out.println(t.dataId +"\t"+t.data.toJSONString()+"\t"+t.batchVer+"\t"+t.errorStatus);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testEditErrorBatchData() {
+		try {
+
+			JSONObject data = JSON.parseObject("{\"sex\":\"001\",\"name\":\"testName1\"}");
+			tableService.editErrorBatchData(tableSchemaId, batchId, userId, 10000013, batchVer3, data, "测试修改错误数据");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	//批次数据导入正式表
+	@Test
+	public void testBatchDataMoveTableData() {
+		try {
+			tableService.BatchDataMoveTableData(tableSchemaId, batchId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//获取正式表数据
+	@Test
+	public void testGetTableDataBySchemaId() {
+		try {
+			List<TableData> tList = tableService.getTableDataBySchemaId(tableSchemaId, 100, 0);
+			for(TableData t:tList) {
+				System.out.println(t.id+"\t \t"+t.batchDataId+"\t \t"+t.data.toJSONString()+"\t \t"+t.errorStatus);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	//标记正式表错误数据
+	@Test
+	public void testSetErrorData() {
+		try {
+			int i = tableService.setErrorData(401656679036003L, tableSchemaId,"");
+			System.out.println(i);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	//驳回错误数据到批次数据表
+	@Test
+	public void testRejectErrorData() {
+		try {
+			tableService.rejectErrorData(tableSchemaId);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	//替换正式表中的错误数据
+	@Test
+	public void testReplaceDataIntoTableData() {
+		try {
+			tableService.replaceDataIntoTableData(tableSchemaId);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
 }

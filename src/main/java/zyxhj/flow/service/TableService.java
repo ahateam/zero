@@ -141,7 +141,8 @@ public class TableService extends Controller {
 			des = "创建表结构表TableSchema" //
 	)
 	@REQUIRE(role = { "orgAdmin" }, perm = { "tableSchema" })
-	public TableSchema createTableSchema(@P(t = "表名") String alias, //
+	public TableSchema createTableSchema(//
+			@P(t = "表名") String alias, //
 			@P(t = "表类型") Byte type, //
 			@P(t = "数据列") JSONArray columns, //
 			@P(t = "标签名称列表") JSONArray tags//
@@ -167,7 +168,8 @@ public class TableService extends Controller {
 			des = "修改表结构", //
 			ret = "state --- int" //
 	)
-	public int editTableSchema(@P(t = "表结构编号") Long id, //
+	public int editTableSchema(//
+			@P(t = "表结构编号") Long id, //
 			@P(t = "表名") String alias, //
 			@P(t = "数据列") JSONArray columns, //
 			@P(t = "标签名称列表") JSONArray tags//
@@ -191,7 +193,9 @@ public class TableService extends Controller {
 			path = "delTableSchema", //
 			des = "删除表结构" //
 	)
-	public void delTableSchema(@P(t = "表结构编号") Long id) throws Exception {
+	public void delTableSchema(//
+			@P(t = "表结构编号") Long id//
+	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			tableSchemaRepository.delete(conn, EXP.INS().key("id", id));
 		}
@@ -222,7 +226,9 @@ public class TableService extends Controller {
 			des = "根据表结构编号获取表结构", //
 			ret = "TableSchema" //
 	)
-	public TableSchema getTableSchemaById(@P(t = "表结构编号") Long id) throws Exception {
+	public TableSchema getTableSchemaById(//
+			@P(t = "表结构编号") Long id//
+	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableSchemaRepository.get(conn, EXP.INS().key("id", id));
 		}
@@ -287,9 +293,11 @@ public class TableService extends Controller {
 			path = "updateTableData", //
 			des = "修改表数据", //
 			ret = "state --- int")
-	public int updateTableData(@P(t = "表结构编号") Long tableSchemaId, //
+	public int updateTableData(//
+			@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "表数据编号") Long dataId, //
-			@P(t = "表数据") JSONObject data) throws Exception {
+			@P(t = "表数据") JSONObject data//
+	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			TableData td = tableDataRepository.get(conn,
 					EXP.INS().key("table_schema_id", tableSchemaId).andKey("id", dataId));
@@ -331,7 +339,8 @@ public class TableService extends Controller {
 			des = "删除表数据", //
 			ret = "state -- int"//
 	)
-	public int delTableData(@P(t = "表结构编号") Long tableSchemaId, //
+	public int delTableData(//
+			@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "表数据编号") Long dataId//
 	) throws Exception {
 
@@ -347,7 +356,8 @@ public class TableService extends Controller {
 			des = "获取表数据", //
 			ret = "List<TableData>"//
 	)
-	public List<TableData> getTableDatas(@P(t = "表结构编号") Long tableSchemaId, //
+	public List<TableData> getTableDatas(//
+			@P(t = "表结构编号") Long tableSchemaId, //
 			Integer count, //
 			Integer offset//
 	) throws Exception {
@@ -362,7 +372,8 @@ public class TableService extends Controller {
 			des = "获取表数据", //
 			ret = "TableData"//
 	)
-	public TableData getTableDatasById(@P(t = "表结构编号") Long tableDataId //
+	public TableData getTableDatasById(//
+			@P(t = "表结构编号") Long tableDataId //
 	) throws Exception {
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -376,7 +387,8 @@ public class TableService extends Controller {
 	@POSTAPI(path = "createTableQuery", //
 			des = "创建表查询" //
 	)
-	public void createTableQuery(@P(t = "表结构编号") Long tableSchemaId, //
+	public void createTableQuery(//
+			@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "查询语句") JSONObject queryFormula//
 	) throws Exception {
 		TableQuery tq = new TableQuery();
@@ -395,7 +407,8 @@ public class TableService extends Controller {
 			des = "通过表结构编号获取表查询", //
 			ret = "List<TableQuery>"//
 	)
-	public List<TableQuery> getTableQueries(@P(t = "表结构编号") Long tableSchemaId, //
+	public List<TableQuery> getTableQueries(//
+			@P(t = "表结构编号") Long tableSchemaId, //
 			Integer count, //
 			Integer offset//
 	) throws Exception {
@@ -411,7 +424,8 @@ public class TableService extends Controller {
 			des = "删除表查询", //
 			ret = "state --- int"//
 	)
-	public int delTableQuery(@P(t = "表结构编号") Long tableSchemaId, //
+	public int delTableQuery(//
+			@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "表查询编号") Long queryId//
 	) throws Exception {
 
@@ -429,7 +443,8 @@ public class TableService extends Controller {
 			des = "根据条件查询表数据", //
 			ret = "List<TableData>"//
 	)
-	public List<TableData> getTableDatasByQuery(@P(t = "表结构编号") Long tableSchemaId, //
+	public List<TableData> getTableDatasByQuery(//
+			@P(t = "表结构编号") Long tableSchemaId, //
 			@P(t = "表查询编号") Long queryId, //
 			Integer count, //
 			Integer offset//
@@ -460,7 +475,8 @@ public class TableService extends Controller {
 	@POSTAPI(path = "createTableVirtual", //
 			des = "创建表格可视化样式TableVirtual"//
 	)
-	public void createTableVirtual(@P(t = "表结构编号tableSchemaId") Long tableSchemaId, //
+	public void createTableVirtual(//
+			@P(t = "表结构编号tableSchemaId") Long tableSchemaId, //
 			@P(t = " 可视化定义（具体前端定）") String virtual//
 	) throws ServerException, SQLException {
 
@@ -485,7 +501,8 @@ public class TableService extends Controller {
 			des = "通过表结构编号（tableSchemaId）查询表格可视化样式数据", //
 			ret = "List<TableVirtual>"//
 	)
-	public List<TableView> getTableVirtualList(@P(t = "表结构编号") Long tableSchemaId, //
+	public List<TableView> getTableVirtualList(//
+			@P(t = "表结构编号") Long tableSchemaId, //
 			Integer count, //
 			Integer offset//
 	) throws Exception {
@@ -504,8 +521,10 @@ public class TableService extends Controller {
 	 */
 	@POSTAPI(path = "editTableVirtual", //
 			des = " 编辑表可视化样式数据(TableVirtual)", ret = "state -- int")
-	public int editTableVirtual(@P(t = "表结构编号") Long tableSchemaId, @P(t = "表可视化样式编号") Long id,
-			@P(t = "表可视化样式数据") String virtual) throws Exception {
+	public int editTableVirtual(//
+			@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "表可视化样式编号") Long id, @P(t = "表可视化样式数据") String virtual//
+	) throws Exception {
 		TableView tv = new TableView();
 		tv.virtual = virtual;
 
@@ -523,8 +542,11 @@ public class TableService extends Controller {
 	 * @throws ServerException
 	 */
 	@POSTAPI(path = "delTableVirtual", //
-			des = " 通过表结构编号与表可视化样式编号删除表可视化样式数据(TableVirtual)", ret = "state -- int")
-	public int delTableVirtual(@P(t = "表结构编号") Long tableSchemaId, @P(t = "表可视化样式编号") Long id//
+			des = " 通过表结构编号与表可视化样式编号删除表可视化样式数据(TableVirtual)", //
+			ret = "state -- int")
+	public int delTableVirtual(//
+			@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "表可视化样式编号") Long id//
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableVirtualRepository.delete(conn, EXP.INS().key("tableSchema_id", tableSchemaId).andKey("id", id));
@@ -541,12 +563,13 @@ public class TableService extends Controller {
 	 * 
 	 */
 	public TableBatch createBatch(//
-			Long userId,//
-			String batchName,//
-			JSONArray data//
-			) throws Exception {
+			Long userId, //
+			String batchName, //
+			Long tableSchemaId//
+	) throws Exception {
 		TableBatch tb = new TableBatch();
 		tb.batchId = IDUtils.getSimpleId();
+		tb.tableSchemaId = tableSchemaId;
 		tb.name = batchName;
 		tb.userId = userId;
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -555,18 +578,48 @@ public class TableService extends Controller {
 		return tb;
 	}
 
-	/**
-	 * 导入数据
-	 * 确实数据导入功能，并对应存入data（JSONArray）中
-	 */
-	public void improtBatchData(//
-			Long batchId,//
-			Long tableSchemaId,//
-			Long userId,//
-			String batchVer,//
-			JSONObject data,//
-			String remark//
+	public List<TableBatch> getBatchByTableSchemaId(//
+			@P(t = "	批次编号	") Long tableSchemaId, //
+			Integer count, //
+			Integer offset//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableBatchRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId), count, offset);
+		}
+	}
+
+	public TableBatch getBatchById(//
+			Long batchId//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableBatchRepository.get(conn, EXP.INS().key("id", batchId));
+		}
+	}
+	
+	public List<TableBatch> getALLBatch(//
+			Integer count, //
+			Integer offset//
 			) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableBatchRepository.getList(conn, null, count, offset);
+		}
+	}
+
+	/**
+	 * 导入数据 确实数据导入功能，并对应存入data（JSONArray）中
+	 */
+	@POSTAPI(//
+			path = "addBatchData", //
+			des = " 线上添加数据 	" //
+	)
+	public void addBatchData(//
+			@P(t = "批次编号") Long batchId, //
+			@P(t = "表结构编号") Long tableSchemaId, //
+			Long userId, //
+			String batchVer, //
+			JSONObject data, //
+			String remark//
+	) throws Exception {
 		TableBatchData batchData = new TableBatchData();
 		batchData.data = data;
 		batchData.batchId = batchId;
@@ -575,192 +628,407 @@ public class TableService extends Controller {
 		batchData.userId = userId;
 		batchData.remark = remark;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			tableBatchDataRepository.insert(conn, batchData);;
+			tableBatchDataRepository.insert(conn, batchData);
 		}
 	}
 
 	/**
-	 * 修改错误数据
+	 * Excel导入数据
 	 */
-	public int editBatchData(//
-			Long batchId,//
-			Integer batchDataId,//
-			String batchVer,//
-			JSONObject data//
-			) throws Exception {
-		TableBatchData batchData = new TableBatchData();
-		batchData.batchVer = batchVer;
-		batchData.data = data;
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableBatchDataRepository.update(conn, EXP.INS().key("batch_id", batchId).andKey("data_id", batchDataId), batchData , true);
-		}
+	public void improtBatchData() throws Exception {
+
 	}
-	
-	
+
 	/**
 	 * 标记错误数据
 	 */
+	@POSTAPI(//
+			path = "setErrorData", //
+			des = " 标记错误数据 	", //
+			ret = "	受影响行数	"//
+	)
 	public int setErrorData(//
-			Long dataId,//
-			Long tableSchemaId//
-			) throws Exception {
+			@P(t = "数据编号") Long dataId, //
+			@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "错误数据说明", r = false) String errorDesc//
+	) throws Exception {
 		TableData td = new TableData();
 		td.errorStatus = TableData.ERROR_STATUS_WRONG;
+		td.errorDesc = errorDesc;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableDataRepository.update(conn, EXP.INS().key("id", dataId).andKey("table_schema_id", tableSchemaId), td, true);
+			return tableDataRepository.update(conn,
+					EXP.INS().key("id", dataId).andKey("table_schema_id", tableSchemaId), td, true);
 		}
 	}
+
 	/**
 	 * 标记批次错误数据
 	 */
-	public int setErrorBatchData() throws Exception {
-		
-		 return 0;
+	@POSTAPI(//
+			path = "setErrorBatchData", //
+			des = " 标记批次错误数据 	", //
+			ret = "	受影响行数	"//
+	)
+	public int setErrorBatchData(//
+			@P(t = "批次数据编号") Integer batchDataId, //
+			@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "错误数据说明", r = false) String errorDesc//
+	) throws Exception {
+		TableBatchData tdb = new TableBatchData();
+		tdb.errorStatus = TableData.ERROR_STATUS_WRONG;
+		tdb.errorDesc = errorDesc;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableBatchDataRepository.update(conn,
+					EXP.INS().key("data_id", batchDataId).andKey("table_schema_id", tableSchemaId), tdb, true);
+		}
 	}
+
 	/**
 	 * 标记异常数据
 	 */
+	@POSTAPI(//
+			path = "setAbnormalData", //
+			des = " 标记异常数据  	", //
+			ret = "	受影响行数	"//
+	)
 	public int setAbnormalData(//
-			Long dataId,//
-			Long tableSchemaId//
-			) throws Exception {
+			@P(t = "数据编号") Long dataId, //
+			@P(t = "表结构编号") Long tableSchemaId//
+	) throws Exception {
 		TableData td = new TableData();
 		td.errorStatus = TableData.ERROR_STATUS_ABNORMAL;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return tableDataRepository.update(conn, EXP.INS().key("id", dataId).andKey("table_schema_id", tableSchemaId), td, true);
+			return tableDataRepository.update(conn,
+					EXP.INS().key("id", dataId).andKey("table_schema_id", tableSchemaId), td, true);
 		}
 	}
-	
+
 	/**
 	 * 标记批次异常数据
 	 */
-	public int setAbnormalBatchData() throws Exception {
-		
-		 return 0;
+	@POSTAPI(//
+			path = "setAbnormalBatchData", //
+			des = " 标记批次异常数据  	", //
+			ret = "	受影响行数	"//
+	)
+	public int setAbnormalBatchData(//
+			@P(t = "批次数据编号") Long batchDataId, //
+			@P(t = "表结构编号") Long tableSchemaId//
+	) throws Exception {
+		TableBatchData tdb = new TableBatchData();
+		tdb.errorStatus = TableData.ERROR_STATUS_ABNORMAL;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableBatchDataRepository.update(conn,
+					EXP.INS().key("data_id", batchDataId).andKey("table_schema_id", tableSchemaId), tdb, true);
+		}
 	}
-	
-	
+
 	/**
 	 * 驳回错误批次数据
 	 */
+	@POSTAPI(//
+			path = "rejectErrorBatchData", //
+			des = " 驳回错误批次数据  	", //
+			ret = "JSONArray(没有找到批次的数据)	"//
+	)
 	public JSONArray rejectErrorBatchData(//
-			Long tableSchemaId//
-			) throws Exception {
+			@P(t = "表结构编号") Long tableSchemaId//
+	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			//查找正式表TableData中的错误数据
-			List<Long> batchDataIds = tableDataRepository.getErrorBatchDataIds(conn,tableSchemaId);
-			
-			//通過batchDataId得到所有错误数据所在批次（任务）编号
-			List<Long> batchIdList = tableBatchDataRepository.getErrorDataBatch(conn,tableSchemaId,batchDataIds);
-			//得到任務批次列表
+			// 查找正式表TableData中的错误数据
+			List<Integer> batchDataIds = tableDataRepository.getErrorBatchDataIds(conn, tableSchemaId);
+
+			// 通過batchDataId得到所有错误数据所在批次（任务）编号
+			List<Long> batchIdList = tableBatchDataRepository.getErrorDataBatch(conn, tableSchemaId, batchDataIds);
+			// 得到任務批次列表
 			List<TableBatch> tbList = tableBatchRepository.getList(conn, EXP.IN("batch_id", batchIdList), null, null);
-			 
-			//存放未找到批次的数据
+
+			// 存放未找到批次的数据
 			JSONArray noBatch = new JSONArray();
-			
-			//通过批次编号得到各个批次的错误数据
-			for(Long batchId : batchIdList) {
+
+			// 通过批次编号得到各个批次的错误数据
+			for (Long batchId : batchIdList) {
 				Boolean c = false;
-				for(TableBatch tdb: tbList) {
-					if(batchId == tdb.batchId) {
-						//获取到该批次的错误数据
-						List<TableBatchData> errorDataList = tableBatchDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId).andKey("batch_id",batchId).and(EXP.IN("data_id", batchDataIds)),null , null);
+				for (TableBatch tdb : tbList) {
+					if (batchId == tdb.batchId) {
+						// 获取到该批次的错误数据
+						List<TableBatchData> errorDataList = tableBatchDataRepository
+								.getList(
+										conn, EXP.INS().key("table_schema_id", tableSchemaId)
+												.andKey("batch_id", batchId).and(EXP.IN("data_id", batchDataIds)),
+										null, null);
 						c = true;
-						//驳回该批次的错误数据到上传者
-						//TODO 暂未实现
+						// 驳回该批次的错误数据到上传者
+						// TODO 暂未实现
 						break;
 					}
 				}
-				//判断是否找到批次
-				if(c) {
+				// 判断是否找到批次
+				if (c) {
 					continue;
-				}else {
-					List<TableBatchData> noBatchErrorDataList = tableBatchDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId).andKey("batch_id",batchId).and(EXP.IN("data_id", batchDataIds)),null , null);
+				} else {
+					List<TableBatchData> noBatchErrorDataList = tableBatchDataRepository.getList(conn,
+							EXP.INS().key("table_schema_id", tableSchemaId).andKey("batch_id", batchId)
+									.and(EXP.IN("data_id", batchDataIds)),
+							null, null);
 					noBatch.add(noBatchErrorDataList);
 				}
 			}
 			return noBatch;
 		}
 	}
-	
+
 	/**
-	 * 上传数据到批次数据表
+	 * 上传数据到批次数据表(线上填写数据)
 	 */
+	@POSTAPI(//
+			path = "importDataIntoBatchData", //
+			des = " 上传数据到批次数据表 ( 线上填写数据 )  	", //
+			ret = "List<TableBatchData>"//
+	)
 	public void importDataIntoBatchData(//
-			Long batchId//
-			) throws Exception {
+			@P(t = "批次编号") Long batchId, //
+			@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "用户编号") Long userId, //
+			@P(t = "批次数据版本") String batchVer, //
+			@P(t = "批次数据") JSONObject data, //
+			@P(t = "备注") String remark//
+	) throws Exception {
+		TableBatchData batchData = new TableBatchData();
+		batchData.data = data;
+		batchData.batchId = batchId;
+		batchData.tableSchemaId = tableSchemaId;
+		batchData.batchVer = batchVer;
+		batchData.userId = userId;
+		batchData.remark = remark;
+		batchData.errorStatus = TableBatchData.ERROR_STATUS_CORRECT;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			
-			//获取批次数据，最新版本
-			List<TableBatchData> batchDataList = tableBatchDataRepository.getList(conn, EXP.INS().key("batch_id", batchId), null, null);
-			int size = batchDataList.size()/100;
-			if(batchDataList.size()%100>0) {
-				size++;
-			}
-			for(int i = 1; i < size; i++ ) {
-				for(int j = 1; j < 10; j++ ) {
-					
-				}
-			}
-			
-			List<TableData> tdlist = new ArrayList<TableData>();
+			tableBatchDataRepository.insert(conn, batchData);
 		}
 	}
+
 	/**
 	 * 获取批次数据
 	 */
-	public List<TableBatchData> getBatchDataByBatchId() throws Exception{
-		
-		
-		return null;
+	@POSTAPI(//
+			path = "getBatchDataByBatchId", //
+			des = " 获取当前批次所有批次数据 	", //
+			ret = "List<TableBatchData>"//
+	)
+	public List<TableBatchData> getBatchDataByBatchId(//
+			@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "批次编号") Long batchId//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableBatchDataRepository.getList(conn,
+					EXP.INS().key("table_schema_id", tableSchemaId).andKey("batch_id", batchId), null, null);
+		}
 	}
-	
+
 	/**
 	 * 获取错误批次数据
 	 */
-	
-	public List<TableBatchData> getErrorBatchData() throws Exception{
-		
-		return null;
+	@POSTAPI(//
+			path = "getErrorBatchData", //
+			des = " 获取错误批次数据 	", //
+			ret = "List<TableBatchData>"//
+	)
+	public List<TableBatchData> getErrorBatchData(//
+			@P(t = "批次编号") Long batchId, //
+			@P(t = "表结构编号") Long tableSchemaId//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableBatchDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId)
+					.andKey("batch_id", batchId).andKey("error_status", TableBatchData.ERROR_STATUS_WRONG), null, null);
+		}
 	}
+
 	/**
-	 * 修改错误批次数据
+	 * 修改错误批次数据(将修改后的数据新建为一条新数据)
 	 */
-	public int editErrorBatchData() throws Exception {
-		
-		return 0;
+	@POSTAPI(//
+			path = "editErrorBatchData", //
+			des = "  修改错误批次数据(将修改后的数据新建为一条新数据)，线上修改  	", //
+			ret = "修改后的数据TableBatchData"//
+	)
+	public TableBatchData editErrorBatchData(//
+			@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "批次编号") Long batchId, //
+			@P(t = "上传者编号") Long userId, //
+			@P(t = "批次数据编号") Integer batchDataId, //
+			@P(t = "批次数据版本号") String batchVer, //
+			@P(t = "批次数据编号") JSONObject data, //
+			@P(t = "备注") String remark//
+	) throws Exception {
+		TableBatchData batchData = new TableBatchData();
+		batchData.tableSchemaId = tableSchemaId;
+		batchData.batchId = batchId;
+		batchData.dataId = batchDataId;
+		batchData.batchVer = batchVer;
+		batchData.errorStatus = TableBatchData.ERROR_STATUS_CORRECT;
+		batchData.userId = userId;
+		batchData.remark = remark;
+		batchData.data = data;
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			// 将错误版本的errorStatus修改为已经处理状态
+			EXP set = EXP.INS().key("error_status", TableBatchData.ERROR_STATUS_WRONG_OK);
+			EXP where = EXP.INS().key("table_schema_id", tableSchemaId).andKey("batch_id", batchId)
+					.andKey("data_id", batchDataId).andKey("error_status", TableBatchData.ERROR_STATUS_WRONG);
+			int status = tableBatchDataRepository.update(conn, set, where);
+			if (status > 0) {
+				// 添加新数据
+				tableBatchDataRepository.insert(conn, batchData);
+			}
+		}
+		return batchData;
 	}
-	
+
 	/**
 	 * 将错误数据导入到Excel表中
 	 */
 	public int importErrorDataIntoExcel() {
-		
+
 		return 0;
 	}
+
 	/**
 	 * 将修改后的错误数据导入到批次表
 	 */
 	public int importErrorDataIntoBatchData() throws Exception {
-		
+
 		return 0;
 	}
-	
+
 	/**
 	 * 上传批次数据到正式数据表
 	 */
-	public int BatchDataMoveTableData() throws Exception{
-		
-		return 0;
+	@POSTAPI(//
+			path = "BatchDataMoveTableData", //
+			des = "上传批次数据到正式数据表", //
+			ret = "上传的数据条数"//
+	)
+	public int BatchDataMoveTableData(//
+			@P(t = "表结构编号") Long tableSchemaId, //
+			@P(t = "批次编号") Long batchId//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			// 获取批次数据，最新版本
+			List<TableBatchData> batchDataList = tableBatchDataRepository.getList(conn,
+					EXP.INS().key("table_schema_id", tableSchemaId).andKey("batch_id", batchId).and("error_status",
+							"<>", TableBatchData.ERROR_STATUS_WRONG),
+					null, null);
+
+			List<TableData> tdlist = new ArrayList<TableData>();
+			for (TableBatchData t : batchDataList) {
+				if (t.errorStatus != TableBatchData.ERROR_STATUS_WRONG
+						&& t.errorStatus != TableBatchData.ERROR_STATUS_WRONG_OK) {
+
+					TableData td = new TableData();
+					td.batchDataId = t.dataId;
+					td.data = t.data;
+					td.errorStatus = TableBatchData.ERROR_STATUS_CORRECT;
+					td.errorDesc = t.errorDesc;
+					td.id = IDUtils.getSimpleId();
+					td.tableSchemaId = t.tableSchemaId;
+					td.userId = t.userId;
+					tdlist.add(td);
+
+				}
+			}
+			return tableDataRepository.insertList(conn, tdlist);
+		}
 	}
+
 	/**
-	 * 驳回正式数据表中的错误数据
+	 * 驳回正式数据表中的错误数据(将错误数据标记到批次数据中，并通知该批次数据上传者)
 	 */
-	public int rejectErrorData()throws Exception{
-		
-		return 0;
+	@POSTAPI(//
+			path = "rejectErrorData", //
+			des = "驳回正式数据表中的错误数据(将错误数据标记到批次数据中，并通知该批次数据上传者)", //
+			ret = "驳回的数据条数"//
+	)
+	public int rejectErrorData(//
+			@P(t = "表结构编号") Long tableSchemaId//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			// 获取正式表中的错误数据
+			List<TableData> dataList = tableDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId)
+					.andKey("error_status", TableData.ERROR_STATUS_WRONG), null, null);
+			int ret = 0;
+			for (TableData t : dataList) {
+
+				TableBatchData tdb = new TableBatchData();
+				tdb.errorStatus = TableBatchData.ERROR_STATUS_WRONG;
+				tdb.errorDesc = t.errorDesc;
+				ret += tableBatchDataRepository.update(conn, EXP.INS().key("table_schema_id", tableSchemaId)
+						.andKey("data_id", t.batchDataId).andKey("error_status", TableBatchData.ERROR_STATUS_CORRECT),
+						tdb, true);
+			}
+
+			EXP where = EXP.INS().key("error_status", TableBatchData.ERROR_STATUS_WRONG).append("group by user_id");
+			List<TableBatchData> tdblist = tableBatchDataRepository.getList(conn, where, null, null);
+			for (TableBatchData t : tdblist) {
+				// TODO 发送消息到批次上传者，提醒修改错误信息
+//				t.userId = 
+				System.out.println("userId:" + t.userId);
+			}
+			return ret;
+		}
 	}
-	
-	
-	
+
+	/**
+	 * 替换正式表错误数据
+	 */
+	@POSTAPI(//
+			path = "replaceDataIntoTableData", //
+			des = "替换正式表错误数据", //
+			ret = "JSONObject"//
+	)
+	public JSONObject replaceDataIntoTableData(//
+			@P(t = "表结构编号") Long tableSchemaId//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+
+			JSONObject retJo = new JSONObject();
+			// 读取正式表中的错误数据
+			List<TableData> tdList = tableDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId)
+					.andKey("error_status", TableData.ERROR_STATUS_WRONG), null, null);
+			retJo.put("errorCount", tdList.size());
+			int successCount = 0;
+			int failCount = 0;
+			for (TableData t : tdList) {
+				// 通过批次数据编号得到批次表中的数据
+				TableBatchData tdb = tableBatchDataRepository.get(conn, EXP.INS().key("data_id", t.batchDataId)
+						.andKey("error_status", TableBatchData.ERROR_STATUS_CORRECT));
+				if (tdb != null) {
+					t.data = tdb.data;
+					t.userId = tdb.userId;
+					t.errorStatus = TableData.ERROR_STATUS_CORRECT;
+					t.errorDesc = null;
+					successCount += tableDataRepository.update(conn, EXP.INS().key("id", t.id), t, true);
+				} else {
+					failCount++;
+				}
+			}
+			retJo.put("successCount", successCount);
+			retJo.put("failCount", failCount);
+			return retJo;
+		}
+	}
+
+	@POSTAPI(//
+			path = "getTableDataBySchemaId", //
+			des = "获取表数据（正式表）", //
+			ret = "List<TableData>"//
+	)
+	public List<TableData> getTableDataBySchemaId(//
+			@P(t = "表结构编号") Long tableSchemaId, //
+			Integer count, //
+			Integer offset//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId), count, offset);
+		}
+	}
+
 }

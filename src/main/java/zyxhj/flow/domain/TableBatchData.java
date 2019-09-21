@@ -67,9 +67,12 @@ public class TableBatchData {
 
 	//正确CORRECT
 	public static Byte ERROR_STATUS_CORRECT = 0;
-	//错误WRONG
+	//未处理的错误数据
 	public static Byte ERROR_STATUS_WRONG = 1;
 	//异常abnormal
 	public static Byte ERROR_STATUS_ABNORMAL = 2;
+	//已经处理的错误数据
+	public static Byte ERROR_STATUS_WRONG_OK = 3;
+	
 
 }

@@ -1,5 +1,7 @@
 package zyxhj.core.service;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -8,25 +10,36 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.Column;
+import com.alicloud.openservices.tablestore.model.Direction;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
+import com.alicloud.openservices.tablestore.model.PrimaryKeyValue;
+import com.alicloud.openservices.tablestore.model.search.SearchQuery;
 
+import io.vertx.core.Vertx;
 import zyxhj.core.domain.ImportTask;
 import zyxhj.core.domain.ImportTempRecord;
 import zyxhj.core.repository.ImportTaskRepository;
 import zyxhj.core.repository.ImportTempRecordRepository;
-import zyxhj.utils.CodecUtils;
+import zyxhj.flow.domain.TableSchema;
+import zyxhj.flow.service.TableService;
 import zyxhj.utils.ExcelUtils;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
 import zyxhj.utils.data.ts.ColumnBuilder;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
+import zyxhj.utils.data.ts.RowChangeBuilder;
+import zyxhj.utils.data.ts.TSQL;
+import zyxhj.utils.data.ts.TSRepository;
+import zyxhj.utils.data.ts.TSQL.OP;
 
 public class ImportTaskService {
 
@@ -34,6 +47,7 @@ public class ImportTaskService {
 
 	private ImportTaskRepository taskRepository;
 	private ImportTempRecordRepository tempRecordRepository;
+	private TableService tableService;
 
 	// private static TSAutoCloseableClient client;
 
@@ -45,6 +59,8 @@ public class ImportTaskService {
 
 			taskRepository = Singleton.ins(ImportTaskRepository.class);
 			tempRecordRepository = Singleton.ins(ImportTempRecordRepository.class);
+			tableService = Singleton.ins(TableService.class);
+
 		} catch (Exception e) {
 			log.error(e.getMessage());
 		}
@@ -88,6 +104,250 @@ public class ImportTaskService {
 		} else {
 			return 0;
 		}
+	}
+
+	public void createImportTask(DruidPooledConnection conn, String title, Long batchId, Long userId, Byte type)
+			throws Exception {
+		ImportTask imp = new ImportTask();
+		if (type == 0) {
+			imp.origin = "user";
+		} else if (type == 1) {
+			imp.origin = "asset";
+		} else {
+			imp.origin = "tableBatch";
+		}
+		imp.id = IDUtils.getSimpleId();
+		imp.orgId = batchId;
+		imp.title = title;
+		imp.userId = userId;
+		imp.createTime = new Date();
+		imp.startTime = new Date();
+		imp.finishTime = new Date();
+		imp.amount = 0;
+		imp.completedCount = 0;
+		imp.successCount = 0;
+		imp.failureCount = 0;
+		imp.status = ImportTask.STATUS.WAITING.v();
+		taskRepository.insert(conn, imp);
+	}
+
+	// 查询组织导入
+	public List<ImportTask> getListImportTask(DruidPooledConnection conn, Long orgId, Byte type, Integer count,
+			Integer offset) throws Exception {
+		return taskRepository.getListImportTask(conn, orgId, type, count, offset);
+	}
+
+	/**
+	 * 导入到临时表
+	 * 
+	 * @param importTaskId 导入id
+	 * @param skipRowCount 第几行开始
+	 * @param colCount     总列数
+	 */
+	public void importRecord(SyncClient client, DruidPooledConnection conn, Long batchId, Long userId, String url,
+			Long importTaskId, Integer skipRowCount, Integer colCount) throws Exception {
+
+		PrimaryKey pk = new PrimaryKeyBuilder().add("taskId", importTaskId).addAutoIncermentKey("recordId").build();
+		JSONArray json = JSONArray.parseArray(url);
+		Integer count = 0;// 总条数
+		List<List<Object>> table = null;
+		for (int o = 0; o < json.size(); o++) {
+			table = ExcelUtils.readExcelOnline(json.getString(o), skipRowCount, colCount, 0);
+
+			List<List<Column>> batchRows = new ArrayList<>();
+			for (List<Object> row : table) {
+				ColumnBuilder cb = new ColumnBuilder();
+				cb.add("batch", batchId);
+				cb.add("status", (long) ImportTempRecord.STATUS.PENDING.v());
+				for (int i = 0; i < colCount; i++) {
+					cb.add(StringUtils.join("Col", i), ExcelUtils.getString(row.get(i)));
+				}
+
+				count++;
+				List<Column> list = cb.build();
+
+				batchRows.add(list);
+
+				if (batchRows.size() >= 10) {
+					RowChangeBuilder rcb = new RowChangeBuilder();
+					for (List<Column> cc : batchRows) {
+						rcb.put(tempRecordRepository.getTableName(), pk, cc, true);
+					}
+
+					TSRepository.nativeBatchWrite(client, rcb.build());
+					batchRows.clear();
+				}
+			}
+
+			if (batchRows.size() > 0) {
+				RowChangeBuilder rcb = new RowChangeBuilder();
+				for (List<Column> cc : batchRows) {
+					rcb.put(tempRecordRepository.getTableName(), pk, cc, true);
+				}
+
+				TSRepository.nativeBatchWrite(client, rcb.build());
+				batchRows.clear();
+			}
+		}
+
+		// 修改导入任务总数
+		ImportTask imp = new ImportTask();
+		imp.amount = count;
+		imp.startTime = new Date();
+		imp.status = ImportTask.STATUS.FILE_READY.v();
+		taskRepository.update(conn, EXP.INS().key("id", importTaskId), imp, true);
+
+	}
+
+	// 开始导入数据到批次数据表TableBatchData
+	public void importAsset(Long importTaskId, Long tableSchemaId, Long batchId, String batchVer, Long userId) throws Exception {
+
+		// 异步方法，不会阻塞
+		Vertx.vertx().executeBlocking(future -> {
+			// 下面这行代码可能花费很长时间
+			DruidDataSource dds;
+			DruidPooledConnection conn = null;
+			SyncClient client = null;
+			try {
+				dds = DataSource.getDruidDataSource("rdsDefault.prop");
+				conn = (DruidPooledConnection) dds.getConnection();
+				client = DataSource.getTableStoreSyncClient("tsDefault.prop");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			try {
+
+				// 修改导入任务为正在导入
+				ImportTask imp = new ImportTask();
+				imp.status = ImportTask.STATUS.PROGRESSING.v();
+				taskRepository.update(conn, EXP.INS().key("id", importTaskId), imp, true);
+
+				// 根据taskid去获取导入表
+				ImportTask task = taskRepository.get(conn, EXP.INS().key("id", importTaskId));
+				Integer amount = task.amount;
+				Integer offset = 0;
+
+				TableSchema ts = tableService.getTableSchemaById(tableSchemaId);
+				JSONArray tsColumns = ts.columns;
+				for (int k = 0; k < amount / 100 + 1; k++) {
+					JSONArray listImportTemp = getListImportTemp(client, importTaskId, 100, offset);
+					// 遍历获取到的数据
+					for (int i = 0; i < listImportTemp.size(); i++) {
+						
+						// 获取导入数据
+						JSONObject data = JSONObject.parseObject(listImportTemp.getString(i));
+						
+						//// 将数据处理后放入到集合中
+						for (int c = 0; c < tsColumns.size(); c++) {
+							JSONObject jo = JSON.parseObject(tsColumns.getString(c));
+							String colName = jo.getString("name");
+							String dataType = jo.getString("dataType");
+							JSONObject cloData = new JSONObject();
+							cloData.put(colName, getValues(dataType,data,c));
+						}
+						Long recordId = data.getLong("recordId");
+						try {
+							tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer, data, "Excel数据导入");
+							
+							PrimaryKey pk = new PrimaryKeyBuilder().add("taskId", importTaskId)
+									.add("recordId", recordId).build();
+							ColumnBuilder cb = new ColumnBuilder();
+							cb.add("status", (int) ImportTempRecord.STATUS.SUCCESS.v());
+							List<Column> columns = cb.build();
+							TSRepository.nativeUpdate(client, tempRecordRepository.getTableName(), pk, true, columns);
+							taskRepository.countORGUserImportCompletionTask(conn, importTaskId);
+						} catch (Exception e) {
+							PrimaryKey pk = new PrimaryKeyBuilder().add("taskId", importTaskId)
+									.add("recordId", recordId).build();
+							ColumnBuilder cb = new ColumnBuilder();
+							cb.add("status", ImportTempRecord.STATUS.FAILURE.v());
+							cb.add("result", e.getLocalizedMessage());
+							List<Column> columns = cb.build();
+							TSRepository.nativeUpdate(client, tempRecordRepository.getTableName(), pk, true, columns);
+							taskRepository.countORGUserImportNotCompletionTask(conn, importTaskId);
+						}
+					}
+					offset = offset + 100;
+				}
+				// 执行完成 修改任务表里成功与失败数量
+				imp.finishTime = new Date();
+				imp.status = ImportTask.STATUS.COMPLETED.v();
+				taskRepository.update(conn, EXP.INS().key("id", importTaskId), imp, true);
+
+			} catch (Exception eee) {
+				eee.printStackTrace();
+			} finally {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			future.complete("ok");
+		}, res -> {
+			System.out.println("The result is: " + res.result());
+		});
+
+	}
+
+	private Object getValues(String dataType, JSONObject data, int c) {
+		if(!StringUtils.isBlank(dataType)) {
+			if("Integer".equals(dataType)) {
+				return data.getInteger(StringUtils.join("Col", c));
+			}else if("String".equals(dataType)) {
+				return data.getString(StringUtils.join("Col", c));
+			}else if("decimal".equals(dataType)) {
+				return data.getDouble(StringUtils.join("Col", c));
+			}else if("date".equals(dataType)) {
+				return data.getDate(StringUtils.join("Col", c));
+			}else if("time".equals(dataType)) {
+				return data.getDate(StringUtils.join("Col", c));
+			}else if("money".equals(dataType)) {
+				return data.getDouble(StringUtils.join("Col", c));
+			}else if("bool".equals(dataType)) {
+				return data.getBoolean(StringUtils.join("Col", c));
+			}else if("subtable".equals(dataType)) {
+				return data.getString(StringUtils.join("Col", c));
+			}else {
+				return "数据为空";
+			}
+		}else {
+			return "数据类型错误";
+		}
+	}
+
+	public void deleteImportTask(SyncClient client, Long importTaskId) throws Exception {
+		PrimaryKey pk = new PrimaryKeyBuilder().add("taskId", importTaskId).addAutoIncermentKey("recordId").build();
+		TSRepository.nativeDel(client, "ImportTempRecord", pk);
+	}
+
+	public JSONArray getListImportTemp(SyncClient client, Long importTaskId, Integer count, Integer offset)
+			throws Exception {
+
+		// 设置起始主键
+		PrimaryKey pkStart = new PrimaryKeyBuilder().add("taskId", importTaskId)
+				.add("recordId", PrimaryKeyValue.INF_MIN).build();
+
+		// 设置结束主键
+		PrimaryKey pkEnd = new PrimaryKeyBuilder().add("taskId", importTaskId).add("recordId", PrimaryKeyValue.INF_MAX)
+				.build();
+		return tempRecordRepository.getRange(client, Direction.FORWARD, pkStart, pkEnd, count, offset);
+
+	}
+
+	public JSONObject getFailImportRecord(SyncClient client, Long importTaskId, Integer count, Integer offset)
+			throws Exception {
+		TSQL ts = new TSQL();
+		ts.Term(OP.AND, "status", (long) ImportTempRecord.STATUS.FAILURE.v()).Term(OP.AND, "taskId", importTaskId);
+		ts.setLimit(count);
+		ts.setOffset(offset);
+		ts.setGetTotalCount(true);
+		SearchQuery query = ts.build();
+		return TSRepository.nativeSearch(client, tempRecordRepository.getTableName(), "ImportTempRecordIndex", query);
+	}
+
+	public ImportTask getImportTask(DruidPooledConnection conn, Long importTaskId) throws Exception {
+		return taskRepository.get(conn, EXP.INS().key("id", importTaskId));
 	}
 
 	/**

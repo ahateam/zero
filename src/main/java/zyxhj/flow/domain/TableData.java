@@ -37,7 +37,7 @@ public class TableData {
 	 * 批次（任务）数据编号
 	 */
 	@RDSAnnField(column = RDSAnnField.ID)
-	public Long batchDataId;
+	public Integer batchDataId;
 
 	/**
 	 * 用户编号

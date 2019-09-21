@@ -371,12 +371,12 @@ public class FlowTest {
 		JSONObject jo = new JSONObject();
 		jo.put("exp", "expDefault");
 		jo.put("targetType", "activity");
-		jo.put("target", 401274724523438L);// 下一节点 第二节点
+		jo.put("target", 401628385491116L);// 下一节点 第二节点
 		roles.add(jo);
-		Long pdId = 401274709271725L;
-		Long activityId = 400719819725379L;// 当前节点  第一个节点
+		Long pdId = 401628373028011L;
+		Long activityId = 401628390774958L;// 当前节点  第一个节点
 
-		ProcessAction paction = flowService.createProcessAction(pdId, activityId, ProcessAction.OWNER_TYPE_ACTIVITY, ProcessAction.TYPE_ACCEPT, roles);
+		ProcessAction paction = flowService.createProcessAction(pdId, activityId, ProcessAction.OWNER_TYPE_ACTIVITY, ProcessAction.TYPE_REJECT, roles);
 	}
 
 	@Test
@@ -464,9 +464,9 @@ public class FlowTest {
 	//创建流程实例 --- 成功
 	@Test
 	public void testCreateProcess() throws Exception {
-		Long pdId = 401122871418288L;
+		Long pdId = 401628373028011L;
 		Long userId = 125469853421023L;
-		processService.createProcess(pdId, userId, "重构测试流程实例接口", "重构测试流程实例接口");
+		processService.createProcess(pdId, userId, "分户流程测试", "分户流程测试");
 	}
 	
 	//得到process相关信息、processDefinition processActivity processAction

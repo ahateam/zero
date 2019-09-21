@@ -16,7 +16,7 @@ public class TableBatchDataRepository extends RDSRepository<TableBatchData> {
 	}
 
 	
-	public List<Long> getErrorDataBatch(DruidPooledConnection conn, Long tableSchemaId, List<Long> batchDataIdList) throws Exception {
+	public List<Long> getErrorDataBatch(DruidPooledConnection conn, Long tableSchemaId, List<Integer> batchDataIdList) throws Exception {
 //		String sql = "select batch_data_id from tb_table_data where table_schema_id = "+tableSchemaId+" and error_data = 1  GROUP BY batch_data_id";
 		
 		
