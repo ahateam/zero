@@ -62,6 +62,21 @@ public class ImprotController extends Controller {
 	}
 
 	/**
+	 * 导入数据到批次数据表
+	 */
+	public APIResponse importTableBatchData(//
+			Long batchId,//
+			Long userId,//
+			Long importTaskId,//
+			Long tableSchemaId,//
+			String batchVer//
+			) throws Exception {
+		try (DruidPooledConnection conn = dds.getConnection()) {
+			importTaskService.importTableBatchData(importTaskId, tableSchemaId, batchId, batchVer, userId);
+			return APIResponse.getNewSuccessResp();
+		}
+	}
+	/**
 	 * 
 	 */
 	@POSTAPI(//

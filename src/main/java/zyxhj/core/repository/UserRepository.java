@@ -1,6 +1,7 @@
 package zyxhj.core.repository;
 
 import java.util.Arrays;
+import java.util.List;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
@@ -20,6 +21,11 @@ public class UserRepository extends RDSRepository<User> {
 
 	public JSONArray getUserTags(DruidPooledConnection conn, Long userId, String tagKey) throws ServerException {
 		return getTags(conn, "tags", tagKey, "id=?", Arrays.asList(userId));
+	}
+	
+	public List<Object[]> testExport(DruidPooledConnection conn, String sql, Integer count, Integer offset) throws Exception {
+		return this.sqlGetObjectsList(conn, sql, null, count, offset);
+		
 	}
 
 }
