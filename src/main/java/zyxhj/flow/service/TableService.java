@@ -2,7 +2,9 @@ package zyxhj.flow.service;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -33,6 +35,7 @@ import zyxhj.flow.repository.TableDataRepository;
 import zyxhj.flow.repository.TableQueryRepository;
 import zyxhj.flow.repository.TableSchemaRepository;
 import zyxhj.flow.repository.TableVirtualRepository;
+import zyxhj.utils.ExcelUtils;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.BaseRC;
@@ -635,7 +638,7 @@ public class TableService extends Controller {
 	/**
 	 * Excel导入数据
 	 */
-	public void improtBatchData() throws Exception {
+	public void importDataIntoBatchDataByExcel() throws Exception {
 
 	}
 
@@ -886,8 +889,37 @@ public class TableService extends Controller {
 	/**
 	 * 将错误数据导入到Excel表中
 	 */
-	public int importErrorDataIntoExcel() {
-
+	public int importErrorDataIntoExcel(//
+			@P(t = "批次编号") Long batchId, //
+			@P(t = "表结构编号") Long tableSchemaId//
+			) throws Exception {
+		List<Map<String, Object>> errorDataList = new ArrayList<Map<String,Object>>();
+		List<TableBatchData> errorBatchData = getErrorBatchData(batchId, tableSchemaId);
+		int size = 0;
+		Map<String, Object> map1 = new HashMap<String, Object>();
+		for(TableBatchData t : errorBatchData) {
+			Map<String, Object> data = new HashMap<String, Object>();
+			JSONObject jo = t.data;
+			int c = 0;
+			for(String  s:jo.keySet()) {
+//				System.out.println(s+"---------"+jo.getString(s));
+				data.put(s, jo.getString(s));
+				c++;
+			}
+			if(size <= c) {
+				size = c;
+				map1 = data;
+			}
+			errorDataList.add(data);
+		}
+		String[] titles = new String[size];
+		int i = 0;
+		for (String key : map1.keySet()) {
+			titles[i] = key;
+			i++;
+		}
+		ExcelUtils utils = new ExcelUtils();
+		utils.downErrorData(errorDataList, titles);
 		return 0;
 	}
 
@@ -895,7 +927,7 @@ public class TableService extends Controller {
 	 * 将修改后的错误数据导入到批次表
 	 */
 	public int importErrorDataIntoBatchData() throws Exception {
-
+		
 		return 0;
 	}
 
@@ -996,6 +1028,9 @@ public class TableService extends Controller {
 			retJo.put("errorCount", tdList.size());
 			int successCount = 0;
 			int failCount = 0;
+			
+			// TODO 首先取出数据，再进行匹配
+			
 			for (TableData t : tdList) {
 				// 通过批次数据编号得到批次表中的数据
 				TableBatchData tdb = tableBatchDataRepository.get(conn, EXP.INS().key("data_id", t.batchDataId)

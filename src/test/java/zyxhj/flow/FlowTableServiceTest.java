@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import zyxhj.core.controller.ImprotController;
 import zyxhj.core.domain.Tag;
 import zyxhj.core.domain.TagGroup;
 import zyxhj.flow.domain.TableBatchData;
@@ -370,6 +371,50 @@ public class FlowTableServiceTest {
 		}
 		
 	}
+	
+	@Test
+	public void testImportErrorDataIntoExcel() {
+		try {
+			tableService.importErrorDataIntoExcel(batchId, tableSchemaId);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	ImprotController ic = new ImprotController("node");
+	
+	@Test
+	public void testCreateImportTask() {
+	
+		String title = "测试导入数据";
+		Byte type = 2;
+		try {
+			ic.createImportTask(title, batchId, userId, type);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testimportRecord() {
+		String url = "file:///D:\\401716947882931.xlsx";
+		JSONArray ja = new JSONArray();
+		ja.add(url);
+		Long importTaskId = 401720118000152L;
+		Integer skipRowCount = 1;
+		Integer colCount = 6;
+		String batchVer = "ce_1_1";
+		try {
+			ic.importRecord(batchId, userId, ja.toJSONString(), importTaskId, skipRowCount, colCount);
+			
+			ic.importTableBatchData(batchId, userId, importTaskId, tableSchemaId, batchVer);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	
 	
 }

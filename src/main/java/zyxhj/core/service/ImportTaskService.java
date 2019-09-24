@@ -152,7 +152,7 @@ public class ImportTaskService {
 		Integer count = 0;// 总条数
 		List<List<Object>> table = null;
 		for (int o = 0; o < json.size(); o++) {
-			table = ExcelUtils.readExcelOnline(json.getString(o), skipRowCount, colCount, 0);
+			table = ExcelUtils.readExcelOnline(json.getString(0), skipRowCount, colCount, 0);
 
 			List<List<Column>> batchRows = new ArrayList<>();
 			for (List<Object> row : table) {
@@ -200,7 +200,7 @@ public class ImportTaskService {
 	}
 
 	// 开始导入数据到批次数据表TableBatchData
-	public void importAsset(Long importTaskId, Long tableSchemaId, Long batchId, String batchVer, Long userId) throws Exception {
+	public void importTableBatchData(Long importTaskId, Long tableSchemaId, Long batchId, String batchVer, Long userId) throws Exception {
 
 		// 异步方法，不会阻塞
 		Vertx.vertx().executeBlocking(future -> {
@@ -238,13 +238,16 @@ public class ImportTaskService {
 						JSONObject data = JSONObject.parseObject(listImportTemp.getString(i));
 						
 						//// 将数据处理后放入到集合中
+						System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 						for (int c = 0; c < tsColumns.size(); c++) {
 							JSONObject jo = JSON.parseObject(tsColumns.getString(c));
+							System.out.println(jo.toJSONString());
 							String colName = jo.getString("name");
 							String dataType = jo.getString("dataType");
 							JSONObject cloData = new JSONObject();
 							cloData.put(colName, getValues(dataType,data,c));
 						}
+						System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 						Long recordId = data.getLong("recordId");
 						try {
 							tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer, data, "Excel数据导入");
