@@ -21,18 +21,6 @@
 	</properties>
 
 	<dependencies>
-	<!-- 支付宝小程序SDK -->
-	<dependency>
-	    <groupId>com.alipay.sdk</groupId>
-	    <artifactId>alipay-sdk-java</artifactId>
-	    <version>4.7.1.ALL</version>
-	</dependency>
-	<dependency>
-		<groupId>com.aliyun.oss</groupId>
-    	<artifactId>aliyun-sdk-oss</artifactId>
-    	<version>3.5.0</version>
-	</dependency>
-	
 	</dependencies>
 
 	<build>
