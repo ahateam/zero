@@ -42,9 +42,12 @@ public class WxDataService extends Controller {
 			log.error(e.getMessage(), e);
 		}
 	}
-
-	public static final String APPID = "wxbe41dad7130b6dcf";
-	public static final String APPSECRET = "0487f9aab9d0863ac001bd76a9030987";
+//
+//	public static final String APPID = "wxbe41dad7130b6dcf";
+//	public static final String APPSECRET = "0487f9aab9d0863ac001bd76a9030987";
+//	
+	public static final String APPID = "wxf71b4c1f834c8b28";
+	public static final String APPSECRET = "b57a57b0aff3c9fc0f128e051e2a1e91";
 	public static final String MCHID = "3150";// 商户账号
 	public static final String Key = "ZHwfiHhZmfLFt8MTP7flBpW8pWZpF8f7";// 商户密钥
 
