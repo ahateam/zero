@@ -232,22 +232,20 @@ public class FlowTableServiceTest {
 	 */
 	private static Long tableSchemaId = 401655491082651L;
 	private static Long userId = 10010L;
-	private static Long batchId = 401656058367382L;
+	private static Long batchId = 401769446115940L;
 	private static String batchVer1 = "TEST_1";
 	private static String batchVer2 = "TEST_2";
 	private static String batchVer3 = "TEST_3";
 	//创建批次
-	@Test
 	public void testcreateBatch() {
 		try {
-			tableService.createBatch(userId, "测试批次", tableSchemaId);
+			tableService.createBatch(userId, "测试批次001", tableSchemaId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
 	//导入数据到批次数据表
-	@Test
 	public void testImprotDataIntoBatchData() {
 		try {
 			//导入数据
@@ -270,7 +268,6 @@ public class FlowTableServiceTest {
 		}
 	}
 	//获取批次数据
-	@Test
 	public void testGetBatchDataByBatchId() {
 		try {
 			List<TableBatchData> tdbList = tableService.getBatchDataByBatchId(tableSchemaId, batchId);
@@ -284,7 +281,6 @@ public class FlowTableServiceTest {
 	
 	
 	//标记错误批次数据
-	@Test
 	public void testSetErrorBatchData() {
 		try {
 			tableService.setErrorBatchData(10000013, tableSchemaId,"");
@@ -294,7 +290,6 @@ public class FlowTableServiceTest {
 	}
 	
 	//获取错误批次数据
-	@Test
 	public void testGetErrorBatchData() {
 		try {
 			List<TableBatchData> tdbList = tableService.getErrorBatchData(batchId, tableSchemaId);
@@ -306,7 +301,6 @@ public class FlowTableServiceTest {
 		}
 	}
 	
-	@Test
 	public void testEditErrorBatchData() {
 		try {
 
@@ -317,7 +311,6 @@ public class FlowTableServiceTest {
 		}
 	}
 	//批次数据导入正式表
-	@Test
 	public void testBatchDataMoveTableData() {
 		try {
 			tableService.BatchDataMoveTableData(tableSchemaId, batchId);
@@ -327,7 +320,6 @@ public class FlowTableServiceTest {
 	}
 	
 	//获取正式表数据
-	@Test
 	public void testGetTableDataBySchemaId() {
 		try {
 			List<TableData> tList = tableService.getTableDataBySchemaId(tableSchemaId, 100, 0);
@@ -339,7 +331,6 @@ public class FlowTableServiceTest {
 		}
 	}
 	//标记正式表错误数据
-	@Test
 	public void testSetErrorData() {
 		try {
 			int i = tableService.setErrorData(401656679036003L, tableSchemaId,"");
@@ -350,7 +341,6 @@ public class FlowTableServiceTest {
 		}
 	}
 	//驳回错误数据到批次数据表
-	@Test
 	public void testRejectErrorData() {
 		try {
 			tableService.rejectErrorData(tableSchemaId);
@@ -361,7 +351,6 @@ public class FlowTableServiceTest {
 	}
 	
 	//替换正式表中的错误数据
-	@Test
 	public void testReplaceDataIntoTableData() {
 		try {
 			tableService.replaceDataIntoTableData(tableSchemaId);
@@ -372,7 +361,6 @@ public class FlowTableServiceTest {
 		
 	}
 	
-	@Test
 	public void testImportErrorDataIntoExcel() {
 		try {
 			tableService.importErrorDataIntoExcel(batchId, tableSchemaId);
@@ -383,13 +371,12 @@ public class FlowTableServiceTest {
 	}
 	ImprotController ic = new ImprotController("node");
 	
-	@Test
 	public void testCreateImportTask() {
 	
-		String title = "测试导入数据";
+		String title = "测试导入数据002";
 		Byte type = 2;
 		try {
-			ic.createImportTask(title, batchId, userId, type);
+			ic.createImportTaskForTableBatch(title, batchId, userId);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -398,17 +385,15 @@ public class FlowTableServiceTest {
 	
 	@Test
 	public void testimportRecord() {
-		String url = "file:///D:\\401716947882931.xlsx";
+		String url = "C:\\Users\\Admin\\Desktop\\123456.xlsx";
 		JSONArray ja = new JSONArray();
 		ja.add(url);
-		Long importTaskId = 401720118000152L;
+		Long importTaskId = 401769456781322L;
 		Integer skipRowCount = 1;
 		Integer colCount = 6;
 		String batchVer = "ce_1_1";
 		try {
-			ic.importRecord(batchId, userId, ja.toJSONString(), importTaskId, skipRowCount, colCount);
-			
-			ic.importTableBatchData(batchId, userId, importTaskId, tableSchemaId, batchVer);
+			ic.importTableBatchData(batchId, userId, importTaskId, tableSchemaId, batchVer,url);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

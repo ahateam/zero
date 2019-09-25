@@ -2,14 +2,21 @@ package zyxhj.flow;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -17,11 +24,15 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.controller.ImprotController;
@@ -29,15 +40,41 @@ import zyxhj.core.domain.OrgUser;
 import zyxhj.core.domain.User;
 import zyxhj.core.repository.UserRepository;
 import zyxhj.core.service.ImportTaskService;
+import zyxhj.flow.domain.TableBatch;
 import zyxhj.flow.domain.TableBatchData;
+import zyxhj.flow.domain.TableSchema;
+import zyxhj.flow.repository.TableSchemaRepository;
 import zyxhj.utils.ExcelUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.EXP;
 import zyxhj.utils.data.rds.RDSRepositoryServiceTest.RDSRepositoryTest;
 import zyxhj.utils.data.rds.RDSRepositoryServiceTest.RDSRepositoryTest1;
 
 public class testImport {
 
+	private static DruidPooledConnection conn;
+	private static UserRepository urep;
+	private static TableSchemaRepository tableScheamRpository;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		try {
+			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
+			urep = Singleton.ins(UserRepository.class);
+			tableScheamRpository = Singleton.ins(TableSchemaRepository.class);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		conn.close();
+	}
+	
+	
 	@Test
 	public void testdownUserList() {
 		ExcelUtils excel = new ExcelUtils();
@@ -84,7 +121,7 @@ public class testImport {
 
 	@Test
 	public void testReadExcel() {
-		readExcel("D:\\401716947882931.xlsx");
+		readExcel("C:\\Users\\Admin\\Desktop\\123456.xlsx");
 	}
 
 	public static void readExcel(String path) {
@@ -124,40 +161,19 @@ public class testImport {
 							Cell cell0 = row.getCell(0);
 							Cell cell1 = row.getCell(1);
 							Cell cell2 = row.getCell(2);
-//							Cell cell3 = row.getCell(3);
-//							Cell cell4 = row.getCell(4);
 
 							if (cell1.getCellTypeEnum() == CellType.STRING) {
-								String stringCellValue = cell1.getStringCellValue();
-								System.out.println("第" + rowNum + "行，第一列[" + title[0] + "]数据" + stringCellValue);
+								String stringCellValue = cell0.getStringCellValue();
+								System.out.println("第" + rowNum + "行，第一列[" + title[0] + "]数据===" + stringCellValue);
 							} else {
 								System.out.println("第" + rowNum + "行，第一列[" + title[0] + "]数据错误！");
 							}
 							if (cell1.getCellTypeEnum() == CellType.STRING) {
 								String stringCellValue = cell1.getStringCellValue();
-								System.out.println("第" + rowNum + "行，第二列[" + title[1] + "]数据" + stringCellValue);
+								System.out.println("第" + rowNum + "行，第二列[" + title[1] + "]数据===" + stringCellValue);
 							} else {
 								System.out.println("第" + rowNum + "行，第二列[" + title[1] + "]数据错误！");
 							}
-//							if (cell2.getCellTypeEnum() == CellType.STRING) {
-//								String stringCellValue = cell2.getStringCellValue();
-//								System.out.println(stringCellValue);
-//							} else {
-//								System.out.println("第" + rowNum + "行，第三列[" + title[2] + "]数据错误！");
-//							}
-//							if ((cell3.getCellTypeEnum() == CellType.NUMERIC) && DateUtil.isCellDateFormatted(cell3)) {
-//								Date dateCellValue = cell3.getDateCellValue();
-//								System.out.println(sdf.format(dateCellValue));
-//							} else {
-//								System.out.println("第" + rowNum + "行，第四列[" + title[3] + "]数据错误！");
-//							}
-//							if ((cell4.getCellTypeEnum() == CellType.NUMERIC)
-//									&& (!DateUtil.isCellDateFormatted(cell4))) {
-//								double numericCellValue = cell4.getNumericCellValue();
-//								System.out.println(numericCellValue);
-//							} else {
-//								System.out.println("第" + rowNum + "行，第五列[" + title[4] + "]数据错误！");
-//							}
 						}
 					}
 				}
@@ -173,185 +189,8 @@ public class testImport {
 		}
 	}
 
-	private static DruidPooledConnection conn;
-	private static UserRepository urep;
+	public void testimportTableBatchData() {
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		try {
-			conn = DataSource.getDruidDataSource("rdsDefault.prop").getConnection();
-			urep = Singleton.ins(UserRepository.class);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		conn.close();
-	}
-
-	// 正式表数据导出测试
-	@Test
-	public void testFormalExport() {
-
-		try {
-
-			List<Map<String, Object>> exportDataList = new ArrayList<Map<String, Object>>();
-
-			String newSql = "SELECT OU.family_number AS '户序号', OU.family_master AS '户主姓名', OU.address AS '地址', U.real_name AS '姓名', U.id_number AS '身份证号码', ou.is_org_user AS '是否组织成员', ou.share_amount AS '个人持股数（股）', ou.family_relations AS '与户主关系', ou.share_cer_no AS '成员股权证号', ou.resource_shares AS '本户资源股', ou.asset_shares AS '本户资产股', o.`name` AS '合作社名称', o.address AS '合作社地址', o.create_time AS '合作社成立时间', o.`code` AS '合作社信用代码', o.asset_shares AS '集体资产股', o.resource_shares AS '集体资源股' FROM ( tb_ecm_org O LEFT JOIN tb_ecm_org_user OU ON O.id = OU.org_id ) LEFT JOIN tb_user U ON OU.user_id = U.id WHERE O.id = 397652553337218 ";
-			
-			
-			
-//			String sql = "select real_name, id_number, sex, pwd from tb_user";
-			
-			List<Object[]> olist = urep.testExport(conn, newSql, 100, 0);
-
-			Map<String, Object> map = new HashMap<String, Object>();
-			for (int i = 0; i < olist.size(); i++) {
-				Object[] s = olist.get(i);
-				Map<String, Object> data = new HashMap<String, Object>();
-
-				if(s[0]==null) {
-					data.put("户序号", "");
-				}else {
-					data.put("户序号", s[0].toString());
-				}
-				if(s[1]==null) {
-					data.put("户主姓名", "");
-				}else {
-					data.put("户主姓名", s[1].toString());
-				}
-				if(s[2]==null) {
-					data.put("地址", "");
-				}else {
-					data.put("地址", s[2].toString());
-				}
-				if(s[3]==null) {
-					data.put("姓名","");
-				}else {
-					data.put("姓名", s[3].toString());
-				}
-
-				if(s[4]==null) {
-					data.put("性别", "");
-					data.put("身份证号码","");
-				}else {
-					String idNumber = s[4].toString();
-					if(idNumber.length()==18) {
-						if(Integer.parseInt(idNumber.substring(16, 17))%2==0) {
-							data.put("性别", "女");
-						}else {
-							data.put("性别", "男");
-						}
-					}
-					data.put("身份证号码", idNumber);
-				}
-				if(s[5]==null) {
-					data.put("是否集体组织成员", "否");
-				}else {
-					if((boolean)s[5]==true) {
-						data.put("是否集体组织成员", "是");
-					}else {
-						data.put("是否集体组织成员", "否");
-					}
-				}
-				
-				if(s[6]==null) {
-					data.put("个人持股数（股）", "");
-				}else {
-					data.put("个人持股数（股）", s[6].toString());
-				}
-				
-				if(s[7]==null) {
-					data.put("与户主关系", "");
-				}else {
-					data.put("与户主关系", s[7].toString());
-				}
-				
-				if(s[8]==null) {
-					data.put("成员股权证号", "");
-				}else {
-					data.put("成员股权证号", s[8].toString());
-				}
-				
-				if(s[9]==null) {
-					data.put("本户资源股", "");
-				}else {
-					data.put("本户资源股", s[9].toString());
-				}
-				
-				if(s[10]==null) {
-					data.put("本户资产股","");
-				}else {
-					data.put("本户资产股", s[10].toString());
-				}
-
-				if(s[11]==null) {
-					data.put("合作社名称", "");
-				}else {
-					data.put("合作社名称", s[11].toString());
-				}
-				
-				if(s[12]==null) {
-					data.put("合作社地址", "");
-				}else {
-					data.put("合作社地址", s[11].toString());
-				}
-				
-				if(s[13]==null) {
-					data.put("合作社成立时间","");
-				}else {
-					data.put("合作社成立时间", s[13].toString().substring(0,10));
-				}
-				
-				if(s[14]==null) {
-					data.put("合作社信用代码","");
-				}else {
-					data.put("合作社信用代码", s[14].toString());
-				}
-
-				if(s[15]==null) {
-					data.put("集体资产股", "");
-				}else {
-					data.put("集体资产股", s[15].toString());
-				}
-				
-				data.put("原合作社集体资产股", "");
-				
-				if(s[16]==null) {
-					data.put("集体资源股", "");
-				}else {
-					data.put("集体资源股", s[16].toString());
-				}
-				data.put("原合作社集体资产股","");
-				
-				exportDataList.add(data);
-				map = data;
-			}
-			
-			
-			String[] titles = new String[]{"户序号","户主姓名","地址","姓名","性别","身份证号码","是否集体组织成员","个人持股数（股）","与户主关系","成员股权证号","本户资产股","本户资源股","合作社名称","合作社地址","合作社成立时间","合作社信用代码","集体资产股","原合作社集体资产股","集体资源股","原合作社集体资源股"};
-//			int i = 0;
-//			for (String key : map.keySet()) {
-//				System.out.println(key);
-//				titles[i] = key;
-//				i++;
-//			}
-			ExcelUtils utils = new ExcelUtils();
-			utils.exportData(exportDataList, titles);
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-		}
-	}
-	@Test
-	public void testuuuu() {
-
-		Date date = new Date();
-		SimpleDateFormat dateFormat= new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss");
-		System.out.println(new Date().getTime());
 	}
 
 }

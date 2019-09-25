@@ -61,6 +61,9 @@ public class ImprotController extends Controller {
 		}
 	}
 
+
+	
+	
 	/**
 	 * 导入数据到批次数据表
 	 */
@@ -69,10 +72,12 @@ public class ImprotController extends Controller {
 			Long userId,//
 			Long importTaskId,//
 			Long tableSchemaId,//
-			String batchVer//
+			String batchVer,//
+			String fileUrl//
 			) throws Exception {
 		try (DruidPooledConnection conn = dds.getConnection()) {
-			importTaskService.importTableBatchData(importTaskId, tableSchemaId, batchId, batchVer, userId);
+			System.out.println("进入importTableBatchData");
+			importTaskService.importTableBatchData(importTaskId, tableSchemaId, batchId, batchVer, userId, fileUrl);
 			return APIResponse.getNewSuccessResp();
 		}
 	}
@@ -127,21 +132,20 @@ public class ImprotController extends Controller {
 	}
 
 	/**
-	 * 获取导入列表
+	 * 	创建导入批次数据任务
 	 */
 	@POSTAPI(//
-			path = "createImportTask", //
+			path = "createImportTaskForTableBatch", //
 			des = "创建导入任务", //
 			ret = ""//
 	)
-	public APIResponse createImportTask(//
+	public APIResponse createImportTaskForTableBatch(//
 			@P(t = "导入名称") String title, //
-			@P(t = "组织id") Long batchId, //
-			@P(t = "用户id") Long userId, //
-			@P(t = "导入类型 0为用户导入  1为资产导入") Byte type//
+			@P(t = "批次id") Long batchId, //
+			@P(t = "用户id") Long userId //
 	) throws Exception {
 		try (DruidPooledConnection conn = dds.getConnection()) {
-			importTaskService.createImportTask(conn, title, batchId, userId, type);
+			importTaskService.createImportTask(conn, title, batchId, userId);
 			return APIResponse.getNewSuccessResp();
 		}
 	}

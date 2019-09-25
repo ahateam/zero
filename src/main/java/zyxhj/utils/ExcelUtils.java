@@ -245,38 +245,17 @@ public class ExcelUtils {
 		for (int i = 0; i < listresult.size(); i++) {
 			// 创建行
 			row = sheet.createRow(i + 1);
-			// 序号
-//            row.createCell(0).setCellValue(i+1);
-//           
-//            row.createCell(1).setCellValue(listresult.get(i).get("rowKey1").toString());
-//            sheet.autoSizeColumn(1, true);
-//            
-//            row.createCell(2).setCellValue(listresult.get(i).get("rowKey2").toString());
-//            
-//            row.createCell(3).setCellValue(listresult.get(i).get("rowKey3").toString());
-//            
-//            row.createCell(4).setCellValue(listresult.get(i).get("rowKey4").toString());
-
 			int c = 0;
 			for (String key : listresult.get(i).keySet()) {
-				System.out.println("key---------------:" + key);
 				for (String s : titles) {
-//        			System.out.println("--------------title:"+s);
 					if (key.equals(s)) {
-						System.out.println("succ++++++++key:" + key);
-						System.out.println("succ----------" + s);
 						row.createCell(c).setCellValue(listresult.get(i).get(key).toString());
-						System.out.println(listresult.get(i).get(key).toString());
 						break;
 					}
 				}
-				System.out.println("c----------------" + c);
 				c++;
 			}
 		}
-		/**
-		 * 上面的操作已经是生成一个完整的文件了，只需要将生成的流转换成文件即可； 下面的设置宽度可有可无，对整体影响不大
-		 */
 		// 设置单元格宽度
 		int curColWidth = 0;
 		for (int i = 0; i <= titel.length; i++) {
@@ -287,8 +266,6 @@ public class ExcelUtils {
 			if (curColWidth < 2500) {
 				sheet.setColumnWidth(i, 2500);
 			}
-			// 第3列文字较多，设置较大点。
-			sheet.setColumnWidth(3, 8000);
 		}
 		return wb;
 	}
@@ -321,185 +298,4 @@ public class ExcelUtils {
 		}
 		return name;
 	}
-
-	public String exportData(List<Map<String, Object>> listresult, String[] titles) {
-		// getTime()是一个返回当前时间的字符串，用于做文件名称
-		String name = getString(IDUtils.getSimpleId());
-		// csvFile是我的一个路径，自行设置就行
-//		String csvFile = "D:\\";
-//		String ys = csvFile + "//" + name + ".xlsx";
-		// 1.生成Excel
-		XSSFWorkbook userListExcel = exportDataTOExcel(listresult, titles);
-		try {
-			// 输出成文件
-//			File file = new File(csvFile);
-//			if (file.exists() || !file.isDirectory()) {
-//				file.mkdirs();
-//			}
-			// TODO 生成的wb对象传输
-			
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			userListExcel.write(outputStream);
-			InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-			//上传到OSS
-			Date date = new Date();
-			SimpleDateFormat dateFormat= new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss");
-			//当前下载时间作为文件名
-			String fileName = "print-excel/"+new Date().getTime()+".xlsx";
-			String bucketName = "jitijingji-test1";
-			
-			uploadToOSS(inputStream, bucketName, fileName);
-			String url = "https://"+bucketName+".oss-cn-hangzhou.aliyuncs.com/"+fileName;
-			inputStream.close();
-			outputStream.close();
-			return url;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	/**
-	 * 将数据导入到Excel中
-	 * @param listresult
-	 * @param titles
-	 * @return
-	 */
-	private XSSFWorkbook exportDataTOExcel(List<Map<String, Object>> listresult, String[] titles) {
-		// 1.创建HSSFWorkbook，一个HSSFWorkbook对应一个Excel文件
-		XSSFWorkbook wb = new XSSFWorkbook();
-		// 2.在workbook中添加一个sheet,对应Excel文件中的sheet
-		XSSFSheet sheet = wb.createSheet("sheet1");
-		// 3.设置表头，即每个列的列名
-		String[] titel = titles;
-		// 3.1创建第一行
-		XSSFRow row = sheet.createRow(0);
-//        // 此处创建一个序号列
-//        row.createCell(0).setCellValue("序号");
-		// 将列名写入
-		for (int i = 0; i < titel.length; i++) {
-			// 给列写入数据,创建单元格，写入数据
-			row.createCell(i).setCellValue(titel[i]);
-		}
-		// 写入正式数据
-		//TODO 等待修改
-		for (int i = 0; i < listresult.size(); i++) {
-			// 创建行
-			row = sheet.createRow(i + 1);
-			for (String key : listresult.get(i).keySet()) {
-				for (String s : titles) {
-					if (key.equals(s)) {
-						if ("户序号".equals(s)) {
-							row.createCell(0).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("户主姓名".equals(s)) {
-							row.createCell(1).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("地址".equals(s)) {
-							row.createCell(2).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("姓名".equals(s)) {
-							row.createCell(3).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("性别".equals(s)) {
-							row.createCell(4).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("身份证号码".equals(s)) {
-							row.createCell(5).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("是否集体组织成员".equals(s)) {
-							row.createCell(6).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("个人持股数（股）".equals(s)) {
-							row.createCell(7).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("与户主关系".equals(s)) {
-							row.createCell(8).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("成员股权证号".equals(s)) {
-							row.createCell(9).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("成员资产股".equals(s)) {
-							row.createCell(10).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("本户资源股".equals(s)) {
-							row.createCell(11).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("合作社名称".equals(s)) {
-							row.createCell(12).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("合作社地址".equals(s)) {
-							row.createCell(13).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("合作社成立时间".equals(s)) {
-							row.createCell(14).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("合作社信用代码".equals(s)) {
-							row.createCell(15).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("集体资产股".equals(s)) {
-							row.createCell(16).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("原合作社集体资产股".equals(s)) {
-							row.createCell(17).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("集体资源股".equals(s)) {
-							row.createCell(18).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						} else if ("原合作社集体资源股".equals(s)) {
-							row.createCell(19).setCellValue(listresult.get(i).get(key).toString());
-							break;
-						}
-					}
-				}
-			}
-		}
-		/**
-		 * 上面的操作已经是生成一个完整的文件了，只需要将生成的流转换成文件即可； 下面的设置宽度可有可无，对整体影响不大
-		 */
-		// 设置单元格宽度
-		int curColWidth = 0;
-		for (int i = 0; i <= titel.length; i++) {
-			// 列自适应宽度，对于中文半角不友好，如果列内包含中文需要对包含中文的重新设置。
-			sheet.autoSizeColumn(i, true);
-			// 为每一列设置一个最小值，方便中文显示
-			curColWidth = sheet.getColumnWidth(i);
-			if (curColWidth < 2500) {
-				sheet.setColumnWidth(i, 2500);
-			}
-			// 第3列文字较多，设置较大点。
-			sheet.setColumnWidth(3, 8000);
-		}
-		return wb;
-	}
-
-	
-	/**
-	 * 
-	 * @param inputStream
-	 * 		输入流对象
-	 * @param bucketName
-	 * 		分组包名称
-	 * @param fileName
-	 * 		分组包下的路径与文件名（print-excel/123456.xlsx）
-	 */
-	private void uploadToOSS(InputStream inputStream,String bucketName,String fileName) {
-
-		String endpoint = "http://oss-cn-hangzhou.aliyuncs.com";
-		String accessKeyId = "LTAIJ9mYIjuW54Cj";
-		String accessKeySecret = "89EMlXLsP13H8mWKIvdr4iM1OvdVxs";
-
-		// 创建OSSClient实例。
-		OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
-
-		// 上传文件流。
-		try {
-			ossClient.putObject(bucketName, fileName, inputStream);
-			// 关闭OSSClient。
-			ossClient.shutdown();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 }

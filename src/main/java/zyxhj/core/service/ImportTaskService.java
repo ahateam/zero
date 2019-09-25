@@ -1,5 +1,7 @@
 package zyxhj.core.service;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,6 +9,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +34,7 @@ import zyxhj.core.domain.ImportTempRecord;
 import zyxhj.core.repository.ImportTaskRepository;
 import zyxhj.core.repository.ImportTempRecordRepository;
 import zyxhj.flow.domain.TableSchema;
+import zyxhj.flow.repository.TableBatchDataRepository;
 import zyxhj.flow.service.TableService;
 import zyxhj.utils.ExcelUtils;
 import zyxhj.utils.IDUtils;
@@ -60,7 +67,6 @@ public class ImportTaskService {
 			taskRepository = Singleton.ins(ImportTaskRepository.class);
 			tempRecordRepository = Singleton.ins(ImportTempRecordRepository.class);
 			tableService = Singleton.ins(TableService.class);
-
 		} catch (Exception e) {
 			log.error(e.getMessage());
 		}
@@ -106,16 +112,9 @@ public class ImportTaskService {
 		}
 	}
 
-	public void createImportTask(DruidPooledConnection conn, String title, Long batchId, Long userId, Byte type)
-			throws Exception {
+	public void createImportTask(DruidPooledConnection conn, String title, Long batchId, Long userId) throws Exception {
 		ImportTask imp = new ImportTask();
-		if (type == 0) {
-			imp.origin = "user";
-		} else if (type == 1) {
-			imp.origin = "asset";
-		} else {
-			imp.origin = "tableBatch";
-		}
+		imp.origin = "tableBatch";
 		imp.id = IDUtils.getSimpleId();
 		imp.orgId = batchId;
 		imp.title = title;
@@ -200,18 +199,21 @@ public class ImportTaskService {
 	}
 
 	// 开始导入数据到批次数据表TableBatchData
-	public void importTableBatchData(Long importTaskId, Long tableSchemaId, Long batchId, String batchVer, Long userId) throws Exception {
+	public void importTableBatchData(Long importTaskId, Long tableSchemaId, Long batchId, String batchVer, Long userId,
+			String fileUrl) throws Exception {
+
+		System.out.println("进入importTableBatchData-----Service");
 
 		// 异步方法，不会阻塞
 		Vertx.vertx().executeBlocking(future -> {
 			// 下面这行代码可能花费很长时间
+
+			System.out.println("进入executeBlocking-----Service");
 			DruidDataSource dds;
 			DruidPooledConnection conn = null;
-			SyncClient client = null;
 			try {
 				dds = DataSource.getDruidDataSource("rdsDefault.prop");
 				conn = (DruidPooledConnection) dds.getConnection();
-				client = DataSource.getTableStoreSyncClient("tsDefault.prop");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -220,58 +222,13 @@ public class ImportTaskService {
 				// 修改导入任务为正在导入
 				ImportTask imp = new ImportTask();
 				imp.status = ImportTask.STATUS.PROGRESSING.v();
-				taskRepository.update(conn, EXP.INS().key("id", importTaskId), imp, true);
 
-				// 根据taskid去获取导入表
-				ImportTask task = taskRepository.get(conn, EXP.INS().key("id", importTaskId));
-				Integer amount = task.amount;
-				Integer offset = 0;
+				System.out.println("00000000000000000000");
+				int i = taskRepository.update(conn, EXP.INS().key("id", importTaskId), imp, true);
+				System.out.println(i);
+				System.out.println("11111111111111111111");
+				this.readExcel(conn, fileUrl, tableSchemaId, batchId, userId, batchVer, importTaskId);
 
-				TableSchema ts = tableService.getTableSchemaById(tableSchemaId);
-				JSONArray tsColumns = ts.columns;
-				for (int k = 0; k < amount / 100 + 1; k++) {
-					JSONArray listImportTemp = getListImportTemp(client, importTaskId, 100, offset);
-					// 遍历获取到的数据
-					for (int i = 0; i < listImportTemp.size(); i++) {
-						
-						// 获取导入数据
-						JSONObject data = JSONObject.parseObject(listImportTemp.getString(i));
-						
-						//// 将数据处理后放入到集合中
-						System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-						for (int c = 0; c < tsColumns.size(); c++) {
-							JSONObject jo = JSON.parseObject(tsColumns.getString(c));
-							System.out.println(jo.toJSONString());
-							String colName = jo.getString("name");
-							String dataType = jo.getString("dataType");
-							JSONObject cloData = new JSONObject();
-							cloData.put(colName, getValues(dataType,data,c));
-						}
-						System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-						Long recordId = data.getLong("recordId");
-						try {
-							tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer, data, "Excel数据导入");
-							
-							PrimaryKey pk = new PrimaryKeyBuilder().add("taskId", importTaskId)
-									.add("recordId", recordId).build();
-							ColumnBuilder cb = new ColumnBuilder();
-							cb.add("status", (int) ImportTempRecord.STATUS.SUCCESS.v());
-							List<Column> columns = cb.build();
-							TSRepository.nativeUpdate(client, tempRecordRepository.getTableName(), pk, true, columns);
-							taskRepository.countORGUserImportCompletionTask(conn, importTaskId);
-						} catch (Exception e) {
-							PrimaryKey pk = new PrimaryKeyBuilder().add("taskId", importTaskId)
-									.add("recordId", recordId).build();
-							ColumnBuilder cb = new ColumnBuilder();
-							cb.add("status", ImportTempRecord.STATUS.FAILURE.v());
-							cb.add("result", e.getLocalizedMessage());
-							List<Column> columns = cb.build();
-							TSRepository.nativeUpdate(client, tempRecordRepository.getTableName(), pk, true, columns);
-							taskRepository.countORGUserImportNotCompletionTask(conn, importTaskId);
-						}
-					}
-					offset = offset + 100;
-				}
 				// 执行完成 修改任务表里成功与失败数量
 				imp.finishTime = new Date();
 				imp.status = ImportTask.STATUS.COMPLETED.v();
@@ -293,28 +250,107 @@ public class ImportTaskService {
 
 	}
 
+	public void readExcel(DruidPooledConnection conn, String path, Long tableSchemaId, Long batchId, Long userId,
+			String batchVer, Long taskId) throws Exception {
+		
+
+		System.out.println("进入readExcel-----Service");
+		File file = new File(path);
+		FileInputStream fis = null;
+		Workbook workBook = null;
+		if (file.exists()) {
+			try {
+				fis = new FileInputStream(file);
+				workBook = WorkbookFactory.create(fis);
+
+				TableSchema ts = tableService.getTableSchemaById(tableSchemaId);
+				JSONArray ja = ts.columns;
+
+				List<String> alias = new ArrayList<String>();
+				List<String> columnName = new ArrayList<String>();
+				for (int a = 0; a < ja.size(); a++) {
+					JSONObject jo = ja.getJSONObject(a);
+					columnName.add(jo.getString("name"));
+					alias.add(jo.getString("alias"));
+				}
+
+				// sheet工作表
+				Sheet sheetAt = workBook.getSheetAt(0);
+				// 获取工作表名称
+				String sheetName = sheetAt.getSheetName();
+				System.out.println("工作表名称：" + sheetName);
+				// 获取当前Sheet的总行数
+				int rowsOfSheet = sheetAt.getPhysicalNumberOfRows();
+				System.out.println("当前表格的总行数:" + rowsOfSheet);
+				// 第一行
+				Row row0 = sheetAt.getRow(0);
+				int physicalNumberOfCells = sheetAt.getRow(0).getPhysicalNumberOfCells();
+				String[] titles = new String[physicalNumberOfCells];
+				for (int i = 0; i < physicalNumberOfCells; i++) {
+					titles[i] = row0.getCell(i).getStringCellValue();
+				}
+
+				ImportTask imp = new ImportTask();
+				imp.amount = rowsOfSheet;
+				int completedCount = 0;
+				for (int r = 1; r < rowsOfSheet; r++) {
+					Row row = sheetAt.getRow(r);
+					if (row == null) {
+						continue;
+					} else {
+						for (int t = 0; t < titles.length; t++) {
+							for (int al = 0; al < alias.size(); al++) {
+								System.out.println("alias:" + alias.get(al));
+								if (titles[t].equals(alias.get(al))) {
+									JSONObject colData = new JSONObject();
+									colData.put(columnName.get(al), row.getCell(t).getStringCellValue());
+									tableService.addBatchData(batchId, tableSchemaId, userId, batchVer, colData,
+											"Excel数据导入");
+									imp.completedCount = ++completedCount;
+									taskRepository.update(conn, EXP.INS().key("id", taskId), imp, true);
+									break;
+								}
+							}
+						}
+					}
+				}
+				imp.successCount = completedCount;
+				imp.failureCount = (rowsOfSheet - completedCount);
+				taskRepository.update(conn, EXP.INS().key("id", taskId), imp, true);
+
+				if (fis != null) {
+					fis.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			System.out.println("文件不存在!");
+		}
+	}
+
 	private Object getValues(String dataType, JSONObject data, int c) {
-		if(!StringUtils.isBlank(dataType)) {
-			if("Integer".equals(dataType)) {
+		if (!StringUtils.isBlank(dataType)) {
+			if ("Integer".equals(dataType)) {
 				return data.getInteger(StringUtils.join("Col", c));
-			}else if("String".equals(dataType)) {
+			} else if ("String".equals(dataType)) {
 				return data.getString(StringUtils.join("Col", c));
-			}else if("decimal".equals(dataType)) {
+			} else if ("decimal".equals(dataType)) {
 				return data.getDouble(StringUtils.join("Col", c));
-			}else if("date".equals(dataType)) {
+			} else if ("date".equals(dataType)) {
 				return data.getDate(StringUtils.join("Col", c));
-			}else if("time".equals(dataType)) {
+			} else if ("time".equals(dataType)) {
 				return data.getDate(StringUtils.join("Col", c));
-			}else if("money".equals(dataType)) {
+			} else if ("money".equals(dataType)) {
 				return data.getDouble(StringUtils.join("Col", c));
-			}else if("bool".equals(dataType)) {
+			} else if ("bool".equals(dataType)) {
 				return data.getBoolean(StringUtils.join("Col", c));
-			}else if("subtable".equals(dataType)) {
+			} else if ("subtable".equals(dataType)) {
 				return data.getString(StringUtils.join("Col", c));
-			}else {
+			} else {
 				return "数据为空";
 			}
-		}else {
+		} else {
 			return "数据类型错误";
 		}
 	}
