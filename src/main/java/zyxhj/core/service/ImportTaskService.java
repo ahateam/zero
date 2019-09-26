@@ -3,12 +3,15 @@ package zyxhj.core.service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -29,6 +32,7 @@ import com.alicloud.openservices.tablestore.model.PrimaryKeyValue;
 import com.alicloud.openservices.tablestore.model.search.SearchQuery;
 
 import io.vertx.core.Vertx;
+import zyxhj.core.controller.ImprotController;
 import zyxhj.core.domain.ImportTask;
 import zyxhj.core.domain.ImportTempRecord;
 import zyxhj.core.repository.ImportTaskRepository;
@@ -52,9 +56,9 @@ public class ImportTaskService {
 
 	private static Logger log = LoggerFactory.getLogger(ImportTaskService.class);
 
-	private ImportTaskRepository taskRepository;
+	private static ImportTaskRepository taskRepository;
 	private ImportTempRecordRepository tempRecordRepository;
-	private TableService tableService;
+	private static TableService tableService;
 
 	// private static TSAutoCloseableClient client;
 
@@ -198,61 +202,76 @@ public class ImportTaskService {
 
 	}
 
+//	public static void main(String[] args) {
+//		String url = "C:\\Users\\Admin\\Desktop\\123456.xlsx";
+//		Long importTaskId = 401784026919259L;
+//		Long tableSchemaId = 401655491082651L;
+//		Long userId = 10010L;
+//		Long batchId = 401769446115940L;
+//		String batchVer = "ce_1_1";
+//		try {
+//			importTableBatchData(importTaskId,tableSchemaId, batchId, batchVer, userId, url);
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
+
 	// 开始导入数据到批次数据表TableBatchData
-	public void importTableBatchData(Long importTaskId, Long tableSchemaId, Long batchId, String batchVer, Long userId,
-			String fileUrl) throws Exception {
+	public static void importTableBatchData(DruidPooledConnection conn, Long importTaskId, Long tableSchemaId,
+			Long batchId, String batchVer, Long userId, String fileUrl) throws Exception {
 
 		System.out.println("进入importTableBatchData-----Service");
+//
+//		// 异步方法，不会阻塞
+//		Vertx.vertx().executeBlocking(future -> {
+//			// 下面这行代码可能花费很长时间
 
-		// 异步方法，不会阻塞
-		Vertx.vertx().executeBlocking(future -> {
-			// 下面这行代码可能花费很长时间
+//			System.out.println("进入executeBlocking-----Service");
+//			DruidDataSource dds;
+//			DruidPooledConnection conn = null;
+//			try {
+//				dds = DataSource.getDruidDataSource("rdsDefault.prop");
+//				conn = (DruidPooledConnection) dds.getConnection();
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//			try {
 
-			System.out.println("进入executeBlocking-----Service");
-			DruidDataSource dds;
-			DruidPooledConnection conn = null;
-			try {
-				dds = DataSource.getDruidDataSource("rdsDefault.prop");
-				conn = (DruidPooledConnection) dds.getConnection();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			try {
+		// 修改导入任务为正在导入
+		ImportTask imp = new ImportTask();
+		imp.status = 3;
 
-				// 修改导入任务为正在导入
-				ImportTask imp = new ImportTask();
-				imp.status = ImportTask.STATUS.PROGRESSING.v();
+		System.out.println("00000000000000000000");
+		System.out.println(importTaskId);
+		int i = taskRepository.update(conn, EXP.INS(false).key("id", importTaskId), imp, true);
+		System.out.println(i);
+		System.out.println("11111111111111111111");
+		readExcel(conn, fileUrl, tableSchemaId, batchId, userId, batchVer, importTaskId);
 
-				System.out.println("00000000000000000000");
-				int i = taskRepository.update(conn, EXP.INS().key("id", importTaskId), imp, true);
-				System.out.println(i);
-				System.out.println("11111111111111111111");
-				this.readExcel(conn, fileUrl, tableSchemaId, batchId, userId, batchVer, importTaskId);
+		// 执行完成 修改任务表里成功与失败数量
+		imp.finishTime = new Date();
+		imp.status = ImportTask.STATUS.COMPLETED.v();
+		taskRepository.update(conn, EXP.INS().key("id", importTaskId), imp, true);
 
-				// 执行完成 修改任务表里成功与失败数量
-				imp.finishTime = new Date();
-				imp.status = ImportTask.STATUS.COMPLETED.v();
-				taskRepository.update(conn, EXP.INS().key("id", importTaskId), imp, true);
-
-			} catch (Exception eee) {
-				eee.printStackTrace();
-			} finally {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-			future.complete("ok");
-		}, res -> {
-			System.out.println("The result is: " + res.result());
-		});
+//			} catch (Exception eee) {
+//				eee.printStackTrace();
+//			} finally {
+//				try {
+//					conn.close();
+//				} catch (SQLException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//			future.complete("ok");
+//		}, res -> {
+//			System.out.println("The result is: " + res.result());
+//		});
 
 	}
 
-	public void readExcel(DruidPooledConnection conn, String path, Long tableSchemaId, Long batchId, Long userId,
+	public static void readExcel(DruidPooledConnection conn, String path, Long tableSchemaId, Long batchId, Long userId,
 			String batchVer, Long taskId) throws Exception {
-		
 
 		System.out.println("进入readExcel-----Service");
 		File file = new File(path);
@@ -294,6 +313,7 @@ public class ImportTaskService {
 				imp.amount = rowsOfSheet;
 				int completedCount = 0;
 				for (int r = 1; r < rowsOfSheet; r++) {
+					JSONObject colData = new JSONObject();
 					Row row = sheetAt.getRow(r);
 					if (row == null) {
 						continue;
@@ -302,17 +322,30 @@ public class ImportTaskService {
 							for (int al = 0; al < alias.size(); al++) {
 								System.out.println("alias:" + alias.get(al));
 								if (titles[t].equals(alias.get(al))) {
-									JSONObject colData = new JSONObject();
-									colData.put(columnName.get(al), row.getCell(t).getStringCellValue());
-									tableService.addBatchData(batchId, tableSchemaId, userId, batchVer, colData,
-											"Excel数据导入");
-									imp.completedCount = ++completedCount;
-									taskRepository.update(conn, EXP.INS().key("id", taskId), imp, true);
+									Cell col = row.getCell(t);
+									switch (col.getCellTypeEnum()) {
+									case NUMERIC:
+										if(DateUtil.isCellDateFormatted(col)) {
+											Date date =  col.getDateCellValue();
+											colData.put(columnName.get(al), new SimpleDateFormat("yyyy-MM-dd").format(date) );
+										}else {
+											colData.put(columnName.get(al), col.getNumericCellValue());
+										}
+										break;
+									case STRING:
+										colData.put(columnName.get(al), col.getStringCellValue());
+										break;
+										
+									}
 									break;
 								}
 							}
 						}
 					}
+					System.out.println(colData.toJSONString());
+					tableService.addBatchData(batchId, tableSchemaId, userId, batchVer, colData, "Excel数据导入");
+					imp.completedCount = ++completedCount;
+					taskRepository.update(conn, EXP.INS().key("id", taskId), imp, true);
 				}
 				imp.successCount = completedCount;
 				imp.failureCount = (rowsOfSheet - completedCount);

@@ -48,7 +48,12 @@ public class ExportTask {
 	 */
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long orgId;
-
+	/**
+	 * 区级编号
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long areaId;
+	
 	/**
 	 * 任务标题
 	 */

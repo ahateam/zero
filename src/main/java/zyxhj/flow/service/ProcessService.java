@@ -556,11 +556,11 @@ public class ProcessService extends Controller {
 	}
 
 	@POSTAPI(//
-			path = "testAction", //
+			path = "execAction", //
 			des = "执行action", //
 			ret = "受影响行数"//
 	)
-	public int testAction(//
+	public int execAction(//
 			@P(t = "流程实例行为编号，") Long processId, //
 			@P(t = "节点行为编号，") Long activityId, //
 			@P(t = "action行为编号，") Long actionId, //

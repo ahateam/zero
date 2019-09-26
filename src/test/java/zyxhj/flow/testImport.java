@@ -36,6 +36,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.core.controller.ImprotController;
+import zyxhj.core.domain.ImportTask;
 import zyxhj.core.domain.OrgUser;
 import zyxhj.core.domain.User;
 import zyxhj.core.repository.UserRepository;
@@ -121,7 +122,98 @@ public class testImport {
 
 	@Test
 	public void testReadExcel() {
-		readExcel("C:\\Users\\Admin\\Desktop\\123456.xlsx");
+		String url = "C:\\Users\\Admin\\Desktop\\123456.xlsx";
+		Long importTaskId = 401784026919259L;
+		Long tableSchemaId = 401655491082651L;
+		Long userId = 10010L;
+		Long batchId = 401769446115940L;
+		String batchVer = "ce_1_1";
+		try {
+			readExcel01(tableSchemaId, url);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public static void readExcel01(Long tableSchemaId, String path) throws Exception {
+		
+
+		System.out.println("进入readExcel-----Service");
+		File file = new File(path);
+		FileInputStream fis = null;
+		Workbook workBook = null;
+		if (file.exists()) {
+			try {
+				fis = new FileInputStream(file);
+				workBook = WorkbookFactory.create(fis);
+
+				TableSchema ts = tableScheamRpository.get(conn,EXP.INS().key("id", tableSchemaId));
+				JSONArray ja = ts.columns;
+
+				List<String> alias = new ArrayList<String>();
+				List<String> columnName = new ArrayList<String>();
+				for (int a = 0; a < ja.size(); a++) {
+					JSONObject jo = ja.getJSONObject(a);
+					columnName.add(jo.getString("name"));
+					alias.add(jo.getString("alias"));
+				}
+
+				// sheet工作表
+				Sheet sheetAt = workBook.getSheetAt(0);
+				// 获取工作表名称
+				String sheetName = sheetAt.getSheetName();
+				System.out.println("工作表名称：" + sheetName);
+				// 获取当前Sheet的总行数
+				int rowsOfSheet = sheetAt.getPhysicalNumberOfRows();
+				System.out.println("当前表格的总行数:" + rowsOfSheet);
+				// 第一行
+				Row row0 = sheetAt.getRow(0);
+				int physicalNumberOfCells = sheetAt.getRow(0).getPhysicalNumberOfCells();
+				String[] titles = new String[physicalNumberOfCells];
+				for (int i = 0; i < physicalNumberOfCells; i++) {
+					titles[i] = row0.getCell(i).getStringCellValue();
+				}
+
+				ImportTask imp = new ImportTask();
+				imp.amount = rowsOfSheet;
+				int completedCount = 0;
+				for (int r = 1; r < rowsOfSheet; r++) {
+					Row row = sheetAt.getRow(r);
+					if (row == null) {
+						continue;
+					} else {
+						for (int t = 0; t < titles.length; t++) {
+							for (int al = 0; al < alias.size(); al++) {
+								System.out.println("alias:" + alias.get(al));
+								if (titles[t].equals(alias.get(al))) {
+									JSONObject colData = new JSONObject();
+									colData.put(columnName.get(al), row.getCell(t).getStringCellValue());
+//									tableService.addBatchData(batchId, tableSchemaId, userId, batchVer, colData,
+//											"Excel数据导入");
+//									imp.completedCount = ++completedCount;
+//									taskRepository.update(conn, EXP.INS().key("id", taskId), imp, true);
+									System.out.println(colData.toJSONString());
+									break;
+								}
+							}
+						}
+					}
+				}
+				imp.successCount = completedCount;
+				imp.failureCount = (rowsOfSheet - completedCount);
+//				taskRepository.update(conn, EXP.INS().key("id", taskId), imp, true);
+
+				if (fis != null) {
+					fis.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			System.out.println("文件不存在!");
+		}
 	}
 
 	public static void readExcel(String path) {

@@ -477,6 +477,26 @@ public class FlowTest {
 		System.out.println(jo.toJSONString());
 	}
 	
+	@Test
+	public void testAddAssetDesc() {
+		Long assetDescId = 401791183453258L;
+		Long activityId = 401628385491116L;//开户申请编号
+		String type = "table";
+		String name = "开户申请表";
+		Boolean necessary = false;
+		String remark = "开户申请信息填写";
+		String template ="";
+		String uri = "401655491082651";
+		try {
+			flowService.createAssetDesc(activityId, type, name, necessary, remark, template, uri);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
 	
 
 }

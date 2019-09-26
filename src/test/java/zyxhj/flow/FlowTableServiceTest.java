@@ -56,7 +56,6 @@ public class FlowTableServiceTest {
 				if (end > start + 3) {
 					// 找到结束符号
 					ind = end + 2;// 记录下次位置
-
 					ret.add(src.substring(start + 2, end));
 				} else {
 					// 没有找到匹配的结束符号，终止循环
@@ -370,10 +369,11 @@ public class FlowTableServiceTest {
 		}
 	}
 	ImprotController ic = new ImprotController("node");
-	
+
+	@Test
 	public void testCreateImportTask() {
 	
-		String title = "测试导入数据002";
+		String title = "测试导入数据004";
 		Byte type = 2;
 		try {
 			ic.createImportTaskForTableBatch(title, batchId, userId);
@@ -382,7 +382,7 @@ public class FlowTableServiceTest {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	public void testimportRecord() {
 		String url = "C:\\Users\\Admin\\Desktop\\123456.xlsx";
@@ -393,7 +393,7 @@ public class FlowTableServiceTest {
 		Integer colCount = 6;
 		String batchVer = "ce_1_1";
 		try {
-			ic.importTableBatchData(batchId, userId, importTaskId, tableSchemaId, batchVer,url);
+			ic.importTableBatchData(batchId, userId, 401789818475047L, 400792291067488L, batchVer,url);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
