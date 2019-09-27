@@ -1,5 +1,6 @@
 package zyxhj.flow;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -16,12 +17,15 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import io.vertx.core.Vertx;
 import zyxhj.core.controller.ImprotController;
+import zyxhj.core.domain.ImportTask;
 import zyxhj.core.domain.Tag;
 import zyxhj.core.domain.TagGroup;
 import zyxhj.flow.domain.TableBatchData;
@@ -127,8 +131,6 @@ public class FlowTableServiceTest {
 
 	private static final Long queryId = 400281182414740L;
 
-	
-
 	@Test
 	public void testInsertTableData() {
 
@@ -143,7 +145,7 @@ public class FlowTableServiceTest {
 		jo.put("name", "ssssssss");
 		jo.put("star", new Date());
 		jo.put("end", new Date());
-		
+
 		try {
 			tableService.insertTableData(400792274247519L, jo);
 		} catch (Exception e) {
@@ -222,10 +224,7 @@ public class FlowTableServiceTest {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
-	
+
 	/**
 	 * 数据导入
 	 */
@@ -235,7 +234,8 @@ public class FlowTableServiceTest {
 	private static String batchVer1 = "TEST_1";
 	private static String batchVer2 = "TEST_2";
 	private static String batchVer3 = "TEST_3";
-	//创建批次
+
+	// 创建批次
 	public void testcreateBatch() {
 		try {
 			tableService.createBatch(userId, "测试批次001", tableSchemaId);
@@ -243,63 +243,63 @@ public class FlowTableServiceTest {
 			e.printStackTrace();
 		}
 	}
-	
-	//导入数据到批次数据表
+
+	// 导入数据到批次数据表
 	public void testImprotDataIntoBatchData() {
 		try {
-			//导入数据
+			// 导入数据
 			JSONObject data1 = JSON.parseObject("{\"name\":\"testName1\",\"sex\":\"人妖\"}");
 			JSONObject data2 = JSON.parseObject("{\"name\":\"testName2\",\"sex\":\"女\"}");
 			JSONObject data3 = JSON.parseObject("{\"name\":\"testName3\",\"sex\":\"女\"}");
 			JSONObject data4 = JSON.parseObject("{\"name\":\"testName4\",\"sex\":\"女\"}");
 			JSONObject data5 = JSON.parseObject("{\"name\":\"testName5\",\"sex\":\"男\"}");
 			JSONObject data6 = JSON.parseObject("{\"name\":\"testName6\",\"sex\":\"男\"}");
-			
+
 			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data1, "测试数据 ");
 			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data2, "测试数据 ");
 			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data3, "测试数据 ");
 			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data4, "测试数据 ");
 			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data5, "测试数据 ");
 			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data6, "测试数据 ");
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	//获取批次数据
+
+	// 获取批次数据
 	public void testGetBatchDataByBatchId() {
 		try {
 			List<TableBatchData> tdbList = tableService.getBatchDataByBatchId(tableSchemaId, batchId);
-			for(TableBatchData t: tdbList) {
-				System.out.println(t.dataId +"\t"+t.data.toJSONString()+"\t"+t.batchVer+"\t"+t.errorStatus);
+			for (TableBatchData t : tdbList) {
+				System.out.println(t.dataId + "\t" + t.data.toJSONString() + "\t" + t.batchVer + "\t" + t.errorStatus);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	//标记错误批次数据
+
+	// 标记错误批次数据
 	public void testSetErrorBatchData() {
 		try {
-			tableService.setErrorBatchData(10000013, tableSchemaId,"");
+			tableService.setErrorBatchData(10000013, tableSchemaId, "");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	//获取错误批次数据
+
+	// 获取错误批次数据
 	public void testGetErrorBatchData() {
 		try {
 			List<TableBatchData> tdbList = tableService.getErrorBatchData(batchId, tableSchemaId);
-			for(TableBatchData t: tdbList) {
-				System.out.println(t.dataId +"\t"+t.data.toJSONString()+"\t"+t.batchVer+"\t"+t.errorStatus);
+			for (TableBatchData t : tdbList) {
+				System.out.println(t.dataId + "\t" + t.data.toJSONString() + "\t" + t.batchVer + "\t" + t.errorStatus);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void testEditErrorBatchData() {
 		try {
 
@@ -309,7 +309,8 @@ public class FlowTableServiceTest {
 			e.printStackTrace();
 		}
 	}
-	//批次数据导入正式表
+
+	// 批次数据导入正式表
 	public void testBatchDataMoveTableData() {
 		try {
 			tableService.BatchDataMoveTableData(tableSchemaId, batchId);
@@ -317,29 +318,32 @@ public class FlowTableServiceTest {
 			e.printStackTrace();
 		}
 	}
-	
-	//获取正式表数据
+
+	// 获取正式表数据
 	public void testGetTableDataBySchemaId() {
 		try {
 			List<TableData> tList = tableService.getTableDataBySchemaId(tableSchemaId, 100, 0);
-			for(TableData t:tList) {
-				System.out.println(t.id+"\t \t"+t.batchDataId+"\t \t"+t.data.toJSONString()+"\t \t"+t.errorStatus);
+			for (TableData t : tList) {
+				System.out.println(
+						t.id + "\t \t" + t.batchDataId + "\t \t" + t.data.toJSONString() + "\t \t" + t.errorStatus);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	//标记正式表错误数据
+
+	// 标记正式表错误数据
 	public void testSetErrorData() {
 		try {
-			int i = tableService.setErrorData(401656679036003L, tableSchemaId,"");
+			int i = tableService.setErrorData(401656679036003L, tableSchemaId, "");
 			System.out.println(i);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	//驳回错误数据到批次数据表
+
+	// 驳回错误数据到批次数据表
 	public void testRejectErrorData() {
 		try {
 			tableService.rejectErrorData(tableSchemaId);
@@ -348,8 +352,8 @@ public class FlowTableServiceTest {
 			e.printStackTrace();
 		}
 	}
-	
-	//替换正式表中的错误数据
+
+	// 替换正式表中的错误数据
 	public void testReplaceDataIntoTableData() {
 		try {
 			tableService.replaceDataIntoTableData(tableSchemaId);
@@ -357,9 +361,9 @@ public class FlowTableServiceTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	public void testImportErrorDataIntoExcel() {
 		try {
 			tableService.importErrorDataIntoExcel(batchId, tableSchemaId);
@@ -368,11 +372,12 @@ public class FlowTableServiceTest {
 			e.printStackTrace();
 		}
 	}
+
 	ImprotController ic = new ImprotController("node");
 
 	@Test
 	public void testCreateImportTask() {
-	
+
 		String title = "测试导入数据004";
 		Byte type = 2;
 		try {
@@ -393,13 +398,11 @@ public class FlowTableServiceTest {
 		Integer colCount = 6;
 		String batchVer = "ce_1_1";
 		try {
-			ic.importTableBatchData(batchId, userId, 401789818475047L, 400792291067488L, batchVer,url);
+			ic.importTableBatchData(batchId, userId, 401789818475047L, batchVer, url);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
+
 }

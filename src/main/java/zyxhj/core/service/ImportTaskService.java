@@ -37,12 +37,15 @@ import zyxhj.core.domain.ImportTask;
 import zyxhj.core.domain.ImportTempRecord;
 import zyxhj.core.repository.ImportTaskRepository;
 import zyxhj.core.repository.ImportTempRecordRepository;
+import zyxhj.flow.domain.TableBatch;
 import zyxhj.flow.domain.TableSchema;
 import zyxhj.flow.repository.TableBatchDataRepository;
 import zyxhj.flow.service.TableService;
 import zyxhj.utils.ExcelUtils;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
+import zyxhj.utils.api.BaseRC;
+import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
 import zyxhj.utils.data.ts.ColumnBuilder;
@@ -56,9 +59,9 @@ public class ImportTaskService {
 
 	private static Logger log = LoggerFactory.getLogger(ImportTaskService.class);
 
-	private static ImportTaskRepository taskRepository;
-	private ImportTempRecordRepository tempRecordRepository;
-	private static TableService tableService;
+	public static ImportTaskRepository taskRepository = new ImportTaskRepository();
+	public ImportTempRecordRepository tempRecordRepository = new ImportTempRecordRepository();
+	public static TableService tableService = new TableService("");
 
 	// private static TSAutoCloseableClient client;
 
@@ -68,9 +71,9 @@ public class ImportTaskService {
 			// client = (TSAutoCloseableClient)
 			// DataSourceUtils.getDataSource("tsDefault").openConnection();
 
-			taskRepository = Singleton.ins(ImportTaskRepository.class);
-			tempRecordRepository = Singleton.ins(ImportTempRecordRepository.class);
-			tableService = Singleton.ins(TableService.class);
+//			taskRepository = Singleton.ins(ImportTaskRepository.class);
+//			tempRecordRepository = Singleton.ins(ImportTempRecordRepository.class);
+//			tableService = Singleton.ins(TableService.class);
 		} catch (Exception e) {
 			log.error(e.getMessage());
 		}
@@ -79,7 +82,7 @@ public class ImportTaskService {
 	/**
 	 * 创建导入任务
 	 */
-	public void createImportTask(DruidPooledConnection conn, String origin, String title, Long userId)
+	public static void createImportTask(DruidPooledConnection conn, String origin, String title, Long userId)
 			throws Exception {
 		ImportTask it = new ImportTask();
 		it.origin = origin;
@@ -202,71 +205,68 @@ public class ImportTaskService {
 
 	}
 
-//	public static void main(String[] args) {
-//		String url = "C:\\Users\\Admin\\Desktop\\123456.xlsx";
-//		Long importTaskId = 401784026919259L;
-//		Long tableSchemaId = 401655491082651L;
-//		Long userId = 10010L;
-//		Long batchId = 401769446115940L;
-//		String batchVer = "ce_1_1";
-//		try {
-//			importTableBatchData(importTaskId,tableSchemaId, batchId, batchVer, userId, url);
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
+	public static void main(String[] args) {
+		String url = "C:\\Users\\Admin\\Desktop\\123456.xlsx";
+		Long importTaskId = 401784026919259L;
+		Long tableSchemaId = 401655491082651L;
+		Long userId = 10010L;
+		Long batchId = 401769446115940L;
+		String batchVer = "ce_1_1";
+		try {
+			importTableBatchData(importTaskId, batchId, batchVer, userId, url);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	// 开始导入数据到批次数据表TableBatchData
-	public static void importTableBatchData(DruidPooledConnection conn, Long importTaskId, Long tableSchemaId,
-			Long batchId, String batchVer, Long userId, String fileUrl) throws Exception {
+	public static void importTableBatchData(Long importTaskId, Long batchId, String batchVer, Long userId,
+			String fileUrl) throws Exception {
 
 		System.out.println("进入importTableBatchData-----Service");
-//
-//		// 异步方法，不会阻塞
-//		Vertx.vertx().executeBlocking(future -> {
-//			// 下面这行代码可能花费很长时间
+		// 异步方法，不会阻塞
+		Vertx.vertx().executeBlocking(future -> {
+			// 下面这行代码可能花费很长时间
 
-//			System.out.println("进入executeBlocking-----Service");
-//			DruidDataSource dds;
-//			DruidPooledConnection conn = null;
-//			try {
-//				dds = DataSource.getDruidDataSource("rdsDefault.prop");
-//				conn = (DruidPooledConnection) dds.getConnection();
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//			try {
+			System.out.println("进入executeBlocking-----Service");
+			DruidDataSource dds;
+			DruidPooledConnection conn = null;
+			try {
+				dds = DataSource.getDruidDataSource("rdsDefault.prop");
+				conn = (DruidPooledConnection) dds.getConnection();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			try {
+				TableBatch tb = tableService.getBatchById(batchId);
+				Long tableSchemaId = tb.tableSchemaId;
+				// 修改导入任务为正在导入
+				ImportTask imp = new ImportTask();
+				imp.status = 3;
 
-		// 修改导入任务为正在导入
-		ImportTask imp = new ImportTask();
-		imp.status = 3;
+				taskRepository.update(conn, EXP.INS(false).key("id", importTaskId), imp, true);
 
-		System.out.println("00000000000000000000");
-		System.out.println(importTaskId);
-		int i = taskRepository.update(conn, EXP.INS(false).key("id", importTaskId), imp, true);
-		System.out.println(i);
-		System.out.println("11111111111111111111");
-		readExcel(conn, fileUrl, tableSchemaId, batchId, userId, batchVer, importTaskId);
+				readExcel(conn, fileUrl, tableSchemaId, batchId, userId, batchVer, importTaskId);
 
-		// 执行完成 修改任务表里成功与失败数量
-		imp.finishTime = new Date();
-		imp.status = ImportTask.STATUS.COMPLETED.v();
-		taskRepository.update(conn, EXP.INS().key("id", importTaskId), imp, true);
+				// 执行完成 修改任务表里成功与失败数量
+				imp.finishTime = new Date();
+				imp.status = ImportTask.STATUS.COMPLETED.v();
+				taskRepository.update(conn, EXP.INS().key("id", importTaskId), imp, true);
 
-//			} catch (Exception eee) {
-//				eee.printStackTrace();
-//			} finally {
-//				try {
-//					conn.close();
-//				} catch (SQLException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//			future.complete("ok");
-//		}, res -> {
-//			System.out.println("The result is: " + res.result());
-//		});
+			} catch (Exception eee) {
+				eee.printStackTrace();
+			} finally {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			future.complete("ok");
+		}, res -> {
+			System.out.println("The result is: " + res.result());
+		});
 
 	}
 
@@ -295,12 +295,15 @@ public class ImportTaskService {
 
 				// sheet工作表
 				Sheet sheetAt = workBook.getSheetAt(0);
+
 				// 获取工作表名称
 				String sheetName = sheetAt.getSheetName();
+
 				System.out.println("工作表名称：" + sheetName);
 				// 获取当前Sheet的总行数
 				int rowsOfSheet = sheetAt.getPhysicalNumberOfRows();
 				System.out.println("当前表格的总行数:" + rowsOfSheet);
+
 				// 第一行
 				Row row0 = sheetAt.getRow(0);
 				int physicalNumberOfCells = sheetAt.getRow(0).getPhysicalNumberOfCells();
@@ -308,49 +311,84 @@ public class ImportTaskService {
 				for (int i = 0; i < physicalNumberOfCells; i++) {
 					titles[i] = row0.getCell(i).getStringCellValue();
 				}
-
-				ImportTask imp = new ImportTask();
-				imp.amount = rowsOfSheet;
-				int completedCount = 0;
-				for (int r = 1; r < rowsOfSheet; r++) {
-					JSONObject colData = new JSONObject();
-					Row row = sheetAt.getRow(r);
-					if (row == null) {
-						continue;
-					} else {
-						for (int t = 0; t < titles.length; t++) {
-							for (int al = 0; al < alias.size(); al++) {
-								System.out.println("alias:" + alias.get(al));
-								if (titles[t].equals(alias.get(al))) {
-									Cell col = row.getCell(t);
-									switch (col.getCellTypeEnum()) {
-									case NUMERIC:
-										if(DateUtil.isCellDateFormatted(col)) {
-											Date date =  col.getDateCellValue();
-											colData.put(columnName.get(al), new SimpleDateFormat("yyyy-MM-dd").format(date) );
-										}else {
-											colData.put(columnName.get(al), col.getNumericCellValue());
-										}
-										break;
-									case STRING:
-										colData.put(columnName.get(al), col.getStringCellValue());
-										break;
-										
-									}
-									break;
-								}
+				int yes = 0;
+				if (alias.size() == physicalNumberOfCells) {
+					for (int a = 0; a < alias.size(); a++) {
+						alias.get(a);
+						for (int t = 0; t < physicalNumberOfCells; t++) {
+							if (alias.get(a).equals(titles[t])) {
+								yes++;
 							}
 						}
 					}
-					System.out.println(colData.toJSONString());
-					tableService.addBatchData(batchId, tableSchemaId, userId, batchVer, colData, "Excel数据导入");
-					imp.completedCount = ++completedCount;
-					taskRepository.update(conn, EXP.INS().key("id", taskId), imp, true);
-				}
-				imp.successCount = completedCount;
-				imp.failureCount = (rowsOfSheet - completedCount);
-				taskRepository.update(conn, EXP.INS().key("id", taskId), imp, true);
+					if (yes == alias.size()) {
 
+						ImportTask imp = new ImportTask();
+						imp.amount = rowsOfSheet;
+						int completedCount = 0;
+						// 循环行
+						for (int r = 1; r < rowsOfSheet; r++) {
+							JSONObject colData = new JSONObject();
+							Row row = sheetAt.getRow(r);
+							if (row == null) {
+								continue;
+							} else {
+								// 匹配单元格
+								for (int t = 0; t < titles.length; t++) {
+									for (int al = 0; al < alias.size(); al++) {
+										if (titles[t].equals(alias.get(al))) {
+											Cell col = row.getCell(t);
+											Object data = new Object();
+											// 匹配数据类型
+											switch (col.getCellTypeEnum()) {
+											case NUMERIC: // 数字型
+												if (DateUtil.isCellDateFormatted(col)) {
+													Date date = col.getDateCellValue();
+													data = new SimpleDateFormat("yyyy-MM-dd").format(date);
+												} else {
+													data = col.getNumericCellValue();
+												}
+												break;
+											case BOOLEAN: // Boolean型
+//												colData.put(columnName.get(al), col.getBooleanCellValue());
+												data = col.getBooleanCellValue();
+												break;
+											case STRING: // 字符串型
+												data = col.getStringCellValue();
+												break;
+											case FORMULA: // 计算公式型
+//												data = col.getCellFormula();
+												data = col.getNumericCellValue();
+												break;
+											case BLANK: // 空值
+												data = "null";
+												break;
+											case ERROR: // 非法字符
+												data = col.getStringCellValue();
+												break;
+											default: // 其他类型
+												data = col.getStringCellValue();
+												break;
+											}
+											colData.put(columnName.get(al), data);
+											break;
+										}
+									}
+								}
+							}
+							// 添加数据到数据库中
+							tableService.addBatchData(batchId, tableSchemaId, userId, batchVer, colData, "Excel数据导入");
+							imp.completedCount = ++completedCount;
+							// 修改任务完成数
+							taskRepository.update(conn, EXP.INS().key("id", taskId), imp, true);
+						}
+						// 修改任务成功数与失败数量
+						imp.successCount = completedCount;
+						imp.failureCount = (rowsOfSheet - completedCount);
+						taskRepository.update(conn, EXP.INS().key("id", taskId), imp, true);
+					}
+					throw new ServerException(BaseRC.NOT_FINISHED, "导入失败，数据列不匹配");
+				}
 				if (fis != null) {
 					fis.close();
 				}
@@ -532,10 +570,6 @@ public class ImportTaskService {
 		// return tempRecordRepository.getImportTempRecords(conn, taskId, status, count,
 		// offset);
 		return null;
-	}
-
-	public void importTemp2Assets() throws Exception {
-		// TODO 具体实现
 	}
 
 }

@@ -66,18 +66,21 @@ public class ImprotController extends Controller {
 	
 	/**
 	 * 导入数据到批次数据表
-	 */
+	 */@POSTAPI(//
+				path = "importTableBatchData", //
+				des = "删除导入", //
+				ret = "返回新列表"//
+		)
 	public APIResponse importTableBatchData(//
 			@P(t = "批次编号") Long batchId,//
 			@P(t = "用戶编号") Long userId,//
 			@P(t = "任务编号") Long importTaskId,//
-			@P(t = "表结构编号") Long tableSchemaId,//
 			@P(t = "批次版本编号") String batchVer,//
 			@P(t = "文件路径") String fileUrl//
 			) throws Exception {
 		try (DruidPooledConnection conn = dds.getConnection()) {
 			System.out.println("进入importTableBatchData");
-			importTaskService.importTableBatchData(conn,importTaskId, tableSchemaId, batchId, batchVer, userId, fileUrl);
+			importTaskService.importTableBatchData(importTaskId, batchId, batchVer, userId, fileUrl);
 			return APIResponse.getNewSuccessResp();
 		}
 	}

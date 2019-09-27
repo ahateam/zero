@@ -1,5 +1,6 @@
 package zyxhj.utils.data.rds;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -11,14 +12,19 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alicloud.openservices.tablestore.SyncClient;
 
+import io.vertx.core.Vertx;
 import zyxhj.flow.domain.ProcessActivity;
+import zyxhj.flow.domain.TableBatch;
 import zyxhj.flow.repository.ProcessActivityGroupRepository;
 import zyxhj.flow.repository.ProcessActivityRepository;
+import zyxhj.flow.service.TableService;
 import zyxhj.test.domain.TestDomain;
 import zyxhj.test.domain.TestDomain1;
 import zyxhj.utils.IDUtils;
@@ -29,7 +35,6 @@ import zyxhj.utils.data.EXP;
 
 public class RDSRepositoryServiceTest {
 
-
 	public static class RDSRepositoryTest extends RDSRepository<TestDomain> {
 
 		public RDSRepositoryTest() {
@@ -37,7 +42,7 @@ public class RDSRepositoryServiceTest {
 		}
 
 	}
-	
+
 	public static class RDSRepositoryTest1 extends RDSRepository<TestDomain1> {
 
 		public RDSRepositoryTest1() {
@@ -106,12 +111,10 @@ public class RDSRepositoryServiceTest {
 
 	}
 
-
-
 	/**
 	 * 插入单个对象
-	 * @return
-	 * 	返回创建的实体对象
+	 * 
+	 * @return 返回创建的实体对象
 	 * @throws Exception
 	 */
 	private TestDomain testInsert() throws Exception {
@@ -149,38 +152,39 @@ public class RDSRepositoryServiceTest {
 
 		return t;
 	}
-	
+
 	/**
 	 * 
 	 * 插入多个对象
 	 */
 	private void testInsertList() throws Exception {
-	    TestDomain t = new TestDomain();
-	    t.id = IDUtils.getSimpleId();
-	    t.name = "123sdaf";
-	    t.year = "45641456asdfasd";
-	    t.status = 0;
-	    JSONArray arr1 = new JSONArray();
-	    JSONObject jo = new JSONObject();
-	    t.arrays = arr1;
-	    t.tags = jo;
-	  
-	   TestDomain t1 = new TestDomain();
-	    t1.id = IDUtils.getSimpleId();
-	    t1.name = "123sdaf";
-	    t1.year = "45641456asdfasd";
-	    t1.status = 0;
-	    t1.arrays = arr1;
-	    t1.tags = jo;
-	  
-	  	List<TestDomain> tlist = new ArrayList<TestDomain>();
-	  	tlist.add(t);
-	  	tlist.add(t1);
-	    testRepository.insertList(conn, tlist);
+		TestDomain t = new TestDomain();
+		t.id = IDUtils.getSimpleId();
+		t.name = "123sdaf";
+		t.year = "45641456asdfasd";
+		t.status = 0;
+		JSONArray arr1 = new JSONArray();
+		JSONObject jo = new JSONObject();
+		t.arrays = arr1;
+		t.tags = jo;
+
+		TestDomain t1 = new TestDomain();
+		t1.id = IDUtils.getSimpleId();
+		t1.name = "123sdaf";
+		t1.year = "45641456asdfasd";
+		t1.status = 0;
+		t1.arrays = arr1;
+		t1.tags = jo;
+
+		List<TestDomain> tlist = new ArrayList<TestDomain>();
+		tlist.add(t);
+		tlist.add(t1);
+		testRepository.insertList(conn, tlist);
 	}
 
 	/**
 	 * 删除单条数据
+	 * 
 	 * @param id
 	 * @throws ServerException
 	 */
@@ -194,18 +198,21 @@ public class RDSRepositoryServiceTest {
 		System.out.println("----------testDelByANDKeys==>>" + ret);
 
 	}
+
 	/**
 	 * 删除多条数据
+	 * 
 	 * @throws Exception
 	 */
 	private void testDelByInOrder() throws Exception {
-	  	EXP inOrderBy = EXP.INS().and(EXP.IN_ORDERED("id", 400992946457487L,400992806774166L));
-	    int ret = testRepository.delete(conn, inOrderBy);
-	  	System.out.println("----------testDelByANDKeys==>>" + ret);
+		EXP inOrderBy = EXP.INS().and(EXP.IN_ORDERED("id", 400992946457487L, 400992806774166L));
+		int ret = testRepository.delete(conn, inOrderBy);
+		System.out.println("----------testDelByANDKeys==>>" + ret);
 	}
 
 	/**
 	 * 单条件修改数据
+	 * 
 	 * @param id
 	 * @throws ServerException
 	 */
@@ -218,9 +225,10 @@ public class RDSRepositoryServiceTest {
 		int ret = testRepository.update(conn, EXP.INS().key("id", id), t, true);
 		System.out.println("----------testUpdateByKey==>>" + ret);
 	}
-	
+
 	/**
-	 * 	多条件修改
+	 * 多条件修改
+	 * 
 	 * @param id
 	 * @param name
 	 * @throws ServerException
@@ -236,28 +244,28 @@ public class RDSRepositoryServiceTest {
 	}
 
 	/**
-	 * 获取单条数据
-	 * 单条件
+	 * 获取单条数据 单条件
+	 * 
 	 * @param id
 	 * @throws Exception
 	 */
 	private void testGet(Long id) throws Exception {
 		TestDomain t = testRepository.get(conn, EXP.INS().key("id", id));
-	    System.out.println("----------testUpdateTagToJSONSET==>>" + t.name);
+		System.out.println("----------testUpdateTagToJSONSET==>>" + t.name);
 	}
-	
+
 	/**
 	 * 多条件
+	 * 
 	 * @param id
 	 * @param testName
 	 * @throws Exception
 	 */
-	private void testGet(Long id,String testName) throws Exception {
+	private void testGet(Long id, String testName) throws Exception {
 		TestDomain t = testRepository.get(conn, EXP.INS().key("id", id).andKey("name", testName));
-	    System.out.println("----------testUpdateTagToJSONSET==>>" + t.name);
+		System.out.println("----------testUpdateTagToJSONSET==>>" + t.name);
 	}
-	
-	
+
 	private void testGetList() {
 		try {
 			List<TestDomain> t = testRepository.getList(conn, null, 10, 0);
@@ -272,7 +280,7 @@ public class RDSRepositoryServiceTest {
 			List<TestDomain> t = testRepository.getList(conn, EXP.INS().exp("id", "<>", id), 10, 0);
 			System.out.println("----------testGetListByKey==>>" + t.size());
 		} catch (Exception e) {
-			e.printStackTrace(); 
+			e.printStackTrace();
 		}
 	}
 
@@ -294,16 +302,16 @@ public class RDSRepositoryServiceTest {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void testGetListByKeyORDERBY() throws ServerException {
-		List<TestDomain> t = testRepository.getList(conn, "name = ? ORDER BY id desc", Arrays.asList("123sdafs"), 10, 0);
+		List<TestDomain> t = testRepository.getList(conn, "name = ? ORDER BY id desc", Arrays.asList("123sdafs"), 10,
+				0);
 
 		for (TestDomain t1 : t) {
 			System.out.println(t1.id);
 		}
 		System.out.println("----------testGetListByKeyORDERBY==>>" + t.size());
 	}
-	
 
 	private void testJsonArrayAppendOnkey(Long id) throws ServerException {
 		EXP where = EXP.INS().key("id", id);
@@ -318,7 +326,7 @@ public class RDSRepositoryServiceTest {
 		int ret = testRepository.update(conn, tagAppend, where);
 		System.out.println("----------testJsonArrayAppend==>>" + ret);
 	}
-	
+
 	private void testJsonContainsJSONObject() throws Exception {
 		JSONObject keys = new JSONObject();
 		JSONArray tag = new JSONArray();
@@ -326,11 +334,11 @@ public class RDSRepositoryServiceTest {
 		keys.put("tagGroup1", "tag1");
 		keys.put("tagGroup1", tag);
 		String column = "tags";
-		
+
 		EXP json = EXP.JSON_CONTAINS_JSONOBJECT(keys, column);
 		List<TestDomain> t = testRepository.getList(conn, json, 100, 0);
 		System.out.println("----------testGetListByTagsTOJSONObject==>>" + t.size());
-		
+
 	}
 
 	private void testJsonContainsKeys() throws Exception {
@@ -410,8 +418,8 @@ public class RDSRepositoryServiceTest {
 		}
 		System.out.println("=================================");
 	}
-	
-	public void testSqlGetJSONArray() throws Exception{
+
+	public void testSqlGetJSONArray() throws Exception {
 		String sql = "select * from tb_rds_test where name like ?";
 		List<Object> params = new ArrayList<Object>();
 		params.add("%1%");
@@ -420,55 +428,56 @@ public class RDSRepositoryServiceTest {
 		JSONArray tArray = testRepository.sqlGetJSONArray(conn, sql, params, count, offset);
 		System.out.println(tArray.size());
 	}
-	
-	public void testSqlGetJSONObject() throws Exception{
+
+	public void testSqlGetJSONObject() throws Exception {
 		String sql = "select * from tb_rds_test where name like ?";
 		List<Object> params = new ArrayList<Object>();
 		params.add("%1%");
 		JSONObject jo = testRepository.sqlGetJSONObject(conn, sql, params);
 		System.out.println(jo.get("name"));
 	}
-	
+
 	public void testSqlGetObjects() throws Exception {
 		String sql = "select count(*) from tb_rds_test";
 		Object[] s = testRepository.sqlGetObjects(conn, sql, null);
 		Long is = Long.parseLong(s[0].toString());
 		System.out.println(is);
 	}
-	
+
 	public void testSqlGetObjectsList() throws Exception {
 		String sql = "select real_name from tb_user";
 		List<Object[]> olist = testRepository.sqlGetObjectsList(conn, sql, null, 10, 0);
 		System.out.println(olist.size());
-		for(int i = 0; i < olist.size(); i++) {
+		for (int i = 0; i < olist.size(); i++) {
 			Object[] s = olist.get(i);
-			for(int j = 0; j < s.length; j++) {
-				if(s[j]!=null) {
+			for (int j = 0; j < s.length; j++) {
+				if (s[j] != null) {
 					String is = s[j].toString();
 					System.out.println(is);
-				}else {
+				} else {
 					System.out.println("null");
 				}
 			}
 		}
 	}
-	
+
 	public void testSqlGetOther() throws Exception {
 		String sql = "select * from tb_rds_test1";
 		Object obj = testRepository.sqlGetOther(conn, testRepository1, sql, null);
-		if(obj instanceof TestDomain1) {
-			TestDomain1 list = (TestDomain1)obj;
+		if (obj instanceof TestDomain1) {
+			TestDomain1 list = (TestDomain1) obj;
 			System.out.println(list.id);
 		}
 	}
-	
+
 	public void testSqlGetOtherList() throws Exception {
 		String sql = "select * from tb_rds_test1";
-		List<TestDomain1> list= testRepository.sqlGetOtherList(conn, testRepository1, sql, null);
-		for(TestDomain1 t : list) {
+		List<TestDomain1> list = testRepository.sqlGetOtherList(conn, testRepository1, sql, null);
+		for (TestDomain1 t : list) {
 			System.out.println(t.id);
 		}
 	}
+
 	@Test
 	public void intest() throws Exception {
 		TestDomain1 t1 = new TestDomain1();
@@ -484,12 +493,13 @@ public class RDSRepositoryServiceTest {
 		System.out.println(str);
 		JSONArray ja = JSON.parseArray(str);
 		System.out.println(ja.toJSONString());
-		
-		
+
 		EXP set = EXP.JSON_ARRAY_APPEND("arrays", ja, false);
 		EXP where = EXP.INS().key("id", 123456789);
 		testRepository.update(conn, set, where);
-		
+
 	}
-	
+
+
+
 }
