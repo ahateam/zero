@@ -1065,5 +1065,58 @@ public class TableService extends Controller {
 			return tableDataRepository.getList(conn, EXP.INS().key("table_schema_id", tableSchemaId), count, offset);
 		}
 	}
+	
+	
+	///////////////////////////////////////////////
+	///////////////////////////////////////////////
+	//////数据源导入
+	///////////////////////////////////////////////
+	///////////////////////////////////////////////
+	@POSTAPI(//
+			path = "getDatabaseList", //
+			des = "获取所有数据库", //
+			ret = "JSONArray"//
+	)
+	public JSONArray getDatabaseList(//
+			Integer count, //
+			Integer offset//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableSchemaRepository.getDatabaseList(conn, count, offset);
+		}
+	}
+	
+	
+	
+	
+	@POSTAPI(//
+			path = "getTableNameList", //
+			des = "获取该数据库下所有数据表名", //
+			ret = "List<TableData>"//
+	)
+	public JSONArray getTableNameList(//
+			String databaseName,//
+			Integer count, //
+			Integer offset//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableSchemaRepository.getTableNameList(conn, databaseName, count, offset);
+		}
+	}
+	
+	
+	@POSTAPI(//
+			path = "getTableColumns", //
+			des = "获取该数据库下所有数据表名", //
+			ret = "List<TableData>"//
+	)
+	public JSONArray getTableColumns(//
+			String databaseName,//
+			String tableName//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return tableSchemaRepository.getTableColumns(conn, databaseName, tableName);
+		}
+	}
 
 }

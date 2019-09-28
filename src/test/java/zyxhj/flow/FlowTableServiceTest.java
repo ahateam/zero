@@ -404,5 +404,13 @@ public class FlowTableServiceTest {
 			e.printStackTrace();
 		}
 	}
+	@Test
+	public void testGetTableName() {
+		try {
+			tableService.getTableColumns("temptest","tb_user");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 }
