@@ -581,6 +581,7 @@ public class TableService extends Controller {
 		return tb;
 	}
 
+	//通过表结构编号获取批次详情
 	public List<TableBatch> getBatchByTableSchemaId(//
 			@P(t = "	批次编号	") Long tableSchemaId, //
 			Integer count, //
@@ -591,6 +592,7 @@ public class TableService extends Controller {
 		}
 	}
 
+	//通过批次编号获取批次详情
 	public TableBatch getBatchById(//
 			Long batchId//
 	) throws Exception {
@@ -599,6 +601,7 @@ public class TableService extends Controller {
 		}
 	}
 	
+	//获取所有批次
 	public List<TableBatch> getALLBatch(//
 			Integer count, //
 			Integer offset//
@@ -630,16 +633,10 @@ public class TableService extends Controller {
 		batchData.batchVer = batchVer;
 		batchData.userId = userId;
 		batchData.remark = remark;
+		batchData.errorStatus = TableBatchData.ERROR_STATUS_CORRECT;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			tableBatchDataRepository.insert(conn, batchData);
 		}
-	}
-
-	/**
-	 * Excel导入数据
-	 */
-	public void importDataIntoBatchDataByExcel() throws Exception {
-
 	}
 
 	/**
@@ -781,34 +778,6 @@ public class TableService extends Controller {
 		}
 	}
 
-	/**
-	 * 上传数据到批次数据表(线上填写数据)
-	 */
-	@POSTAPI(//
-			path = "importDataIntoBatchData", //
-			des = " 上传数据到批次数据表 ( 线上填写数据 )  	", //
-			ret = "List<TableBatchData>"//
-	)
-	public void importDataIntoBatchData(//
-			@P(t = "批次编号") Long batchId, //
-			@P(t = "表结构编号") Long tableSchemaId, //
-			@P(t = "用户编号") Long userId, //
-			@P(t = "批次数据版本") String batchVer, //
-			@P(t = "批次数据") JSONObject data, //
-			@P(t = "备注") String remark//
-	) throws Exception {
-		TableBatchData batchData = new TableBatchData();
-		batchData.data = data;
-		batchData.batchId = batchId;
-		batchData.tableSchemaId = tableSchemaId;
-		batchData.batchVer = batchVer;
-		batchData.userId = userId;
-		batchData.remark = remark;
-		batchData.errorStatus = TableBatchData.ERROR_STATUS_CORRECT;
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			tableBatchDataRepository.insert(conn, batchData);
-		}
-	}
 
 	/**
 	 * 获取批次数据
@@ -889,7 +858,7 @@ public class TableService extends Controller {
 	/**
 	 * 将错误数据导入到Excel表中
 	 */
-	public int importErrorDataIntoExcel(//
+	public int importErrorBatchDataIntoExcel(//
 			@P(t = "批次编号") Long batchId, //
 			@P(t = "表结构编号") Long tableSchemaId//
 			) throws Exception {
@@ -923,13 +892,6 @@ public class TableService extends Controller {
 		return 0;
 	}
 
-	/**
-	 * 将修改后的错误数据导入到批次表
-	 */
-	public int importErrorDataIntoBatchData() throws Exception {
-		
-		return 0;
-	}
 
 	/**
 	 * 上传批次数据到正式数据表
@@ -1072,6 +1034,8 @@ public class TableService extends Controller {
 	//////数据源导入
 	///////////////////////////////////////////////
 	///////////////////////////////////////////////
+	
+	
 	@POSTAPI(//
 			path = "getDatabaseList", //
 			des = "获取所有数据库", //
@@ -1085,9 +1049,6 @@ public class TableService extends Controller {
 			return tableSchemaRepository.getDatabaseList(conn, count, offset);
 		}
 	}
-	
-	
-	
 	
 	@POSTAPI(//
 			path = "getTableNameList", //
@@ -1118,5 +1079,25 @@ public class TableService extends Controller {
 			return tableSchemaRepository.getTableColumns(conn, databaseName, tableName);
 		}
 	}
+	
+	@POSTAPI(//
+			path = "setTableColumnsTOSchema", //
+			des = "将选中的数据表字段添加到当前操作表结构中", //
+			ret = "受影响行数"//
+	)
+	public int setTableColumnsTOSchema(//
+			Long tableSchemaId,//
+			String databaseName,//
+			String tableName//
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			JSONArray columns = tableSchemaRepository.getTableColumns(conn, databaseName, tableName);
+			TableSchema ts = getTableSchemaById(tableSchemaId);
+			ts.columns.addAll(columns);
+			return tableSchemaRepository.update(conn, EXP.INS().key("id", tableSchemaId), ts, true);
+		}
+	}
+	
+	
 
 }

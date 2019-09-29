@@ -255,12 +255,12 @@ public class FlowTableServiceTest {
 			JSONObject data5 = JSON.parseObject("{\"name\":\"testName5\",\"sex\":\"男\"}");
 			JSONObject data6 = JSON.parseObject("{\"name\":\"testName6\",\"sex\":\"男\"}");
 
-			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data1, "测试数据 ");
-			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data2, "测试数据 ");
-			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data3, "测试数据 ");
-			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data4, "测试数据 ");
-			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data5, "测试数据 ");
-			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data6, "测试数据 ");
+//			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data1, "测试数据 ");
+//			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data2, "测试数据 ");
+//			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data3, "测试数据 ");
+//			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data4, "测试数据 ");
+//			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data5, "测试数据 ");
+//			tableService.importDataIntoBatchData(batchId, tableSchemaId, userId, batchVer1, data6, "测试数据 ");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -366,7 +366,7 @@ public class FlowTableServiceTest {
 
 	public void testImportErrorDataIntoExcel() {
 		try {
-			tableService.importErrorDataIntoExcel(batchId, tableSchemaId);
+//			tableService.importErrorDataIntoExcel(batchId, tableSchemaId);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

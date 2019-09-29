@@ -224,12 +224,10 @@ public class ImportTaskService {
 	public static void importTableBatchData(Long importTaskId, Long batchId, String batchVer, Long userId,
 			String fileUrl) throws Exception {
 
-		System.out.println("进入importTableBatchData-----Service");
 		// 异步方法，不会阻塞
 		Vertx.vertx().executeBlocking(future -> {
 			// 下面这行代码可能花费很长时间
 
-			System.out.println("进入executeBlocking-----Service");
 			DruidDataSource dds;
 			DruidPooledConnection conn = null;
 			try {
@@ -273,7 +271,6 @@ public class ImportTaskService {
 	public static void readExcel(DruidPooledConnection conn, String path, Long tableSchemaId, Long batchId, Long userId,
 			String batchVer, Long taskId) throws Exception {
 
-		System.out.println("进入readExcel-----Service");
 		File file = new File(path);
 		FileInputStream fis = null;
 		Workbook workBook = null;
@@ -299,10 +296,10 @@ public class ImportTaskService {
 				// 获取工作表名称
 				String sheetName = sheetAt.getSheetName();
 
-				System.out.println("工作表名称：" + sheetName);
+//				System.out.println("工作表名称：" + sheetName);
 				// 获取当前Sheet的总行数
 				int rowsOfSheet = sheetAt.getPhysicalNumberOfRows();
-				System.out.println("当前表格的总行数:" + rowsOfSheet);
+//				System.out.println("当前表格的总行数:" + rowsOfSheet);
 
 				// 第一行
 				Row row0 = sheetAt.getRow(0);

@@ -802,6 +802,9 @@ public class ProcessService extends Controller {
 
 	}
 
+	/**
+	 * 判断是否含有action
+	 */
 	protected ProcessAction processActionIF(//
 			Long processId, //
 			Long ownerId, //
@@ -862,6 +865,7 @@ public class ProcessService extends Controller {
 		}
 	}
 
+	// TODO 已废弃
 	@POSTAPI(//
 			path = "executeProcessAction", //
 			des = "执行流程的行为"//

@@ -360,7 +360,7 @@ public class FlowTest {
 		Long activityGroupId = 401127906929613L;
 		Boolean necessary = false;
 		Long activityId = 400969407422093L;
-		int ret = flowService.editSubActivity(activityGroupId, activityId, necessary);
+		int ret = flowService.updateSubActivity(activityGroupId, activityId, necessary);
 		System.out.println(ret);
 	}
 

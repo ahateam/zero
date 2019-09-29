@@ -66,7 +66,8 @@ public class ImprotController extends Controller {
 	
 	/**
 	 * 导入数据到批次数据表
-	 */@POSTAPI(//
+	 */
+	@POSTAPI(//
 				path = "importTableBatchData", //
 				des = "删除导入", //
 				ret = "返回新列表"//
@@ -79,7 +80,6 @@ public class ImprotController extends Controller {
 			@P(t = "文件路径") String fileUrl//
 			) throws Exception {
 		try (DruidPooledConnection conn = dds.getConnection()) {
-			System.out.println("进入importTableBatchData");
 			importTaskService.importTableBatchData(importTaskId, batchId, batchVer, userId, fileUrl);
 			return APIResponse.getNewSuccessResp();
 		}

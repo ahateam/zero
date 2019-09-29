@@ -743,7 +743,7 @@ public class FlowService extends Controller {
 			des = "修改Activity在Group中是否必须", //
 			ret = "更新影响的记录行数"//
 	)
-	public int editSubActivity(//
+	public int updateSubActivity(//
 			@P(t = "流程定义节点分组编号") Long activityGroupId, //
 			@P(t = "流程定义节点编号") Long activityId, //
 			@P(t = "是否必须") Boolean necessary//
