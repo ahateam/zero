@@ -1069,15 +1069,18 @@ public class TableService extends Controller {
 	@POSTAPI(//
 			path = "getTableColumns", //
 			des = "获取该数据库下所有数据表名", //
-			ret = "List<TableData>"//
+			ret = "List<Column>"//
 	)
 	public JSONArray getTableColumns(//
 			String databaseName,//
 			String tableName//
-	) throws Exception {
+	)  {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return tableSchemaRepository.getTableColumns(conn, databaseName, tableName);
+		}catch(Exception e){
+			e.printStackTrace();
 		}
+		return null;
 	}
 	
 	@POSTAPI(//
