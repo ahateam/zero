@@ -6,6 +6,7 @@ import com.alicloud.openservices.tablestore.SyncClient;
 import zyxhj.cms.domian.Channel;
 import zyxhj.cms.domian.ChannelContentTag;
 import zyxhj.cms.domian.ChannelTag;
+import zyxhj.cms.domian.ChannelUser;
 import zyxhj.cms.domian.Content;
 import zyxhj.cms.domian.ContentTag;
 import zyxhj.core.domain.Appraise;
@@ -38,7 +39,7 @@ public class Test {
 //
 //			RDSUtils.createTableByEntity(dds, ContentTag.class);
 //			RDSUtils.createTableByEntity(dds, ChannelContentTag.class);
-//			RDSUtils.createTableByEntity(dds, ChannelTag.class);
+//			RDSUtils.createTableByEntity(dds, ChannelUser.class);
 
 
 //			TSUtils.createTableByEntity(client, ContentTag.class);

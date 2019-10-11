@@ -13,6 +13,7 @@ import zyxhj.cms.domian.ChannelContentTag;
 import zyxhj.cms.domian.ChannelTag;
 import zyxhj.cms.repository.ChannelContentTagRepository;
 import zyxhj.cms.repository.ChannelTagRepository;
+import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
@@ -67,7 +68,7 @@ public class ChannelTagService extends Controller{
 	
 	@POSTAPI(
 		path = "getChannelContentTag", //
-		des = "查询某个专栏内的标签(根据专栏id查询标签)", //
+		des = "查询课程", //
 		ret = ""//
 	)
 	public List<ChannelContentTag> getChannelContentTag(
@@ -77,9 +78,57 @@ public class ChannelTagService extends Controller{
 		int count,
 		int offset
 	) throws ServerException, SQLException {
-		EXP exp = EXP.INS(false).key("module_id", moduleId).andKey("channelId", channelId).andKey("status", status);
+		EXP exp = EXP.INS(false).key("module_id", moduleId).andKey("channel_id", channelId).andKey("status", status);
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return channelContentTagRepository.getList(conn, exp, count, offset);			
 		}
 	}
+	@POSTAPI(
+			path = "updateChannelContentTag", //
+			des = "修改课程", //
+			ret = ""//
+		)
+		public int updateChannelContentTag(
+				@P(t = "模块编号")Long moduleId,
+				@P(t = "编号")Long id,
+				@P(t = "名称")String name,
+				@P(t = "价格")String price,
+				@P(t = "专栏编号")Long channelId,
+				@P(t = "状态")Byte status
+		) throws ServerException, SQLException {
+			EXP exp = EXP.INS(false).key("module_id", moduleId).andKey("id", id);
+			ChannelContentTag c = new ChannelContentTag();
+			c.name = name;
+			c.price = price;
+			c.channelId = channelId;
+			c.status = status;
+			try (DruidPooledConnection conn = ds.getConnection()) {
+				return channelContentTagRepository.update(conn, exp, c,true);			
+			}
+		}
+	
+	@POSTAPI(
+			path = "createChannelContentTag", //
+			des = "创建课程（标签）", //
+			ret = ""//
+		)
+		public ChannelContentTag createChannelContentTag(
+			@P(t = "模块编号")Long moduleId,
+			@P(t = "名称")String name,
+			@P(t = "价格")String price,
+			@P(t = "专栏编号")Long channelId,
+			@P(t = "状态")Byte status
+		) throws ServerException, SQLException {
+			try (DruidPooledConnection conn = ds.getConnection()) {
+				ChannelContentTag c = new ChannelContentTag();
+				c.moduleId = moduleId;
+				c.id = IDUtils.getSimpleId();
+				c.name = name;
+				c.price = price;
+				c.channelId = channelId;
+				c.status = status;
+				channelContentTagRepository.insert(conn, c);
+				return c;	
+			}
+		}
 }

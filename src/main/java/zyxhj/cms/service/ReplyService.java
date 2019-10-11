@@ -13,6 +13,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSON;
 import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
 import com.alicloud.openservices.tablestore.model.search.SearchQuery;
@@ -20,6 +21,7 @@ import com.alicloud.openservices.tablestore.model.search.sort.FieldSort;
 import com.alicloud.openservices.tablestore.model.search.sort.SortOrder;
 
 import zyxhj.cms.domian.Content;
+import zyxhj.cms.repository.AppraiseRepository;
 import zyxhj.cms.repository.ReplyRepository;
 import zyxhj.core.domain.Reply;
 import zyxhj.core.domain.User;
@@ -46,6 +48,7 @@ public class ReplyService extends Controller {
 
 	private UserService userService;
 	private ReplyRepository replyRepository;
+	private AppraiseRepository appraiseRepository;
 
 	public ReplyService(String node) {
 		super(node);
@@ -55,6 +58,7 @@ public class ReplyService extends Controller {
 
 			replyRepository = Singleton.ins(ReplyRepository.class);
 			userService = Singleton.ins(UserService.class);
+			appraiseRepository = Singleton.ins(AppraiseRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -162,7 +166,7 @@ public class ReplyService extends Controller {
 			path = "getReplyList", //
 			des = "根据状态获取回复评论，没有状态则获取全部" //
 	)
-	public JSONObject getReplyList(//
+	public JSONArray getReplyList(//
 			@P(t = "持有者编号", r = false) Long ownerId, //
 			@P(t = "提交者编号", r = false) Long upUserId, //
 			@P(t = "审核状态，不填表示全部，STATUS_UNEXAMINED = 0未审核，STATUS_ACCEPT = 1已通过，STATUS_REJECT = 2已回绝", r = false) Byte status, //
@@ -178,15 +182,30 @@ public class ReplyService extends Controller {
 		}
 		SearchQuery query = ts.build();
 		
-		JSONObject json = replyRepository.search(client, query);
-		JSONArray jsonarray = json.getJSONArray("list");
-		int index = jsonarray.size();
+		JSONObject reply = replyRepository.search(client, query);
+		JSONArray json = reply.getJSONArray("list");
+		JSONArray returnJson = new JSONArray();
+		int index = json.size();
 		try(DruidPooledConnection conn = ds.getConnection()){
-			for(int i=0;i<index;i++) {
-				User user = userService.getUserById(conn, (Long)jsonarray.getJSONObject(i).get("upUserId"));
-				jsonarray.getJSONObject(i).put("user", user);
+			for(int i= 0 ;i<index ;i++) {
+				//获取每一个评论下的点赞数  
+				//品论id
+				//电站表回复你内人
+				Long relpyId = json.getJSONObject(i).getLong("sequenceId");//评论id
+				TSQL tsAppraise = new TSQL();
+				tsAppraise.Term(OP.AND, "ownerId", relpyId);
+				tsAppraise.setGetTotalCount(true);
+				SearchQuery queryAppraise = tsAppraise.build();
+				/////////////////////////////////////
+				Long appraiseCount = appraiseRepository.search(client, queryAppraise).getLong("totalCount");//获取点赞表中评论id的个数
+				User user = userService.getUserById(conn, json.getJSONObject(i).getLong("upUserId"));
+				JSONObject j = new JSONObject();
+				j = json.getJSONObject(i);
+				j.put("user", user);
+				j.put("appraiseCount", appraiseCount);
+				returnJson.add(j);
 			}
-			return json;
+			return returnJson;
 		}
 		
 	}

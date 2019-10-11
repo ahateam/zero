@@ -110,7 +110,7 @@ public class Content {
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
 
-	@AnnDicField(alias = "相册")
+	@AnnDicField(alias = "图文")
 	public static final Byte TYPE_ALUMB = 0;
 	@AnnDicField(alias = "音频")
 	public static final Byte TYPE_AUDIO = 1;
@@ -120,23 +120,22 @@ public class Content {
 	public static final Byte TYPE_VIDEO = 3;
 	@AnnDicField(alias = "直播")
 	public static final Byte TYPE_LIVE = 4;
-	@AnnDicField(alias = "H5文本")
+	@AnnDicField(alias = "纯文本")
 	public static final Byte TYPE_H5 = 5;
 	@AnnDicField(alias = "帖子")
 	public static final Byte TYPE_POST = 6;
 	@AnnDicField(alias = "集合")
 	public static final Byte TYPE_SET = 7;
 
-	@AnnDicField(alias = "草稿")
-	public static final Byte STATUS_DRAFT = 0;
-	@AnnDicField(alias = "正常")
-	public static final Byte STATUS_NORMAL = 1;
+	@AnnDicField(alias = "待审核")
+	public static final Byte STATUS_DRAFT = 1;
+	@AnnDicField(alias = "未通过审核")
+	public static final Byte STATUS_NORMAL = 2;
 	@AnnDicField(alias = "已关闭")
-	public static final Byte STATUS_CLOSED = 2;
-	@AnnDicField(alias = "已删除")
-	public static final Byte STATUS_DELETED = 3;
+	public static final Byte STATUS_CLOSED = 3;
 	@AnnDicField(alias = "已发布")
-	public static final Byte STATUS_PUBLISHED = 4;
+	public static final Byte STATUS_DELETED = 4;
+	
 
 	@AnnDicField(alias = "免费")
 	public static final Byte RIGHT_FREE = 0;

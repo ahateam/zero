@@ -52,7 +52,7 @@ public class Channel {
 	 * 标签
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public JSONObject tags;
+	public String tags;
 
 	/**
 	 * 数据
@@ -64,10 +64,10 @@ public class Channel {
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
 
-	@AnnDicField(alias = "禁用")
-	public static final Byte STATUS_DISABLE = 0;
 	@AnnDicField(alias = "启用")
-	public static final Byte STATUS_ENABLE = 1;
+	public static final Byte STATUS_ENABLE = 0;
+	@AnnDicField(alias = "禁用")
+	public static final Byte STATUS_DISABLE = 1;
 	@AnnDicField(alias = "锁定")
 	public static final Byte STATUS_LOCKED = 2;
 

@@ -29,6 +29,14 @@ public class ChannelUser {
 	public Long channelId;
 
 	/**
+	 * 课程编号，ID列，无需索引
+	 */
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long channelContentTagId;
+
+	
+	/**
 	 * 用户编号，ID列，无需索引
 	 */
 	@RDSAnnID

@@ -78,8 +78,8 @@ public class ContentTagService extends Controller{
 		ContentTag ct = new ContentTag();
 		ct.status = status;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			contentTagRepository.update(conn, EXP.INS().key("moduleId", moduleId).
-					andKey("group", group).andKey("name", name), ct,true);			
+			contentTagRepository.update(conn, EXP.INS().key("module_id", moduleId).
+					andKey("con_group", group).andKey("name", name), ct,true);			
 		}
 	}
 	
@@ -90,8 +90,8 @@ public class ContentTagService extends Controller{
 	)
 	public List<ContentTag> getContentTag(
 			@P(t = "模板编号") Long moduleId, 
-			@P(t = "分组") String group,
-			@P(t = "状态") Byte status,
+			@P(t = "分组",r = false) String group,
+			@P(t = "状态",r = false) Byte status,
 			Integer count,
 			Integer offset
 			) throws ServerException, SQLException {
@@ -99,7 +99,8 @@ public class ContentTagService extends Controller{
 			if(status ==null) {
 				status = ContentTag.STATUS_ENABLE;
 			}
-			return contentTagRepository.getList(conn, EXP.INS().key("module_id", moduleId).
+			
+			return contentTagRepository.getList(conn, EXP.INS(false).key("module_id", moduleId).
 					andKey("con_group", group).andKey("status", status), count, offset);
 			
 		}
