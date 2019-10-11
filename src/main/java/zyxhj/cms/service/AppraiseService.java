@@ -51,14 +51,19 @@ public class AppraiseService extends Controller{
 			@P(t = "内容编号") Long ownerId, //
 			@P(t = "用户编号") Long userId, //
 			@P(t = "状态") Byte value //
-	) throws ServerException {
+	) throws Exception {
 		Appraise appraise = new Appraise();
-		appraise._id = TSUtils.get_id(ownerId);
-		appraise.ownerId = ownerId;
-		appraise.userId = userId;
-		appraise.value = value;
-		appraiseRepository.insert(client, appraise, true);
-		return appraise;
+		if(judgeAppraise(ownerId, userId, value)) {
+			appraise._id = TSUtils.get_id(ownerId);
+			appraise.ownerId = ownerId;
+			appraise.userId = userId;
+			appraise.value = value;
+			appraiseRepository.insert(client, appraise, true);
+			return appraise;			
+		}else {
+			appraise.value = 10;//10表示已经点过赞
+			return appraise;
+		}
 
 	}
 
@@ -106,5 +111,23 @@ public class AppraiseService extends Controller{
 		ts.setGetTotalCount(true);
 		SearchQuery query = ts.build();
 		return appraiseRepository.search(client, query);
+	}
+	
+	//判断是否点过赞
+	public boolean judgeAppraise(
+			@P(t = "内容编号") Long ownerId, 
+			@P(t = "用户编号") Long userId, 
+			@P(t = "状态0点赞1踩") Byte value
+	) throws Exception {
+		TSQL ts = new TSQL();
+		ts.Term(OP.AND, "ownerId", ownerId).Term(OP.AND, "userId", userId).Term(OP.AND, "value", (long)value);
+		ts.setGetTotalCount(true);
+		SearchQuery query = ts.build();
+		long count = (Long) appraiseRepository.search(client, query).get("totalCount"); 
+		if(count != 0) {//已经点过赞
+			return false;
+		}else {
+			return true;
+		}
 	}
 }

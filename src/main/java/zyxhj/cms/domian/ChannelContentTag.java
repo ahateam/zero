@@ -18,6 +18,13 @@ public class ChannelContentTag {
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long moduleId;
+	
+	/**
+	 * 编号
+	 */
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long id;
 
 	/**
 	 * 所属专栏编号
@@ -32,6 +39,12 @@ public class ChannelContentTag {
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String name;
+	
+	/**
+	 * 价格
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String price;
 
 	/**
 	 * 状态

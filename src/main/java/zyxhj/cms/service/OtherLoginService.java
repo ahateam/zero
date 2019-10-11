@@ -78,6 +78,16 @@ public class OtherLoginService extends Controller{
 	//百度小程序AppSecret
 	private static final String baidu_appSecret = "yaEDzvRSNBgpE4bseyWuOvI34vlvp0og";
 	
+	
+	//微信App获取openid地址
+	private static final String wxApp_url = "https://api.weixin.qq.com/sns/oauth2/access_token";
+	//微信APPId
+	private static final String wxApp_appid = "wxc5a7520814c89f2d";
+	//微信AppSecret
+	private static final String wxApp_appSecret = "0eb2041974c520362e3550db68d889bd";
+		
+	
+	
 	@POSTAPI(//
 			path = "ttGetSessionkey", //
 			des = " 头条获取openid和session_key", //
@@ -173,6 +183,37 @@ public class OtherLoginService extends Controller{
 			return APIResponse.getNewSuccessResp(userService.otherLoginOpenId(conn, bdopenId, name, ext,"baidu"));
 		}
 	}
+	
+	@POSTAPI(//
+			path = "wxAppGetSessionkey", //
+			des = " 微信App获取openid和session_key", //
+			ret = "用户信息"//
+	)
+	public APIResponse wxAppGetSessionkey(//
+			@P(t = "微信code") String code //
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			String res = getopanid(wxApp_url+"?appid="+wxApp_appid+"&secret="+wxApp_appSecret+"&code="+code+"&grant_type=authorization_code");
+			System.out.println(res);
+			return APIResponse.getNewSuccessResp(res);
+		}
+	}
+	
+	@POSTAPI(//
+			path = "loginBywxAppOpenId", //
+			des = " 微信App登录", //
+			ret = "用户信息"//
+	)
+	public APIResponse loginBywxAppOpenId(//
+			@P(t = "微信openId") String wxAppopenId, //
+			@P(t = "用户名") String name, //
+			@P(t = "扩展信息") String ext //
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			return APIResponse.getNewSuccessResp(userService.loginByWxOpenId(conn, wxAppopenId, name, ext));
+		}
+	}
+	
 	
 	//发起get网络请求
 	public String getopanid(String url) {

@@ -15,15 +15,26 @@ public class Template {
 	
 	
 	@AnnDicField(alias = "图文")
-	public static final Byte TYPE_H5 = 0;
+	public static final Byte TEMPTYPE_H5 = 0;
 	@AnnDicField(alias = "视频")
-	public static final Byte TYPE_VIDEO = 1;
+	public static final Byte TEMPTYPE_VIDEO = 1;
 	@AnnDicField(alias = "GIF表情")
-	public static final Byte TYPE_GIF = 2;
+	public static final Byte TEMPTYPE_GIF = 2;
 	@AnnDicField(alias = "音频")
-	public static final Byte TYPE_AUDIO = 3;
-	@AnnDicField(alias = "描述")
-	public static final Byte TYPE_DESC = 4;
+	public static final Byte TEMPTYPE_AUDIO = 3;
+	@AnnDicField(alias = "陪吃")
+	public static final Byte TEMPTYPE_EAT = 4;
+	
+	@AnnDicField(alias = "求表扬")
+	public static final Byte TASKTYPE_PRAISE = 0;
+	@AnnDicField(alias = "求陪玩")
+	public static final Byte TASKTYPE_PLAY = 1;
+	@AnnDicField(alias = "分享")
+	public static final Byte TASKTYPE_SHARE = 2;
+	@AnnDicField(alias = "制作")
+	public static final Byte TASKTYPE_MAKING = 3;
+	
+	
 
 	@AnnDicField(alias = "打开")
 	public static final Byte OPEN = 0;
@@ -52,7 +63,10 @@ public class Template {
 	public Double money;
 
 	@RDSAnnField(column = RDSAnnField.BYTE)
-	public Byte type;
+	public Byte tempType;
+	
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte taskType;
 	
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte status;

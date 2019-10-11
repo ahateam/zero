@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -70,7 +71,7 @@ public class ContentService extends Controller{
 		c.createTime = new Date();
 		c.updateTime = c.createTime;
 		c.type = type;
-		c.status = status;
+		c.status = Content.STATUS_DELETED;
 		c.power = power;
 		c.title = title;
 		c.upUserId = upUserId;
@@ -85,6 +86,8 @@ public class ContentService extends Controller{
 		return c;
 		
 	}
+	
+	
 	
 	
 	@POSTAPI(
@@ -129,7 +132,7 @@ public class ContentService extends Controller{
 
 	@POSTAPI(
 		path = "delContentById", //
-		des = "逻辑删除内容", //
+		des = "删除内容", //
 		ret = "所创建的对象"//
 	)
 	public void delContentById(
@@ -137,12 +140,32 @@ public class ContentService extends Controller{
 	) throws Exception {
 		Content c = new Content();
 		c.id = id;
-		c.updateTime = new Date();
-		c.status = Content.STATUS_DELETED;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			contentRepository.update(conn, EXP.INS().key("id", id), c, true);			
+			contentRepository.delete(conn, EXP.INS().key("id", id));			
 		}
 	}
+	
+	@POSTAPI(
+			path = "auditContent", //
+			des = "审核内容", //
+			ret = "所创建的对象"//
+		)
+		public void auditContent(
+			@P(t = "内容编号") Long id, //
+			@P(t = "是否通过") boolean bool //
+		) throws Exception {
+			Content c = new Content();
+			c.id = id;
+			c.updateTime = new Date();
+			if(bool) {
+				c.status = Content.STATUS_DELETED;				
+			}else {
+				c.status = Content.STATUS_NORMAL;
+			}
+			try (DruidPooledConnection conn = ds.getConnection()) {
+				contentRepository.update(conn, EXP.INS().key("id", id), c, true);			
+			}
+		}
 
 	/**
 	 * 根据条件查询内容 

@@ -8,8 +8,10 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONObject;
 import zyxhj.cms.domian.Channel;
+import zyxhj.cms.domian.ChannelUser;
 import zyxhj.cms.repository.ChannelContentTagRepository;
 import zyxhj.cms.repository.ChannelRepository;
+import zyxhj.cms.repository.ChannelUserRepository;
 import zyxhj.cms.repository.ContentRepository;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.Singleton;
@@ -26,6 +28,7 @@ public class ChannelService extends Controller{
 	private ChannelRepository channelRepository;
 	private ChannelContentTagRepository channelContentTagRepository; 
 	private ContentRepository contentRepository;
+	private ChannelUserRepository channelUserRepository;
 	
 	public ChannelService(String node) {
 		super(node);
@@ -34,6 +37,7 @@ public class ChannelService extends Controller{
 			channelRepository = Singleton.ins(ChannelRepository.class);
 			contentRepository = Singleton.ins(ContentRepository.class);
 			channelContentTagRepository = Singleton.ins(ChannelContentTagRepository.class);
+			channelUserRepository = Singleton.ins(ChannelUserRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -50,7 +54,7 @@ public class ChannelService extends Controller{
 		@P(t = "状态") Byte status, 
 		@P(t = "标题") String title, 
 		@P(t = "标签（json）") String tags, 
-		@P(t = "数据") String data
+		@P(t = "数据",r = false) String data
 	)throws Exception {
 		Channel channel = new Channel();
 		channel.id = IDUtils.getSimpleId();
@@ -58,8 +62,10 @@ public class ChannelService extends Controller{
 		channel.status = status;
 		channel.createTime = new Date();
 		channel.title = title;
-		channel.tags = JSONObject.parseObject(tags);
-		channel.data = data;
+		channel.tags = tags;
+		if(data != null) {
+			channel.data = data;			
+		}
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			channelRepository.insert(conn, channel);;			
 		}
@@ -85,7 +91,7 @@ public class ChannelService extends Controller{
 		channel.status = status;
 		channel.title = title;
 		if(tags != null) {
-			channel.tags = JSONObject.parseObject(tags);			
+			channel.tags = tags;			
 		}
 		channel.data = data;
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -108,10 +114,16 @@ public class ChannelService extends Controller{
 		int offset
 	) throws Exception {
 		JSONObject keys = null;
+		EXP exp = EXP.INS(false).key("module_id", module);
 		if(tags !=null) {
 			 keys = JSONObject.parseObject(tags);
 		}
-		EXP exp = EXP.INS(false).key("module_id", module).andKey("status", status);
+		if(status == null) {
+			exp.andKey("status", Channel.STATUS_ENABLE);
+		}else {
+			exp.andKey("status", status);
+		}
+		
 		if(tags !=null && keys.size()>0) {
 			exp = exp.and(EXP.JSON_CONTAINS_JSONOBJECT(keys, "tags"));
 		}
@@ -175,6 +187,74 @@ public class ChannelService extends Controller{
 		}
 	}
 	
+	@POSTAPI(
+			path = "getChannelContentTagPower", //
+			des = "查询用户是否购买了课程", //
+			ret = ""//
+		)
+	public JSONObject getChannelContentTagPower(
+			@P(t = "模块编号")Long modeuleId,
+			@P(t = "专栏id")Long channelId,
+			@P(t = "课程名id")Long channelContentTagId,
+			@P(t = "用户id")Long userId
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			JSONObject json = new JSONObject();
+			ChannelUser cu = channelUserRepository.get(conn, EXP.INS().key("module_id", modeuleId).andKey("channel_id", channelId)
+					.andKey("channel_content_tag_id", channelContentTagId).andKey("user_id", userId));
+			if(cu != null) {
+				json.put("resultStatus", true);
+				json.put("resultMsg", cu);
+			}else {
+				json.put("resultStatus", false);
+			}
+			return json;
+		}
+	}
+	
+	@POSTAPI(
+			path = "PayChannelContentTag", //
+			des = "用户购买课程", //
+			ret = ""//
+		)
+	public ChannelUser PayChannelContentTag(
+			@P(t = "模块编号")Long modeuleId,
+			@P(t = "专栏id")Long channelId,
+			@P(t = "课程名id")Long ChannelContentTagId,
+			@P(t = "用户id")Long userId
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			ChannelUser c = new ChannelUser();
+			c.moduleId = modeuleId;
+			c.channelId = channelId;
+			c.channelContentTagId = ChannelContentTagId;
+			c.userId = userId;
+			c.createTime = new Date();
+			channelUserRepository.insert(conn, c);
+			return c;
+		}
+	}
+	@POSTAPI(
+			path = "banChannel", //
+			des = "是否禁用专栏", //
+			ret = ""//
+		)
+	public Channel banChannel(
+			@P(t = "模块编号")Long modeuleId,
+			@P(t = "专栏id")Long channelId,
+			@P(t = "是否禁用")Boolean bool
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			Channel c = new Channel();
+			if(bool) {
+				c.status = Channel.STATUS_DISABLE;				
+			}else {
+				c.status = Channel.STATUS_ENABLE;				
+			}
+			channelRepository.update(conn, EXP.INS().key("module_id", modeuleId).andKey("id", channelId), c, true);
+			return c;
+		}
+	}
 }
 
 
