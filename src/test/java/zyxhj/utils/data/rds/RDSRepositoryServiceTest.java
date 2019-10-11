@@ -74,40 +74,41 @@ public class RDSRepositoryServiceTest {
 		conn.close();
 	}
 
-//	@Test
+	@Test
 	public void testTest() throws Exception {
 
 		// 插入
-		TestDomain td = testInsert();
-		TestDomain td2 = testInsert();
+//		TestDomain td = testInsert();
+//		TestDomain td2 = testInsert();
 
 		try {
 
-			testUpdateByKey(td.id);
-			testUpdateByANDKey(td.id, "123adsfs");
+//			testUpdateByKey(td.id);
+//			testUpdateByANDKey(td.id, "123adsfs");
+//
+//			testGetList();
+//			testGetListByKey(td.id);
+//			testGetListByANDKeys();
+//			testGetListByKeyIN(td.id, td2.id);
+//			testGetListByKeyORDERBY();
 
-			testGetList();
-			testGetListByKey(td.id);
-			testGetListByANDKeys();
-			testGetListByKeyIN(td.id, td2.id);
-			testGetListByKeyORDERBY();
-
-			testJsonArrayAppend(td.id);
-			testJsonArrayAppendOnkey(td.id);
-			testJsonContainsKeys();
-			testJsonContainsJSONObject();
-			testJsonSet(td.id);
-
-			testJsonAppendInArrayAndRemove(td2.id);
-			testJsonAppendInArrayOnKeyAndRemove(td2.id);
+//			testJsonArrayAppend(400992946457487L);
+//			testJsonArrayAppendOnkey(td.id);
+//			testJsonContainsKeys();
+//			testJsonContainsJSONObject();
+//			testJsonSet(td.id);
+//
+//			testJsonAppendInArrayAndRemove(400992946457487L);
+			testRemave();
+//			testJsonAppendInArrayOnKeyAndRemove(td2.id);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		// 删除，避免垃圾数据
-		testDelByKey(td.id);
-		testDelByANDKeys(td2.id);
+//		testDelByKey(td.id);
+//		testDelByANDKeys(td2.id);
 
 	}
 
@@ -322,7 +323,7 @@ public class RDSRepositoryServiceTest {
 
 	private void testJsonArrayAppend(Long id) throws ServerException {
 		EXP where = EXP.INS().key("id", id);
-		EXP tagAppend = EXP.JSON_ARRAY_APPEND("arrays", "tag1", true);
+		EXP tagAppend = EXP.JSON_ARRAY_APPEND("arrays", 103, false);
 		int ret = testRepository.update(conn, tagAppend, where);
 		System.out.println("----------testJsonArrayAppend==>>" + ret);
 	}
@@ -364,7 +365,7 @@ public class RDSRepositoryServiceTest {
 	private void testJsonAppendInArrayAndRemove(Long id) throws ServerException {
 		int ret = 0;
 		{
-			EXP set = EXP.JSON_ARRAY_APPEND("arrays", "tag1", false);
+			EXP set = EXP.JSON_ARRAY_APPEND("arrays", 103, false);
 			EXP where = EXP.INS().key("id", id);
 			ret = testRepository.update(conn, set, where);
 			System.out.println(ret);
@@ -500,6 +501,21 @@ public class RDSRepositoryServiceTest {
 
 	}
 
-
+	private void testRemave() throws ServerException {
+		EXP exp = EXP.JSON_CONTAINS("arrays", "$", 103);
+		EXP where = EXP.INS().key("share_amount", 0).append(" or share_amount is null");
+//
+//		List<TestDomain> tlist = testRepository.getList(conn, where, 10, 0);
+//		for (ORGUser t : tlist) {
+//			JSONArray ja = t.roles;
+//			for(int i = 0; i < ja.size(); i++) {
+//				int role = (int) ja.get(i);
+//				if(role == 103) {
+//					ja.remove(i);
+//					break;
+//				}
+//			}
+//		}
+	}
 
 }
