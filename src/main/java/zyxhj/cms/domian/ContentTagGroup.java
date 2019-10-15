@@ -24,7 +24,7 @@ public class ContentTagGroup {
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
-	public String group;
+	public String groupName;
 
 	/**
 	 * 备注
