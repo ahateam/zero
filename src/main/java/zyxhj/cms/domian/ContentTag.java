@@ -13,13 +13,6 @@ import zyxhj.utils.data.rds.RDSAnnID;
 public class ContentTag {
 
 	/**
-	 * 所属模块
-	 */
-	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.ID)
-	public Long moduleId;
-
-	/**
 	 * 所属分组编号
 	 */
 	@RDSAnnID

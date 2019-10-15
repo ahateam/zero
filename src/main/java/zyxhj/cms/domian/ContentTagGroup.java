@@ -12,11 +12,12 @@ import zyxhj.utils.data.rds.RDSAnnID;
 public class ContentTagGroup {
 
 	/**
-	 * 所属模块
+	 * 所属模块</br>
+	 * orgId + moduleKey
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
-	public Long moduleId;
+	public String orgModule;
 
 	/**
 	 * 分组关键字（分类前缀 + 关键字）
