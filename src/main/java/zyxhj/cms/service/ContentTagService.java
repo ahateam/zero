@@ -43,25 +43,16 @@ public class ContentTagService extends Controller{
 			ret = "" //
 	)
 	public void createContentTag(
-			@P(t = "模板编号") Long moduleId, 
 			@P(t = "分组") String group, 
 			@P(t = "名称") String name
 	) throws ServerException, SQLException {
 		ContentTag ct = new ContentTag();
-		ct.moduleId = moduleId;
-		ct.conGroup = group;
+		ct.GroupName = group;
 		ct.name = name;
 		ct.status = ContentTag.STATUS_ENABLE;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			contentTagRepository.insert(conn, ct);
 		}
-	}
-	
-	/**
-	 * 删除内容标签
-	 */
-	public void delContentTag() {
-		
 	}
 	
 	@POSTAPI(//
@@ -78,8 +69,8 @@ public class ContentTagService extends Controller{
 		ContentTag ct = new ContentTag();
 		ct.status = status;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			contentTagRepository.update(conn, EXP.INS().key("module_id", moduleId).
-					andKey("con_group", group).andKey("name", name), ct,true);			
+			contentTagRepository.update(conn, EXP.INS().key("org_module", moduleId).
+					andKey("group_name", group).andKey("name", name), ct,true);			
 		}
 	}
 	
@@ -99,60 +90,41 @@ public class ContentTagService extends Controller{
 			if(status ==null) {
 				status = ContentTag.STATUS_ENABLE;
 			}
-			
-			return contentTagRepository.getList(conn, EXP.INS(false).key("module_id", moduleId).
-					andKey("con_group", group).andKey("status", status), count, offset);
-			
+			return contentTagRepository.getList(conn, EXP.INS(false).key("group_name", group).andKey("status", status), count, offset);
 		}
 	}
-	
-	
-	/////////////////////
-	
+		
 	@POSTAPI(//
 			path = "createContentTagGroup", //
 			des = "创建内容标签分组", //
 			ret = "" //
 	)
 	public void createContentTagGroup(
-			@P(t = "模板编号") Long moduleId,
+			@P(t = "模板编号") String moduleId,
 			@P(t = "分组编号") String group, 
 			@P(t = "备注") String remark
 	) throws ServerException, SQLException {
 		ContentTagGroup ctg = new ContentTagGroup();
-		ctg.moduleId = moduleId;
-		ctg.group = group;
+		ctg.orgModule = moduleId;
+		ctg.groupName = group;
 		ctg.remark = remark;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			contentTagGroupRepository.insert(conn, ctg);
-			
 		}
-	}
-	
-	/**
-	 * 删除
-	 */
-	public void delContentTagGroup() {
-		
 	}
 	
 	@POSTAPI(//
-			path = "editContentTagGroup", //
-			des = "修改内容标签分组", //
+			path = "delContentTagGroup", //
+			des = "删除标签分组", //
 			ret = "" //
 	)
-	public void editContentTagGroup(
+	public void delContentTagGroup(
 			@P(t = "模板编号") Long moduleId,
-			@P(t = "分组编号") String group, 
-			@P(t = "备注") String remark
+			@P(t = "分组编号") String group
 	) throws ServerException, SQLException {
-		ContentTagGroup ctg = new ContentTagGroup();
-		ctg.remark = remark;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			contentTagGroupRepository.update(conn, EXP.INS().key("moduleId", moduleId).
-					andKey("group", group), ctg,true);
+			contentTagGroupRepository.delete(conn, EXP.INS().key("org_module", moduleId).andKey("con_group", group));
 		}
-		
 	}
 	
 	@POSTAPI(//
@@ -166,7 +138,7 @@ public class ContentTagService extends Controller{
 			Integer offset
 	) throws ServerException, SQLException {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			return contentTagGroupRepository.getList(conn, EXP.INS().key("moduleId", moduleId), count, offset);
+			return contentTagGroupRepository.getList(conn, EXP.INS().key("org_module", moduleId), count, offset);
 		}
 	}
 }

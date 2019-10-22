@@ -13,12 +13,12 @@ import zyxhj.utils.data.rds.RDSAnnID;
 public class ChannelContentTag {
 
 	/**
-	 * 所属模块
+	 * 所属专栏编号
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
-	public Long moduleId;
-	
+	public Long channelId;
+
 	/**
 	 * 编号
 	 */
@@ -27,19 +27,12 @@ public class ChannelContentTag {
 	public Long id;
 
 	/**
-	 * 所属专栏编号
-	 */
-	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.ID)
-	public Long channelId;
-
-	/**
 	 * 标签名称（名称直接配合模块编号和持有者编号做主键，不重复）
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String name;
-	
+
 	/**
 	 * 价格
 	 */

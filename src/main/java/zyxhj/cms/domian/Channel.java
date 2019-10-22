@@ -17,11 +17,12 @@ import zyxhj.utils.data.rds.RDSAnnID;
 public class Channel {
 
 	/**
-	 * 所属模块
+	 * 所属模块</br>
+	 * orgId + moduleKey
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
-	public Long moduleId;
+	public String orgModule;
 
 	/**
 	 * 编号

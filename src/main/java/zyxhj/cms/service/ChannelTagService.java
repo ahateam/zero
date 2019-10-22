@@ -59,7 +59,7 @@ public class ChannelTagService extends Controller{
 		int count,
 		int offset
 	) throws ServerException, SQLException {
-		EXP exp = EXP.INS(false).key("module_id", moduleId).andKey("status", status);
+		EXP exp = EXP.INS(false).key("org_module", moduleId).andKey("status", status);
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return channelTagRepository.getList(conn, exp, count, offset);			
 		}
@@ -78,7 +78,7 @@ public class ChannelTagService extends Controller{
 		int count,
 		int offset
 	) throws ServerException, SQLException {
-		EXP exp = EXP.INS(false).key("module_id", moduleId).andKey("channel_id", channelId).andKey("status", status);
+		EXP exp = EXP.INS(false).key("org_module", moduleId).andKey("channel_id", channelId).andKey("status", status);
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return channelContentTagRepository.getList(conn, exp, count, offset);			
 		}
@@ -96,14 +96,13 @@ public class ChannelTagService extends Controller{
 				@P(t = "专栏编号")Long channelId,
 				@P(t = "状态")Byte status
 		) throws ServerException, SQLException {
-			EXP exp = EXP.INS(false).key("module_id", moduleId).andKey("id", id);
 			ChannelContentTag c = new ChannelContentTag();
 			c.name = name;
 			c.price = price;
 			c.channelId = channelId;
 			c.status = status;
 			try (DruidPooledConnection conn = ds.getConnection()) {
-				return channelContentTagRepository.update(conn, exp, c,true);			
+				return channelContentTagRepository.update(conn, EXP.INS().key("org_module", moduleId).andKey("id", id), c,true);			
 			}
 		}
 	
@@ -121,7 +120,6 @@ public class ChannelTagService extends Controller{
 		) throws ServerException, SQLException {
 			try (DruidPooledConnection conn = ds.getConnection()) {
 				ChannelContentTag c = new ChannelContentTag();
-				c.moduleId = moduleId;
 				c.id = IDUtils.getSimpleId();
 				c.name = name;
 				c.price = price;

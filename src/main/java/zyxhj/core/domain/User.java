@@ -42,24 +42,7 @@ public class User {
 	@RDSAnnIndex(type = RDSAnnIndex.NORMAL)
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte sex;
-	/**
-	 * 	头条小程序开放平台id
-	 */
-	@RDSAnnIndex(type = RDSAnnIndex.UNIQUE)
-	@RDSAnnField(column = "VARCHAR(32)")
-	public String ttOpenId;
-	/**
-	 * 	百度小程序开放平台id
-	 */
-	@RDSAnnIndex(type = RDSAnnIndex.UNIQUE)
-	@RDSAnnField(column = "VARCHAR(32)")
-	public String bdOpenId;
-	/**
-	 * 	支付宝小程序开放平台id
-	 */
-	@RDSAnnIndex(type = RDSAnnIndex.UNIQUE)
-	@RDSAnnField(column = "VARCHAR(32)")
-	public String alipayOpenId;
+	
 	
 	/**
 	 * 手机号（索引）
@@ -144,5 +127,24 @@ public class User {
 	 */
 	@RDSAnnField(column = RDSAnnField.JSON)
 	public String ext;
+	
+	/**
+	 * 	头条小程序开放平台id
+	 */
+	@RDSAnnIndex(type = RDSAnnIndex.UNIQUE)
+	@RDSAnnField(column = "VARCHAR(32)")
+	public String ttOpenId;
+	/**
+	 * 	百度小程序开放平台id
+	 */
+	@RDSAnnIndex(type = RDSAnnIndex.UNIQUE)
+	@RDSAnnField(column = "VARCHAR(32)")
+	public String bdOpenId;
+	/**
+	 * 	支付宝小程序开放平台id
+	 */
+	@RDSAnnIndex(type = RDSAnnIndex.UNIQUE)
+	@RDSAnnField(column = "VARCHAR(32)")
+	public String alipayOpenId;
 
 }

@@ -13,18 +13,11 @@ import zyxhj.utils.data.rds.RDSAnnID;
 public class ContentTag {
 
 	/**
-	 * 所属模块
-	 */
-	@RDSAnnID
-	@RDSAnnField(column = RDSAnnField.ID)
-	public Long moduleId;
-
-	/**
 	 * 所属分组编号
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
-	public String conGroup;
+	public String GroupName;
 
 	/**
 	 * 标签名称（名称直接配合模块编号和持有者编号做主键，不重复）

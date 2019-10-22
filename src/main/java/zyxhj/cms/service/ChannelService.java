@@ -50,7 +50,7 @@ public class ChannelService extends Controller{
 		ret = "所创建的对象"//
 	)
 	public Channel createChannel(
-		@P(t = "模块编号") Long module,
+		@P(t = "模块编号") String module,
 		@P(t = "状态") Byte status, 
 		@P(t = "标题") String title, 
 		@P(t = "标签（json）") String tags, 
@@ -58,7 +58,7 @@ public class ChannelService extends Controller{
 	)throws Exception {
 		Channel channel = new Channel();
 		channel.id = IDUtils.getSimpleId();
-		channel.moduleId = module;
+		channel.orgModule = module;
 		channel.status = status;
 		channel.createTime = new Date();
 		channel.title = title;
@@ -79,7 +79,7 @@ public class ChannelService extends Controller{
 		ret = ""//
 	)
 	public Channel editChannel(
-		@P(t = "模块编号")Long module,
+		@P(t = "模块编号")String module,
 		@P(t = "专栏编号")Long id,
 		@P(t = "状态",r = false)Byte status, 
 		@P(t = "标题",r = false)String title,
@@ -87,7 +87,7 @@ public class ChannelService extends Controller{
 		@P(t = "数据",r = false)String data
 	) throws Exception {
 		Channel channel = new Channel();
-		channel.moduleId = module;
+		channel.orgModule = module;
 		channel.status = status;
 		channel.title = title;
 		if(tags != null) {
@@ -95,7 +95,7 @@ public class ChannelService extends Controller{
 		}
 		channel.data = data;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			channelRepository.update(conn, EXP.INS().key("module_id", module) .key("id", id), channel, true);		
+			channelRepository.update(conn, EXP.INS().key("org_module", module) .key("id", id), channel, true);		
 		}
 		return channel;
 
@@ -114,7 +114,7 @@ public class ChannelService extends Controller{
 		int offset
 	) throws Exception {
 		JSONObject keys = null;
-		EXP exp = EXP.INS(false).key("module_id", module);
+		EXP exp = EXP.INS(false).key("org_module", module);
 		if(tags !=null) {
 			 keys = JSONObject.parseObject(tags);
 		}
@@ -147,7 +147,7 @@ public class ChannelService extends Controller{
 			Integer count, 
 			Integer offset
 		) throws Exception {
-			EXP exp = EXP.INS(false).key("module_id", module).andKey("channel_id", channelId).andKey("status", status);
+			EXP exp = EXP.INS(false).key("org_module", module).andKey("channel_id", channelId).andKey("status", status);
 			try (DruidPooledConnection conn = ds.getConnection()) {
 				return APIResponse.getNewSuccessResp(channelContentTagRepository.getList(conn, exp, count, offset));			
 			}
@@ -169,7 +169,7 @@ public class ChannelService extends Controller{
 			Integer count, 
 			Integer offset
 		) throws Exception {
-			EXP exp = EXP.INS(false).key("module_id", module).andKey("up_channel_id", channelId).andKey("status", status);
+			EXP exp = EXP.INS(false).key("org_module", module).andKey("up_channel_id", channelId).andKey("status", status);
 			try (DruidPooledConnection conn = ds.getConnection()) {
 				return APIResponse.getNewSuccessResp(contentRepository.getList(conn,exp, count, offset));			
 			}
@@ -200,7 +200,7 @@ public class ChannelService extends Controller{
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			JSONObject json = new JSONObject();
-			ChannelUser cu = channelUserRepository.get(conn, EXP.INS().key("module_id", modeuleId).andKey("channel_id", channelId)
+			ChannelUser cu = channelUserRepository.get(conn, EXP.INS().key("org_module", modeuleId).andKey("channel_id", channelId)
 					.andKey("channel_content_tag_id", channelContentTagId).andKey("user_id", userId));
 			if(cu != null) {
 				json.put("resultStatus", true);
@@ -225,9 +225,7 @@ public class ChannelService extends Controller{
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			ChannelUser c = new ChannelUser();
-			c.moduleId = modeuleId;
 			c.channelId = channelId;
-			c.channelContentTagId = ChannelContentTagId;
 			c.userId = userId;
 			c.createTime = new Date();
 			channelUserRepository.insert(conn, c);
@@ -251,7 +249,7 @@ public class ChannelService extends Controller{
 			}else {
 				c.status = Channel.STATUS_ENABLE;				
 			}
-			channelRepository.update(conn, EXP.INS().key("module_id", modeuleId).andKey("id", channelId), c, true);
+			channelRepository.update(conn, EXP.INS().key("org_module", modeuleId).andKey("id", channelId), c, true);
 			return c;
 		}
 	}

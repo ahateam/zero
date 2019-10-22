@@ -18,11 +18,12 @@ import zyxhj.utils.data.rds.RDSAnnID;
 public class Content {
 
 	/**
-	 * 所属模块
+	 * 所属模块</br>
+	 * orgId + moduleKey
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
-	public String moduleId;
+	public String orgModule;
 
 	/**
 	 * 编号
@@ -105,6 +106,17 @@ public class Content {
 	
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public User user;//用户信息
+	
+	/**
+	 * 活动开始时间
+	 */
+	@RDSAnnField(column = RDSAnnField.TIME)
+	public Date activityStart;
+	/**
+	 * 活动结束时间
+	 */
+	@RDSAnnField(column = RDSAnnField.TIME)
+	public Date activityEnd;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
@@ -126,6 +138,8 @@ public class Content {
 	public static final Byte TYPE_POST = 6;
 	@AnnDicField(alias = "集合")
 	public static final Byte TYPE_SET = 7;
+	@AnnDicField(alias = "活动")
+	public static final Byte TYPE_ACTIVITY = 8;
 
 	@AnnDicField(alias = "待审核")
 	public static final Byte STATUS_DRAFT = 1;
