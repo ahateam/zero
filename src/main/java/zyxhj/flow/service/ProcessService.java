@@ -59,7 +59,7 @@ public class ProcessService extends Controller {
 
 	private UserRepository userRepository;
 
-	private FlowService flowService;
+	private FlowService flowService = new FlowService("node");
 
 	public ProcessService(String node) {
 		super(node);
@@ -74,8 +74,6 @@ public class ProcessService extends Controller {
 			processActionRepository = Singleton.ins(ProcessActionRepository.class);
 			userRepository = Singleton.ins(UserRepository.class);
 			processActivityGroupRepository = Singleton.ins(ProcessActivityGroupRepository.class);
-
-			flowService = Singleton.ins(FlowService.class);
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

@@ -1,8 +1,5 @@
 package zyxhj.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.metadata.BaseRowModel;
 
@@ -21,15 +18,6 @@ public class TestExcelModel extends BaseRowModel {
 	@ExcelProperty(value = "手机号", index = 3)
 	private String mobile;
 	
-	
-	public TestExcelModel(String name, Integer age, String sex, String mobile) {
-		super();
-		this.name = name;
-		this.age = age;
-		this.sex = sex;
-		this.mobile = mobile;
-	}
-
 
 	public String getName() {
 		return name;
@@ -69,11 +57,6 @@ public class TestExcelModel extends BaseRowModel {
 	public void setMobile(String mobile) {
 		this.mobile = mobile;
 	}
-
-
-	public TestExcelModel() {
-		
-	};
 
 }
 
