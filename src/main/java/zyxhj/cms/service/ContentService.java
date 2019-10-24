@@ -244,7 +244,6 @@ public class ContentService extends Controller{
         }
         return ret;
 	}
-	
 		/**
 		 * 获取发布信息
 		 */

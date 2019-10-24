@@ -78,7 +78,7 @@ public class ChannelTagService extends Controller{
 		int count,
 		int offset
 	) throws ServerException, SQLException {
-		EXP exp = EXP.INS(false).key("org_module", moduleId).andKey("channel_id", channelId).andKey("status", status);
+		EXP exp = EXP.INS().key("channel_id", channelId).andKey("status", status);
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return channelContentTagRepository.getList(conn, exp, count, offset);			
 		}

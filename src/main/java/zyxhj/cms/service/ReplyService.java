@@ -19,10 +19,14 @@ import com.alicloud.openservices.tablestore.model.PrimaryKey;
 import com.alicloud.openservices.tablestore.model.search.SearchQuery;
 import com.alicloud.openservices.tablestore.model.search.sort.FieldSort;
 import com.alicloud.openservices.tablestore.model.search.sort.SortOrder;
+import com.alipay.api.domain.CommentReplyOpenModel;
 
 import zyxhj.cms.domian.Content;
 import zyxhj.cms.repository.AppraiseRepository;
+import zyxhj.cms.repository.CommentRepository;
+import zyxhj.cms.repository.ContentRepository;
 import zyxhj.cms.repository.ReplyRepository;
+import zyxhj.core.domain.Comment;
 import zyxhj.core.domain.Reply;
 import zyxhj.core.domain.User;
 import zyxhj.core.service.UserService;
@@ -33,6 +37,7 @@ import zyxhj.utils.api.BaseRC;
 import zyxhj.utils.api.Controller;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
+import zyxhj.utils.data.EXP;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
 import zyxhj.utils.data.ts.TSQL;
 import zyxhj.utils.data.ts.TSRepository;
@@ -49,6 +54,8 @@ public class ReplyService extends Controller {
 	private UserService userService;
 	private ReplyRepository replyRepository;
 	private AppraiseRepository appraiseRepository;
+	private ContentRepository contentRepository;
+	private CommentRepository commentRepository;
 
 	public ReplyService(String node) {
 		super(node);
@@ -59,6 +66,8 @@ public class ReplyService extends Controller {
 			replyRepository = Singleton.ins(ReplyRepository.class);
 			userService = Singleton.ins(UserService.class);
 			appraiseRepository = Singleton.ins(AppraiseRepository.class);
+			contentRepository = Singleton.ins(ContentRepository.class);
+			commentRepository = Singleton.ins(CommentRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -78,7 +87,6 @@ public class ReplyService extends Controller {
 			@P(t = "正文") String text, //
 			@P(t = "扩展") String ext//
 	) throws ServerException {
-		System.out.println(ownerId);
 		Reply reply = new Reply();
 		reply._id = TSUtils.get_id(ownerId);
 		reply.ownerId = ownerId;
@@ -94,6 +102,40 @@ public class ReplyService extends Controller {
 		replyRepository.insert(client, reply, true);
 
 		return reply;
+	}
+	
+	@POSTAPI(//
+			path = "createComment", //
+			des = "创建二级回复", //
+			ret = "Comment实例" //
+	)
+	public Comment createComment(//
+			@P(t = "回复评论id") Long replyId, //
+			@P(t = "提交者编号") Long upUserId, //
+			@P(t = "提交者头像") String upUserHead, //
+			@P(t = "提交者昵称") String upUserName, //
+			@P(t = "正文") String text, //
+			@P(t = "目标用户编号",r = false) Long toUserId, //
+			@P(t = "目标用户昵称",r = false) String toUserName //
+	) throws ServerException {
+		Comment c = new Comment();
+		c._id = TSUtils.get_id(replyId);
+		c.replyId = replyId;
+		c.createTime = new Date();
+		c.status = Reply.STATUS_UNEXAMINED;
+		c.upUserId = upUserId;
+		c.upUserHead = upUserHead;
+		c.upUserName = upUserName;
+		c.text = text;
+		if(toUserId != null && toUserName != null) {
+			c.toUserId = toUserId;
+			c.toUserName = toUserName;			
+		}else {
+			c.toUserId = 0L;
+			c.toUserName = "no";	
+		}
+		commentRepository.insert(client, c, true);
+		return c;
 	}
 
 	@POSTAPI(//
@@ -167,10 +209,11 @@ public class ReplyService extends Controller {
 			des = "根据状态获取回复评论，没有状态则获取全部" //
 	)
 	public JSONArray getReplyList(//
-			@P(t = "持有者编号", r = false) Long ownerId, //
-			@P(t = "提交者编号", r = false) Long upUserId, //
-			@P(t = "审核状态，不填表示全部，STATUS_UNEXAMINED = 0未审核，STATUS_ACCEPT = 1已通过，STATUS_REJECT = 2已回绝", r = false) Byte status, //
+			@P(t = "持有者编号",r= false) Long ownerId, //
+			@P(t = "提交者编号",r = false) Long upUserId, //
+			@P(t = "审核状态，不填表示全部，0未审核，1已通过",r = false) String status, //
 			@P(t = "是否降序（较新的排前面）") Boolean orderDesc, //
+			@P(t = "目标用户id",r = false) Boolean toUserId, //
 			Integer count, Integer offset//
 	) throws Exception {
 		TSQL ts = new TSQL();
@@ -181,7 +224,6 @@ public class ReplyService extends Controller {
 			ts.addSort(new FieldSort("createTime", SortOrder.ASC));
 		}
 		SearchQuery query = ts.build();
-		
 		JSONObject reply = replyRepository.search(client, query);
 		JSONArray json = reply.getJSONArray("list");
 		JSONArray returnJson = new JSONArray();
@@ -199,14 +241,26 @@ public class ReplyService extends Controller {
 				/////////////////////////////////////
 				Long appraiseCount = appraiseRepository.search(client, queryAppraise).getLong("totalCount");//获取点赞表中评论id的个数
 				User user = userService.getUserById(conn, json.getJSONObject(i).getLong("upUserId"));
+				Content cont = contentRepository.get(conn, EXP.INS().key("id",json.getJSONObject(i).get("ownerId")));
+				//二级评论
+				TSQL commentTs = new TSQL();
+				commentTs.Term(OP.AND, "replyId",  relpyId).Term(OP.AND, "toUserId", toUserId).Term(OP.AND, "status", status);
+				if (orderDesc) {
+					commentTs.addSort(new FieldSort("createTime", SortOrder.DESC));
+				} else {
+					commentTs.addSort(new FieldSort("createTime", SortOrder.ASC));
+				}
+				SearchQuery CommentQuery = commentTs.build();
+				JSONObject comment = commentRepository.search(client, CommentQuery);//二级评论内容
 				JSONObject j = new JSONObject();
 				j = json.getJSONObject(i);
 				j.put("user", user);
 				j.put("appraiseCount", appraiseCount);
+				j.put("content", cont);
+				j.put("comment", comment);
 				returnJson.add(j);
 			}
 			return returnJson;
 		}
-		
 	}
 }

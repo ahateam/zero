@@ -1,6 +1,7 @@
 package zyxhj.cms.service;
 
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ public class ContentTagService extends Controller{
 		try {
 			ds = DataSource.getDruidDataSource("rdsDefault.prop");
 			contentTagRepository = Singleton.ins(ContentTagRepository.class);
+			contentTagGroupRepository = Singleton.ins(ContentTagGroupRepository.class);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -69,8 +71,7 @@ public class ContentTagService extends Controller{
 		ContentTag ct = new ContentTag();
 		ct.status = status;
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			contentTagRepository.update(conn, EXP.INS().key("org_module", moduleId).
-					andKey("group_name", group).andKey("name", name), ct,true);			
+			contentTagRepository.update(conn, EXP.INS().key("group_name", group).andKey("name", name), ct,true);			
 		}
 	}
 	
@@ -87,10 +88,17 @@ public class ContentTagService extends Controller{
 			Integer offset
 			) throws ServerException, SQLException {
 		try (DruidPooledConnection conn = ds.getConnection()) {
+			System.out.println(moduleId);
+			List<ContentTagGroup> list = getContentTagGroup(moduleId,count,offset);
+			List<String> groupList = new LinkedList<String>();
+			for(ContentTagGroup ct:list) {
+				groupList.add(ct.groupName);
+			}
 			if(status ==null) {
 				status = ContentTag.STATUS_ENABLE;
 			}
-			return contentTagRepository.getList(conn, EXP.INS(false).key("group_name", group).andKey("status", status), count, offset);
+			return contentTagRepository.getList(conn, EXP.INS(false).key("status", status).
+					and(EXP.INS().IN("group_name", groupList.toArray())), count, offset);
 		}
 	}
 		
