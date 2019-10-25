@@ -48,8 +48,9 @@ public class Test {
 //			TSUtils.createTableByEntity(client, Appraise.class);
 			TSUtils.createTableByEntity(client, Comment.class);
 			
-//			TSUtils.drapTableByEntity(client, Comment.class);
-//			TSUtils.drapTableByEntity(client, Appraise.class);
+//			TSUtils.drapTableByEntity(client, Reply.class);
+			TSUtils.createTableByEntity(client, Mail.class);
+//			TSUtils.createTableByEntity(client, MailTag.class);
 			client.shutdown();
 
 		} catch (Exception e) {

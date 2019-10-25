@@ -9,13 +9,14 @@ import zyxhj.utils.data.ts.TSAnnField;
 import zyxhj.utils.data.ts.TSAnnID;
 import zyxhj.utils.data.ts.TSAnnIndex;
 import zyxhj.utils.data.ts.TSEntity;
+import zyxhj.utils.data.ts.TSUtils;
 
 /**
  * 邮件标签
  */
 @TSAnnEntity(alias = "tb_mail_tag", indexName = "index_mail_tag")
 public class MailTag extends TSEntity {
-
+	
 	/**
 	 * 分片编号，MD5(id)，避免数据热点
 	 */
@@ -50,5 +51,20 @@ public class MailTag extends TSEntity {
 
 	@AnnDicField(alias = "启用")
 	public static final Integer STATUS_ENABLE = 1;
+	
+	
+	
+	private static MailTag buildJITISysTag(Long moduleId, String name) {
+		MailTag ret = new MailTag();
+		ret._id = TSUtils.get_id(moduleId);
+		ret.moduleId = moduleId;
+		ret.name = name;
+		ret.status = MailTag.STATUS_ENABLE;
+		return ret;
+	}
+	
+	//_集体经济模块编号暂定为100001L
+	public static final MailTag JITI_VOTE = buildJITISysTag(100001L,"vote");
+	public static final MailTag JITI_EXAMINE = buildJITISysTag(100001L,"examine");
 	
 }

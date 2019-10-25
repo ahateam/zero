@@ -12,6 +12,9 @@ import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.Direction;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
 import com.alicloud.openservices.tablestore.model.PrimaryKeyValue;
+import com.alicloud.openservices.tablestore.model.search.sort.FieldSort;
+import com.alicloud.openservices.tablestore.model.search.sort.SortOrder;
+import com.mysql.cj.result.Field;
 
 import zyxhj.core.domain.Mail;
 import zyxhj.core.domain.MailTag;
@@ -19,6 +22,7 @@ import zyxhj.core.repository.MailRepository;
 import zyxhj.core.repository.MailTagRepository;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.Controller;
+import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
 import zyxhj.utils.data.ts.TSQL;
@@ -77,7 +81,7 @@ public class MailService extends Controller {
 	)
 	public JSONArray getMailTagList(//
 			@P(t = "模块编号") Long moduleId, //
-			Integer count,//
+			Integer count, //
 			Integer offset//
 	) throws Exception {
 
@@ -132,7 +136,7 @@ public class MailService extends Controller {
 	public void mailSend(//
 			@P(t = "模块编号") Long moduleId, //
 			@P(t = "接收者编号列表，JSONArray格式") JSONArray receivers, //
-			@P(t = "发送者编号", r = false) JSONArray tags, //
+			@P(t = "标签", r = false) JSONArray tags, //
 			@P(t = "发送者编号") String sender, //
 			@P(t = "标题") String title, //
 			@P(t = "正文") String text, //
@@ -149,7 +153,7 @@ public class MailService extends Controller {
 			m.moduleId = moduleId;
 			m.receiver = receiver;
 			// m.sequenceId = 0L;
-			m.creatTime = new Date();
+			m.createTime = new Date();
 			if (tags != null && tags.size() > 0) {
 				m.tags = JSON.toJSONString(tags);
 			}
@@ -161,8 +165,9 @@ public class MailService extends Controller {
 			m.active = true;
 			try {
 				// 尝试Insert，插入不进去会冲突导致失败，继续下一个
-				mailRepository.insert(client, m, false);
+				mailRepository.insert(client, m, true);
 			} catch (Exception eee) {
+				eee.printStackTrace();
 			}
 		}
 	}
@@ -185,9 +190,9 @@ public class MailService extends Controller {
 		m.moduleId = moduleId;
 		m.receiver = receiver;
 		m.sequenceId = sequenceId;
-		m.active  = false;
+		m.active = false;
 		mailRepository.update(client, m, true);
-		//mailRepository.delete(client, pk);
+		// mailRepository.delete(client, pk);
 	}
 
 	@POSTAPI(//
@@ -220,25 +225,63 @@ public class MailService extends Controller {
 			path = "mailList", //
 			des = "根据标签获取邮件列表，不填标签即获取全部", //
 			ret = "邮件列表，JSONArray格式")
-	public JSONObject mailList(//
+	public JSONArray mailList(//
 			@P(t = "模块编号") Long moduleId, //
 			@P(t = "接收者编号") String receiver, //
-			@P(t = "标签名称列表，JSONArray格式") JSONArray tags, //
+//			@P(t = "标签名称列表，JSONArray格式") JSONArray tags, //
 			Integer count, Integer offset//
 	) throws Exception {
 
 		// 有标签，按索引查
 
-		TSQL ts = new TSQL();
-		ts.Term(OP.AND, "moduleId", moduleId);
-		ts.Term(OP.AND, "receiver", receiver);
+		PrimaryKey pkStart = new PrimaryKeyBuilder().add("moduleId", moduleId).add("receiver", receiver)
+				.add("sequenceId", PrimaryKeyValue.INF_MIN).build();
+		PrimaryKey pkEnd = new PrimaryKeyBuilder().add("moduleId", moduleId).add("receiver", receiver)
+				.add("sequenceId", PrimaryKeyValue.INF_MAX).build();
 
-		if (tags != null && tags.size() > 0) {
-			ts.Terms(OP.AND, "tags", tags.toArray());
-		}
-
-		return mailRepository.search(client, ts.build());
+		return mailRepository.getRange(client, Direction.FORWARD, pkStart, pkEnd, count, offset);
 
 	}
+	
+	@POSTAPI(//
+			path = "delMail", //
+			des = "根据标签获取邮件列表，不填标签即获取全部", //
+			ret = "邮件列表，JSONArray格式")
+	public int delMail(//
+			@P(t = "模块编号") Long moduleId, //
+			@P(t = "接收者编号列表，JSONArray格式") String receiver, //
+			@P(t = "接收者编号") Long sequenceId, //
+			@P(t = "标签", r = false) JSONArray tags, //
+			@P(t = "发送者编号") String sender, //
+			@P(t = "标题") String title, //
+			@P(t = "正文") String text, //
+			@P(t = "消息行为", r = false) String action, //
+			@P(t = "消息行为", r = false) Long createTime, //
+			@P(t = "消息扩展", r = false) String ext//
+	) {
+		Mail m = new Mail();
+		try {
+			m.moduleId = moduleId;
+			m.receiver = receiver;
+			m.sequenceId = sequenceId;
+			m.action =action;
+			m.createTime = new Date(createTime);
+			m.tags = tags.toJSONString();
+			m.ext = ext;
+			m.sender = sender;
+			m.active = false;
+			m.title = title;
+			m.text = text;
+			mailRepository.update(client, m, false);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return 0;
+		}
+		return 1;
+	}
+	
+	
+	
 
 }
