@@ -46,7 +46,7 @@ public class Test {
 //			TSUtils.createTableByEntity(client, ContentTag.class);
 			
 //			TSUtils.createTableByEntity(client, Appraise.class);
-			TSUtils.createTableByEntity(client, Comment.class);
+//			TSUtils.createTableByEntity(client, Comment.class);
 			
 //			TSUtils.drapTableByEntity(client, Reply.class);
 			TSUtils.createTableByEntity(client, Mail.class);

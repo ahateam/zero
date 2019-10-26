@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import com.alibaba.fastjson.JSON;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
@@ -32,6 +33,16 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
+/**
+ * 二维码工具类<br>
+ * Java后端的二维码生成与解析工具<br><br>
+ * 二维码生成：produceQRCode(String, String, String, boolean)<br><br>
+ * 二维码解析：analysisQRCode(String)
+ * 
+ * @author JXians
+ * @version 1.0.0
+ *
+ */
 public class QRCodeUtils {
 
 	public static class BufferedImageLuminanceSource extends LuminanceSource {
@@ -116,6 +127,7 @@ public class QRCodeUtils {
 	}
 
 	public static class QRCodeUtil {
+
 		private static final String CHARSET = "utf-8";
 		private static final String FORMAT_NAME = "JPG";
 		// 二维码尺寸
@@ -129,7 +141,7 @@ public class QRCodeUtils {
 				throws Exception {
 			Hashtable hints = new Hashtable();
 			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
-			hints.put(EncodeHintType.CHARACTER_SET, CHARSET);
+			hints.put(EncodeHintType.CHARACTER_SET, CodecUtils.CHARSET_UTF8);
 			hints.put(EncodeHintType.MARGIN, 1);
 			BitMatrix bitMatrix = new MultiFormatWriter().encode(content, BarcodeFormat.QR_CODE, QRCODE_SIZE,
 					QRCODE_SIZE, hints);
@@ -183,22 +195,7 @@ public class QRCodeUtils {
 			graph.dispose();
 		}
 
-		public static void produceQECode(String content, String imgPath, String destPath, boolean needCompress)
-				throws Exception {
-			BufferedImage image = QRCodeUtil.createImage(content, imgPath, needCompress);
-			mkdirs(destPath);
-			// String file = new Random().nextInt(99999999)+".jpg";
-			// ImageIO.write(image, FORMAT_NAME, new File(destPath+"/"+file));
-			ImageIO.write(image, FORMAT_NAME, new File(destPath));
-		}
-
-		public static BufferedImage produceQECode(String content, String imgPath, boolean needCompress)
-				throws Exception {
-			BufferedImage image = QRCodeUtil.createImage(content, imgPath, needCompress);
-			return image;
-		}
-
-		public static void mkdirs(String destPath) {
+		private static void mkdirs(String destPath) {
 			File file = new File(destPath);
 			// 当文件夹不存在时，mkdirs会自动创建多层目录，区别于mkdir．(mkdir如果父目录不存在则会抛出异常)
 			if (!file.exists() && !file.isDirectory()) {
@@ -206,31 +203,14 @@ public class QRCodeUtils {
 			}
 		}
 
-		public static void produceQECode(String content, String imgPath, String destPath) throws Exception {
-			QRCodeUtil.produceQECode(content, imgPath, destPath, false);
-		}
-		// 被注释的方法
-		/*
-		 * public static void encode(String content, String destPath, boolean
-		 * needCompress) throws Exception { QRCodeUtil.encode(content, null, destPath,
-		 * needCompress); }
+		/**
+		 * 解析二维码
+		 * 
+		 * @param file File二维码文件对象
+		 * @return
+		 * @throws Exception
 		 */
-
-		public static void produceQECode(String content, String destPath) throws Exception {
-			QRCodeUtil.produceQECode(content, null, destPath, false);
-		}
-
-		public static void produceQECode(String content, String imgPath, OutputStream output, boolean needCompress)
-				throws Exception {
-			BufferedImage image = QRCodeUtil.createImage(content, imgPath, needCompress);
-			ImageIO.write(image, FORMAT_NAME, output);
-		}
-
-		public static void produceQECode(String content, OutputStream output) throws Exception {
-			QRCodeUtil.produceQECode(content, null, output, false);
-		}
-
-		public static String decode(File file) throws Exception {
+		protected static String analysisQRCode(File file) throws Exception {
 			BufferedImage image;
 			image = ImageIO.read(file);
 			if (image == null) {
@@ -240,32 +220,107 @@ public class QRCodeUtils {
 			BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 			Result result;
 			Hashtable hints = new Hashtable();
-			hints.put(DecodeHintType.CHARACTER_SET, CHARSET);
+			hints.put(DecodeHintType.CHARACTER_SET, CodecUtils.CHARSET_UTF8);
 			result = new MultiFormatReader().decode(bitmap, hints);
 			String resultStr = result.getText();
 			return resultStr;
 		}
 
-		public static String decode(String path) throws Exception {
-			return QRCodeUtil.decode(new File(path));
+		/**
+		 * 解析二维码
+		 * 
+		 * @param path 文件路径
+		 * @return
+		 * @throws Exception
+		 */
+		public static String analysisQRCode(String path) throws Exception {
+			return QRCodeUtil.analysisQRCode(new File(path));
 		}
+
+		/**
+		 * 二维码中嵌入图标
+		 * 
+		 * @param content      二维码信息
+		 * @param imgPath      嵌入二维码的图片地址
+		 * @param destPath     二维码存放地址
+		 * @param needCompress 是否压缩
+		 * @throws Exception
+		 */
+		public static void produceQRCode(String content, String imgPath, String destPath, boolean needCompress)
+				throws Exception {
+			BufferedImage image = QRCodeUtil.createImage(content, imgPath, needCompress);
+			mkdirs(destPath);
+			ImageIO.write(image, FORMAT_NAME, new File(destPath));
+		}
+
+		/**
+		 * 二维码生成，不压缩
+		 * 
+		 * @param content  二维码信息
+		 * @param imgPath  嵌入二维码的图片地址
+		 * @param destPath 二维码存放地址
+		 * @throws Exception
+		 */
+		public static void produceQRCode(String content, String imgPath, String destPath) throws Exception {
+			QRCodeUtil.produceQRCode(content, imgPath, destPath, false);
+		}
+
+		/**
+		 * 二维码生成，不嵌入图标，不压缩文件
+		 * 
+		 * @param content  二维码信息
+		 * @param destPath 二维码存放地址
+		 * @throws Exception
+		 */
+		public static void produceQRCode(String content, String destPath) throws Exception {
+			QRCodeUtil.produceQRCode(content, null, destPath, false);
+		}
+
+		/**
+		 * 生成二维码
+		 * 
+		 * @param content      二维码信息
+		 * @param imgPath      嵌入二维码的图片地址
+		 * @param needCompress 是否压缩
+		 * @return
+		 * @throws Exception
+		 */
+		protected static BufferedImage produceQRCode(String content, String imgPath, boolean needCompress)
+				throws Exception {
+			BufferedImage image = QRCodeUtil.createImage(content, imgPath, needCompress);
+			return image;
+		}
+
+		protected static void produceQRCode(String content, String imgPath, OutputStream output, boolean needCompress)
+				throws Exception {
+			BufferedImage image = QRCodeUtil.createImage(content, imgPath, needCompress);
+			ImageIO.write(image, FORMAT_NAME, output);
+		}
+
+		protected static void produceQRCode(String content, OutputStream output) throws Exception {
+			QRCodeUtil.produceQRCode(content, null, output, false);
+		}
+
 	}
 
-	public static void textmain() throws Exception {
+	public static void main(String[] args) throws Exception {
 		// 存放在二维码中的内容
-		String text = "https://blog.csdn.net/qq_39005315/article/details/83146241";
+		String text = "https://www.baidu.com";
 		// 嵌入二维码的图片路径
 		String imgPath = "G:/qrCode/dog.jpg";
 		// 生成的二维码的路径及名称
-		String destPath = "C:\\Users\\Admin\\Desktop\\文档\\集体经济\\图片\\名片\\102.jpg";
+//		String destPath = "C:\\Users\\Admin\\Desktop\\文档\\集体经济\\图片\\名片\\102.jpg";
+		String destPath = "C:\\Users\\Admin\\Desktop\\微信图片_20191026143756.jpg";
 		// 生成二维码
-		QRCodeUtil.produceQECode(text, null, destPath, true);
+		QRCodeUtil.produceQRCode(text, null, destPath, false);
 		// 解析二维码
-		String str = QRCodeUtil.decode(destPath);
+		String str = QRCodeUtil.analysisQRCode(destPath);
 		// 打印出解析出的内容
 		System.out.println(str);
+
 	}
 
+	// 定时器
 	public static void showDayTime() {
 //		Calendar calendar = Calendar.getInstance();
 //		int year = calendar.get(Calendar.YEAR);
@@ -285,10 +340,6 @@ public class QRCodeUtils {
 				System.out.println("每日任务已经执行");
 			}
 		}, defaultdate, 24 * 60 * 60 * 1000);// 24* 60* 60 * 1000
-	}
-
-	public static void main(String[] args) {
-		showDayTime();
 	}
 
 }

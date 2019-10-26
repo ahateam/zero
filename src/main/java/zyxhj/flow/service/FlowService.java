@@ -216,7 +216,6 @@ public class FlowService extends Controller {
 		pa.title = title;
 		pa.part = part;
 		pa.receivers = receivers;
-		pa.actions = actions;
 		pa.active = DataConst.ACTIVE_NORMAL;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
@@ -295,7 +294,6 @@ public class FlowService extends Controller {
 		renew.title = title;
 		renew.part = part;
 		renew.receivers = receivers;
-		renew.actions = actions;
 
 		try (DruidPooledConnection conn = ds.getConnection()) {
 

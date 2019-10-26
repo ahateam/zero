@@ -452,58 +452,6 @@ public class ProcessService extends Controller {
 		}
 	}
 
-	///////////////////////////////
-	////// ProcessAction
-	///////////////////////////////
-
-	/**
-	 * 原始版本
-	 *
-	 */
-
-	private void execAction(DruidPooledConnection conn, User user, Process p, ProcessActivity pa,
-			ProcessAction action, Long activityId) throws Exception {
-
-		// 判断type
-		if (action.type.equals(ProcessAction.TYPE_REJECT)) {
-			// 驳回，暂时没做
-		} else if (action.type.equals(ProcessAction.TYPE_TERMINATE)) {
-			// 终结，暂时没做
-		} else {
-			// 其它情况都当同意做
-
-			// 判断role
-			JSONArray rules = action.rules;
-			String defaultTarget = null;
-			for (int i = 0; i < rules.size(); i++) {
-				JSONObject jo = rules.getJSONObject(i);
-				String exp = jo.getString("exp");
-				String target = jo.getString("target");
-
-				System.out.println(StringUtils.join("exec rule>>> ", exp, " --- ", target));
-
-				if (exp.equals("expDefault")) {
-					// 默认case
-					defaultTarget = target;
-				} else {
-					// 其它case，先判断表达式，然后执行
-				}
-			}
-			createProcessLog(p.id, "执行Action", user.id, user.name, action.type, action.label, activityId, "");
-
-			Process renew = new Process();
-			renew.currActivityId = Long.decode(defaultTarget);
-			processRepository.update(conn, EXP.INS().key("id", p.id), renew, true);
-
-		}
-
-	}
-
-	/**
-	 * 
-	 * 重构后版本
-	 */
-
 	// 判断节点分组中的节点是否全部操作完毕
 	@POSTAPI(//
 			path = "ifActivityAction", //
@@ -863,71 +811,6 @@ public class ProcessService extends Controller {
 		}
 	}
 
-	// TODO 已废弃
-	@POSTAPI(//
-			path = "executeProcessAction", //
-			des = "执行流程的行为"//
-	)
-	public void executeProcessAction(//
-			@P(t = "流程实例编号") Long processId, //
-			@P(t = "流程节点编号") Long activityId, //
-			@P(t = "执行的行为编号") String actionId, //
-			@P(t = "用户编号") Long userId//
-	) throws Exception {
-		try (DruidPooledConnection conn = ds.getConnection()) {
-			Process process = processRepository.get(conn, EXP.INS().key("id", processId));
-			if (process == null) {
-				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程实例");
-			} else {
-				if (process.currActivityId.equals(activityId)) {
-					ProcessActivity pa = activityRepository.get(conn, EXP.INS().key("id", activityId));
-					if (pa == null) {
-						throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点Activity");
-					} else {
-
-						if (StringUtils.isBlank(pa.actions)) {
-							throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
-						} else {
-
-							User user = userRepository.get(conn, EXP.INS().key("id", userId));
-							// if (user == null) {
-							// throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的用户");
-							// } else {
-
-							// 暂时没有鉴权
-
-							user = new User();
-							user.id = userId;
-							user.name = "临时用户";
-
-							List<ProcessAction> list = JSON.parseArray(pa.actions,
-									ProcessAction.class);
-							if (list.size() > 0) {
-								HashMap<String, ProcessAction> actions = new HashMap<>();
-								list.forEach(item -> {
-									//TODO item.id
-									actions.put(item.id.toString(), item);
-								});
-								ProcessAction act = actions.get(actionId);
-								if (act == null) {
-									throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
-								} else {
-									// 终于找到节点，要开始执行了。
-									execAction(conn, user, process, pa, act, activityId);
-								}
-							} else {
-								throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "没找到对应流程节点的行为Action");
-							}
-							// }
-						}
-
-					}
-				} else {
-					throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, "业务进度（当前流程节点）与提交的activityId不符");
-				}
-			}
-		}
-	}
 
 	@POSTAPI(//
 			path = "getProcessActionsInActivity", //

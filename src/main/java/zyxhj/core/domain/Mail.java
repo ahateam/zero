@@ -17,6 +17,7 @@ import zyxhj.utils.data.ts.TSEntity;
 @TSAnnEntity(alias = "tb_mail", indexName = "index_mail")
 public class Mail extends TSEntity {
 
+	public static final Long JITI_MODULEID = 100001L;
 	/**
 	 * 模块编号（分片键）_集体经济模块编号暂定为100001L
 	 */

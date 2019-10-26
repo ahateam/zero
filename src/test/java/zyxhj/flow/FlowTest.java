@@ -231,15 +231,6 @@ public class FlowTest {
 	}
 
 	@Test
-	public void testExecuteAction() throws Exception {
-
-		// [{"id":"16c73e50dd437","label":"测试提交","rules":[{"exp":"expDefault","target":"400719819765573"},{"exp":"getTableField(tableSchemaId,fieldName,tableDataId)
-		// > 3","target":"400719819748676"}],"type":"accept"}]
-
-		processService.executeProcessAction(processId, activityIdStart, "16c73e50dd437", 123L);
-	}
-
-	@Test
 	public void testGetProcessAssetByDescIds() throws Exception {
 
 		JSONArray ja = new JSONArray();

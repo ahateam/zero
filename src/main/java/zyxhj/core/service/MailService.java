@@ -223,7 +223,7 @@ public class MailService extends Controller {
 
 	@POSTAPI(//
 			path = "mailList", //
-			des = "根据标签获取邮件列表，不填标签即获取全部", //
+			des = "通过模块编号的用户编号查询当前用户下的所有邮件", //
 			ret = "邮件列表，JSONArray格式")
 	public JSONArray mailList(//
 			@P(t = "模块编号") Long moduleId, //
@@ -238,10 +238,40 @@ public class MailService extends Controller {
 				.add("sequenceId", PrimaryKeyValue.INF_MIN).build();
 		PrimaryKey pkEnd = new PrimaryKeyBuilder().add("moduleId", moduleId).add("receiver", receiver)
 				.add("sequenceId", PrimaryKeyValue.INF_MAX).build();
-
 		return mailRepository.getRange(client, Direction.FORWARD, pkStart, pkEnd, count, offset);
-
 	}
+	
+	//获取最新消息
+	@POSTAPI(//
+			path = "latlestMail", //
+			des = "通过模块编号的用户编号查询当前用户的最新邮件", //
+			ret = "邮件列表，JSONArray格式")
+	public JSONObject latlestMail(//
+			@P(t = "模块编号") Long moduleId, //
+			@P(t = "接收者编号") String receiver//
+	) throws Exception {
+
+		JSONArray ja = mailList(moduleId, receiver, null, null);
+		Long maxTime = 0L;
+		JSONObject maxMail = new JSONObject();
+		for (int i = 0; i < ja.size(); i++) {
+			JSONObject mail = JSON.parseObject(ja.getString(i));
+			if (mail.getBoolean("active")) {
+				Object o = mail.get("createTime");
+				if(o instanceof Long) {
+					Long time = Long.getLong(o.toString());
+					if(time > maxTime) {
+						maxTime = time;
+						maxMail = mail;
+					}
+				}
+			}
+		}
+		return maxMail;
+	}
+	
+	
+	
 	
 	@POSTAPI(//
 			path = "delMail", //
@@ -280,6 +310,7 @@ public class MailService extends Controller {
 		}
 		return 1;
 	}
+	
 	
 	
 	
