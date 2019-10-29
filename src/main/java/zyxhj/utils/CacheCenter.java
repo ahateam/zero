@@ -2,6 +2,7 @@ package zyxhj.utils;
 
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -27,6 +28,11 @@ public class CacheCenter {
 
 	public static Cache<Long, SysRole> USER_ROLE_CACHE = CacheBuilder.newBuilder()//
 			.expireAfterAccess(5, TimeUnit.MINUTES)// 缓存对象有效时间，2天
+			.maximumSize(100)// 最大缓存对象数量
+			.build();
+	
+	public static Cache<String, JSONObject> PHONE_CODE = CacheBuilder.newBuilder()//手机验证码缓存
+			.expireAfterAccess(3, TimeUnit.MINUTES)// 缓存对象有效时间
 			.maximumSize(100)// 最大缓存对象数量
 			.build();
 

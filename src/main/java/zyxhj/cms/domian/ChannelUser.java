@@ -27,6 +27,13 @@ public class ChannelUser {
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Long userId;
+	
+	/**
+	 * 课程编号，ID列，无需索引
+	 */
+	@RDSAnnID
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Long ChannelContentTagId;
 
 	/**
 	 * 创建时间

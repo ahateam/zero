@@ -25,7 +25,6 @@ public class User {
 	/**
 	 * 用户名（索引）
 	 */
-	@RDSAnnIndex(type = RDSAnnIndex.UNIQUE)
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String name;
 

@@ -73,12 +73,17 @@ public class ChannelTagService extends Controller{
 	)
 	public List<ChannelContentTag> getChannelContentTag(
 		@P(t = "模块编号")Long moduleId,
-		@P(t = "专栏编号")Long channelId,
+		@P(t = "专栏编号",r = false)Long channelId,
 		@P(t = "状态",r = false)Byte status,
 		int count,
 		int offset
 	) throws ServerException, SQLException {
-		EXP exp = EXP.INS().key("channel_id", channelId).andKey("status", status);
+		EXP exp = EXP.INS();
+		if(channelId == null) {
+			exp.key("status", status);
+		}else {
+			exp.key("channel_id", channelId).andKey("status", status);
+		}
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			return channelContentTagRepository.getList(conn, exp, count, offset);			
 		}
@@ -114,9 +119,10 @@ public class ChannelTagService extends Controller{
 		public ChannelContentTag createChannelContentTag(
 			@P(t = "模块编号")Long moduleId,
 			@P(t = "名称")String name,
-			@P(t = "价格")String price,
+			@P(t = "价格", r =false)String price,
 			@P(t = "专栏编号")Long channelId,
-			@P(t = "状态")Byte status
+			@P(t = "状态")Byte status,
+			@P(t = "付费")Byte power
 		) throws ServerException, SQLException {
 			try (DruidPooledConnection conn = ds.getConnection()) {
 				ChannelContentTag c = new ChannelContentTag();
@@ -125,6 +131,7 @@ public class ChannelTagService extends Controller{
 				c.price = price;
 				c.channelId = channelId;
 				c.status = status;
+				c.power = power;
 				channelContentTagRepository.insert(conn, c);
 				return c;	
 			}
