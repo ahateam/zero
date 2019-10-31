@@ -517,6 +517,7 @@ public class RDSRepositoryServiceTest {
 //			}
 //		}
 	}
+
 	@Test
 	public void testMessage() {
 		List<Long> idList = new ArrayList<Long>();
@@ -524,10 +525,10 @@ public class RDSRepositoryServiceTest {
 			idList.add(IDUtils.getSimpleId());
 		}
 		JSONArray ja = new JSONArray();
-		for(int j = 0; j < idList.size(); j++) {
+		for (int j = 0; j < idList.size(); j++) {
 			JSONObject jo = new JSONObject();
-			jo.put("id",idList.get(j));
-			jo.put("read"+idList.get(j), 0);
+			jo.put("id", idList.get(j));
+			jo.put("read" + idList.get(j), 0);
 			ja.add(jo);
 		}
 		System.out.println(ja.toJSONString());
@@ -541,13 +542,14 @@ public class RDSRepositoryServiceTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	@Test
 	public void editMessage() throws Exception {
-		
-		testRepository.getList(conn, EXP.INS().key("id", 123L), null, null);
+		char a = 'a';
+		int b = 10;
+		System.out.println(a+b);
 	}
 
 }

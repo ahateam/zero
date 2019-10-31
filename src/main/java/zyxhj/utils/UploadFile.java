@@ -29,7 +29,8 @@ public class UploadFile {
 	public static String OSSCATALOGUE_TEMPLATE = "template/";
 	public static String OSSCATALOGUE_USER = "user/";
 	
-	public static String BUCKETNAME_JITI = "jitijingji-test1";//文件存放一级文件夹（自定义默认存放路径）
+	public static String BUCKETNAME_JITI = "jitijingji-test1";//文件存放一级文件夹（自定义默认存放路径）正式服
+//	public static String BUCKETNAME_JITI = "jiti-img-test";//文件存放一级文件夹（自定义默认存放路径） 测试服
 	
 	private static String ENDPOINT = "http://oss-cn-hangzhou.aliyuncs.com";// endpoint
 	private static String ACCESSKEYID = "LTAIJ9mYIjuW54Cj";// accessKeyId

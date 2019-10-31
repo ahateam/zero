@@ -251,7 +251,7 @@ public class MailService extends Controller {
 			@P(t = "接收者编号") String receiver//
 	) throws Exception {
 
-		JSONArray ja = mailList(moduleId, receiver, null, null);
+		JSONArray ja = mailList(moduleId, receiver, 100, 0);
 		Long maxTime = 0L;
 		JSONObject maxMail = new JSONObject();
 		for (int i = 0; i < ja.size(); i++) {
@@ -259,7 +259,7 @@ public class MailService extends Controller {
 			if (mail.getBoolean("active")) {
 				Object o = mail.get("createTime");
 				if(o instanceof Long) {
-					Long time = Long.getLong(o.toString());
+					Long time = Long.parseLong(o.toString());
 					if(time > maxTime) {
 						maxTime = time;
 						maxMail = mail;
