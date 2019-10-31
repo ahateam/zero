@@ -17,13 +17,13 @@ import com.alibaba.fastjson.JSONObject;
 
 import zyxhj.cms.domian.Content;
 import zyxhj.cms.repository.ContentRepository;
-import zyxhj.core.domain.User;
 import zyxhj.core.service.UserService;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.ServiceUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.APIResponse;
 import zyxhj.utils.api.Controller;
+import zyxhj.utils.api.RC;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
@@ -45,13 +45,15 @@ public class ContentService extends Controller{
 			log.error(e.getMessage(), e);
 		}
 	}
+	
+	
 
 	@POSTAPI(
 		path = "addContent", //
 		des = "创建内容", //
 		ret = "所创建的对象"//
 	)
-	public Content addContent(
+	public APIResponse addContent(
 		@P(t = "模块编号") String module, //
 		@P(t = "内容类型") Byte type, //
 		@P(t = "状态") Byte status, //
@@ -84,10 +86,13 @@ public class ContentService extends Controller{
 		c.ext = ext;
 		c.activityStart = activityStart;
 		c.activityEnd = activityEnd;
+		if(data.length()>10240) {
+			return APIResponse.getNewFailureResp(new RC("fail", "错误！添加内容长度大于10240"));
+		}
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			contentRepository.insert(conn, c);
 		}
-		return c;
+		return APIResponse.getNewSuccessResp(c);
 		
 	}
 	

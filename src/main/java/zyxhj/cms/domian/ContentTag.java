@@ -32,6 +32,11 @@ public class ContentTag {
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte status;
 
+	/**
+	 * 排序大小
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String sortSize;
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////

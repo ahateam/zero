@@ -123,7 +123,7 @@ public class Content {
 	/////////////////////////////////////////////
 
 	@AnnDicField(alias = "图文")
-	public static final Byte TYPE_ALUMB = 0;
+	public static final Byte TYPE_ALUMB = 5;
 	@AnnDicField(alias = "音频")
 	public static final Byte TYPE_AUDIO = 1;
 	@AnnDicField(alias = "短视频")
@@ -133,7 +133,7 @@ public class Content {
 	@AnnDicField(alias = "直播")
 	public static final Byte TYPE_LIVE = 4;
 	@AnnDicField(alias = "纯文本")
-	public static final Byte TYPE_H5 = 5;
+	public static final Byte TYPE_H5 = 0;
 	@AnnDicField(alias = "帖子")
 	public static final Byte TYPE_POST = 6;
 	@AnnDicField(alias = "集合")

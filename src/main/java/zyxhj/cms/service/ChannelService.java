@@ -147,7 +147,7 @@ public class ChannelService extends Controller{
 			Integer count, 
 			Integer offset
 		) throws Exception {
-			EXP exp = EXP.INS(false).key("org_module", module).andKey("channel_id", channelId).andKey("status", status);
+			EXP exp = EXP.INS(false).key("channel_id", channelId).andKey("status", status);
 			try (DruidPooledConnection conn = ds.getConnection()) {
 				return APIResponse.getNewSuccessResp(channelContentTagRepository.getList(conn, exp, count, offset));			
 			}
@@ -200,7 +200,7 @@ public class ChannelService extends Controller{
 	) throws Exception {
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			JSONObject json = new JSONObject();
-			ChannelUser cu = channelUserRepository.get(conn, EXP.INS().key("org_module", modeuleId).andKey("channel_id", channelId)
+			ChannelUser cu = channelUserRepository.get(conn, EXP.INS().key("channel_id", channelId)
 					.andKey("channel_content_tag_id", channelContentTagId).andKey("user_id", userId));
 			if(cu != null) {
 				json.put("resultStatus", true);
@@ -227,6 +227,7 @@ public class ChannelService extends Controller{
 			ChannelUser c = new ChannelUser();
 			c.channelId = channelId;
 			c.userId = userId;
+			c.ChannelContentTagId = ChannelContentTagId;
 			c.createTime = new Date();
 			channelUserRepository.insert(conn, c);
 			return c;
@@ -251,6 +252,21 @@ public class ChannelService extends Controller{
 			}
 			channelRepository.update(conn, EXP.INS().key("org_module", modeuleId).andKey("id", channelId), c, true);
 			return c;
+		}
+	}
+	@POSTAPI(
+			path = "delChannel", //
+			des = "删除专栏", //
+			ret = ""//
+		)
+	public int banChannel(
+			@P(t = "模块编号")Long modeuleId,
+			@P(t = "专栏id")Long channelId
+	) throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			channelRepository.delete(conn, EXP.INS().key("org_module", modeuleId).andKey("id", channelId));
+			contentRepository.delete(conn, EXP.INS().key("up_channel_id", channelId));	
+			return 1;
 		}
 	}
 }
