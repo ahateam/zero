@@ -1,5 +1,6 @@
 package zyxhj.core.repository;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,6 +21,14 @@ public class UserRepository extends RDSRepository<User> {
 		super(User.class);
 	}
 
+	public JSONArray getUsers(DruidPooledConnection conn,int count,int offset)
+			throws Exception {
+		StringBuffer sb = new StringBuffer("SELECT * FROM `tb_user` WHERE `ext` IS NOT NULL");
+		List<Object> params = new ArrayList<Object>();
+		return this.sqlGetJSONArray(conn, sb.toString(), params,count,offset);
+	}
+	
+	
 	public JSONArray getUserTags(DruidPooledConnection conn, Long userId, String tagKey) throws ServerException {
 		return getTags(conn, "tags", tagKey, "id=?", Arrays.asList(userId));
 	}
