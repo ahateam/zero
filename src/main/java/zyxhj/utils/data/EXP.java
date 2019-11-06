@@ -362,11 +362,19 @@ public class EXP implements Cloneable {
 						}
 					}
 				} else {
-					String objStr = (String) obj;
+					String objStr = String.valueOf(obj);
+					if(obj instanceof Integer ) {
+						int objInt = Integer.valueOf(objStr);
+						String path;
+						path = "$." + tempPath;
+						tagEXP.or(EXP.JSON_CONTAINS(column, path, objInt));
+						continue;
+					}
 					if (objStr.length() > 0 && objStr != null) {
 						String path;
 						path = "$." + tempPath;
 						tagEXP.or(EXP.JSON_CONTAINS(column, path, objStr));
+						continue;
 					}
 				}
 			}
