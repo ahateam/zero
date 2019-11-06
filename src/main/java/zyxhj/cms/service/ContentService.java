@@ -2,6 +2,7 @@ package zyxhj.cms.service;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -14,9 +15,15 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alicloud.openservices.tablestore.SyncClient;
+import com.alicloud.openservices.tablestore.model.PrimaryKey;
+import com.alicloud.openservices.tablestore.model.search.SearchQuery;
+import com.alicloud.openservices.tablestore.model.search.query.Query;
 
 import zyxhj.cms.domian.Content;
+import zyxhj.cms.repository.AppraiseRepository;
 import zyxhj.cms.repository.ContentRepository;
+import zyxhj.core.domain.User;
 import zyxhj.core.service.UserService;
 import zyxhj.utils.IDUtils;
 import zyxhj.utils.ServiceUtils;
@@ -27,6 +34,9 @@ import zyxhj.utils.api.RC;
 import zyxhj.utils.api.ServerException;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
+import zyxhj.utils.data.TEXP;
+import zyxhj.utils.data.ts.PrimaryKeyBuilder;
+import zyxhj.utils.data.ts.TSUtils;
 
 public class ContentService extends Controller{
 
@@ -34,7 +44,7 @@ public class ContentService extends Controller{
 	private DruidDataSource ds;
 	private UserService userService;
 	private ContentRepository contentRepository;
-
+	
 	public ContentService(String node) {
 		super(node);
 		try {
@@ -64,9 +74,7 @@ public class ContentService extends Controller{
 		@P(t = "标题") String title, //
 		@P(t = "数据") String data, //
 		@P(t = "私密信息",r = false) String proviteData, //
-		@P(t = "扩展信息",r = false) String ext, //
-		@P(t = "活动开始时间",r = false) Date activityStart, //
-		@P(t = "活动结束时间",r = false) Date activityEnd //
+		@P(t = "扩展信息",r = false) String ext //
 	)
 	throws Exception {
 		Content c = new Content();
@@ -84,8 +92,8 @@ public class ContentService extends Controller{
 		c.data = data;
 		c.proviteData = proviteData;
 		c.ext = ext;
-		c.activityStart = activityStart;
-		c.activityEnd = activityEnd;
+		c.pageView = 0;
+		c.shareNumber = 0;
 		if(data.length()>10240) {
 			return APIResponse.getNewFailureResp(new RC("fail", "错误！添加内容长度大于10240"));
 		}
@@ -116,9 +124,7 @@ public class ContentService extends Controller{
 		@P(t = "标题",r = false) String title, //
 		@P(t = "数据",r = false) String data, //
 		@P(t = "私密信息",r = false) String proviteData, //
-		@P(t = "扩展信息",r = false) String ext, //
-		@P(t = "活动开始时间",r = false) Date activityStart, //
-		@P(t = "活动结束时间",r = false) Date activityEnd //
+		@P(t = "扩展信息",r = false) String ext //
 	)
 	throws Exception {
 		Content c = new Content();
@@ -135,8 +141,6 @@ public class ContentService extends Controller{
 		c.data = data;
 		c.proviteData = proviteData;
 		c.ext = ext;
-		c.activityStart = activityStart;
-		c.activityEnd = activityEnd;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			contentRepository.update(conn, EXP.INS().key("id", id), c, true);			
 		}
@@ -213,7 +217,6 @@ public class ContentService extends Controller{
 			return APIResponse.getNewSuccessResp(ServiceUtils.checkNull(list));			
 		}
 	}
-
 	@POSTAPI(
 		path = "getConntent", //
 		des = "据内容id查询返回一个内容对象", //
@@ -223,6 +226,7 @@ public class ContentService extends Controller{
 		@P(t = "内容编号") Long id
 	) throws ServerException, SQLException {
 		try (DruidPooledConnection conn = ds.getConnection()) {
+			contentRepository.updatePageView(id);
 			return contentRepository.get(conn, EXP.INS().key("id", id));			
 		}
 	}

@@ -106,17 +106,17 @@ public class Content {
 	
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public User user;//用户信息
+	/**
+	 * 浏览量
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Integer pageView;
 	
 	/**
-	 * 活动开始时间
+	 * 分享量
 	 */
-	@RDSAnnField(column = RDSAnnField.TIME)
-	public Date activityStart;
-	/**
-	 * 活动结束时间
-	 */
-	@RDSAnnField(column = RDSAnnField.TIME)
-	public Date activityEnd;
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Integer shareNumber;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////

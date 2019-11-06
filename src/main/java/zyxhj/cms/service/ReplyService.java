@@ -110,7 +110,7 @@ public class ReplyService extends Controller {
 			ret = "Comment实例" //
 	)
 	public Comment createComment(//
-			@P(t = "回复评论id") Long replyId, //
+			@P(t = "一级评论id") Long replyId, //
 			@P(t = "提交者编号") Long upUserId, //
 			@P(t = "提交者头像") String upUserHead, //
 			@P(t = "提交者昵称") String upUserName, //
