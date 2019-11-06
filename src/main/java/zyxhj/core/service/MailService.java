@@ -33,9 +33,9 @@ public class MailService extends Controller {
 
 	private static Logger log = LoggerFactory.getLogger(MailService.class);
 
-	private SyncClient client;
+	private static SyncClient client;
 
-	private MailRepository mailRepository;
+	private static MailRepository mailRepository;
 	private MailTagRepository tagRepository;
 
 	public MailService(String node) {
@@ -128,12 +128,9 @@ public class MailService extends Controller {
 		// TODO 异步管理和维护数据时，才使用移除标签功能，平时只考虑标签的启用禁用即可
 		return 0;
 	}
-
-	@POSTAPI(//
-			path = "mailSend", //
-			des = "发送邮件" //
-	)
-	public void mailSend(//
+	
+	
+	public static void mailSend(//
 			@P(t = "模块编号") Long moduleId, //
 			@P(t = "接收者编号列表，JSONArray格式") JSONArray receivers, //
 			@P(t = "标签", r = false) JSONArray tags, //
@@ -145,30 +142,36 @@ public class MailService extends Controller {
 	) throws Exception {
 		// 写扩散，成批发送
 
+		System.out.println("发送消息中。。。。。。");
 		// TODO 需要改成批量异步发送
-		for (int i = 0; i < receivers.size(); i++) {
-			String receiver = receivers.getString(i);
-
-			Mail m = new Mail();
-			m.moduleId = moduleId;
-			m.receiver = receiver;
-			// m.sequenceId = 0L;
-			m.createTime = new Date();
-			if (tags != null && tags.size() > 0) {
-				m.tags = JSON.toJSONString(tags);
+		if (receivers != null && receivers.size() > 0) {
+			System.out.println("receivers.size==="+receivers.size());
+			for (int i = 0; i < receivers.size(); i++) {
+				String receiver = receivers.getString(i);
+				Mail m = new Mail();
+				m.moduleId = moduleId;
+				m.receiver = receiver;
+				// m.sequenceId = 0L;
+				m.createTime = new Date();
+				if (tags != null && tags.size() > 0) {
+					m.tags = JSON.toJSONString(tags);
+				}else {
+					System.out.println("tags");
+				}
+				m.sender = sender;
+				m.title = title;
+				m.text = text;
+				m.action = action;
+				m.ext = ext;
+				m.active = true;
+				try {
+					// 尝试Insert，插入不进去会冲突导致失败，继续下一个
+					mailRepository.insert(client, m, true);
+				} catch (Exception eee) {
+					eee.printStackTrace();
+				}
 			}
-			m.sender = sender;
-			m.title = title;
-			m.text = text;
-			m.action = action;
-			m.ext = ext;
-			m.active = true;
-			try {
-				// 尝试Insert，插入不进去会冲突导致失败，继续下一个
-				mailRepository.insert(client, m, true);
-			} catch (Exception eee) {
-				eee.printStackTrace();
-			}
+			System.out.println("发送完成！");
 		}
 	}
 
@@ -240,8 +243,8 @@ public class MailService extends Controller {
 				.add("sequenceId", PrimaryKeyValue.INF_MAX).build();
 		return mailRepository.getRange(client, Direction.FORWARD, pkStart, pkEnd, count, offset);
 	}
-	
-	//获取最新消息
+
+	// 获取最新消息
 	@POSTAPI(//
 			path = "latlestMail", //
 			des = "通过模块编号的用户编号查询当前用户的最新邮件", //
@@ -258,9 +261,9 @@ public class MailService extends Controller {
 			JSONObject mail = JSON.parseObject(ja.getString(i));
 			if (mail.getBoolean("active")) {
 				Object o = mail.get("createTime");
-				if(o instanceof Long) {
+				if (o instanceof Long) {
 					Long time = Long.parseLong(o.toString());
-					if(time > maxTime) {
+					if (time > maxTime) {
 						maxTime = time;
 						maxMail = mail;
 					}
@@ -269,10 +272,7 @@ public class MailService extends Controller {
 		}
 		return maxMail;
 	}
-	
-	
-	
-	
+
 	@POSTAPI(//
 			path = "delMail", //
 			des = "根据标签获取邮件列表，不填标签即获取全部", //
@@ -294,7 +294,7 @@ public class MailService extends Controller {
 			m.moduleId = moduleId;
 			m.receiver = receiver;
 			m.sequenceId = sequenceId;
-			m.action =action;
+			m.action = action;
 			m.createTime = new Date(createTime);
 			m.tags = tags.toJSONString();
 			m.ext = ext;
@@ -310,9 +310,5 @@ public class MailService extends Controller {
 		}
 		return 1;
 	}
-	
-	
-	
-	
 
 }
