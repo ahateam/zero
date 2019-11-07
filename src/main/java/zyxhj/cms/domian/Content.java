@@ -149,6 +149,8 @@ public class Content {
 	public static final Byte STATUS_CLOSED = 3;
 	@AnnDicField(alias = "已发布")
 	public static final Byte STATUS_DELETED = 4;
+	@AnnDicField(alias = "评论封禁")
+	public static final Byte STATUS_CLOSEREPLY = 5;
 	
 
 	@AnnDicField(alias = "免费")
