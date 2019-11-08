@@ -1,9 +1,7 @@
 package zyxhj.cms.service;
 
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.Date;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -13,13 +11,11 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.JSON;
 import com.alicloud.openservices.tablestore.SyncClient;
 import com.alicloud.openservices.tablestore.model.PrimaryKey;
 import com.alicloud.openservices.tablestore.model.search.SearchQuery;
 import com.alicloud.openservices.tablestore.model.search.sort.FieldSort;
 import com.alicloud.openservices.tablestore.model.search.sort.SortOrder;
-import com.alipay.api.domain.CommentReplyOpenModel;
 
 import zyxhj.cms.domian.Content;
 import zyxhj.cms.repository.AppraiseRepository;
@@ -30,7 +26,6 @@ import zyxhj.core.domain.Comment;
 import zyxhj.core.domain.Reply;
 import zyxhj.core.domain.User;
 import zyxhj.core.service.UserService;
-import zyxhj.utils.ServiceUtils;
 import zyxhj.utils.Singleton;
 import zyxhj.utils.api.APIResponse;
 import zyxhj.utils.api.BaseRC;
@@ -40,7 +35,6 @@ import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.EXP;
 import zyxhj.utils.data.ts.PrimaryKeyBuilder;
 import zyxhj.utils.data.ts.TSQL;
-import zyxhj.utils.data.ts.TSRepository;
 import zyxhj.utils.data.ts.TSQL.OP;
 import zyxhj.utils.data.ts.TSUtils;
 
@@ -78,7 +72,7 @@ public class ReplyService extends Controller {
 			des = "创建回复", //
 			ret = "Reply实例" //
 	)
-	public Reply createReply(//
+	public APIResponse createReply(//
 			@P(t = "持有者编号") Long ownerId, //
 			@P(t = "提交者编号") Long upUserId, //
 			@P(t = "@对象编号") Long atUserId, //
@@ -86,7 +80,7 @@ public class ReplyService extends Controller {
 			@P(t = "标题") String title, //
 			@P(t = "正文") String text, //
 			@P(t = "扩展") String ext//
-	) throws ServerException {
+	) throws ServerException, SQLException {
 		Reply reply = new Reply();
 		reply._id = TSUtils.get_id(ownerId);
 		reply.ownerId = ownerId;
@@ -98,10 +92,8 @@ public class ReplyService extends Controller {
 		reply.title = title;
 		reply.text = text;
 		reply.ext = ext;
-
 		replyRepository.insert(client, reply, true);
-
-		return reply;
+		return APIResponse.getNewSuccessResp(reply);
 	}
 	
 	@POSTAPI(//
@@ -109,7 +101,7 @@ public class ReplyService extends Controller {
 			des = "创建二级回复", //
 			ret = "Comment实例" //
 	)
-	public Comment createComment(//
+	public APIResponse createComment(//
 			@P(t = "一级评论id") Long replyId, //
 			@P(t = "提交者编号") Long upUserId, //
 			@P(t = "提交者头像") String upUserHead, //
@@ -135,7 +127,7 @@ public class ReplyService extends Controller {
 			c.toUserName = "no";	
 		}
 		commentRepository.insert(client, c, true);
-		return c;
+		return APIResponse.getNewSuccessResp(c);
 	}
 
 	@POSTAPI(//
