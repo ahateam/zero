@@ -60,6 +60,12 @@ public class Channel {
 	 */
 	@RDSAnnField(column = RDSAnnField.TEXT)
 	public String data;
+	
+	/**
+	 *类型
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte type;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
@@ -71,5 +77,10 @@ public class Channel {
 	public static final Byte STATUS_DISABLE = 1;
 	@AnnDicField(alias = "锁定")
 	public static final Byte STATUS_LOCKED = 2;
+	
+	@AnnDicField(alias = "默认-掌上科普区分-栏目")
+	public static final Byte TYPE_COLUMN= 0;
+	@AnnDicField(alias = "默认-掌上-专题")
+	public static final Byte TYPE_CHANNEL= 1;
 
 }

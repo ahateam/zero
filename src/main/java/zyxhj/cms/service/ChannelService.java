@@ -54,7 +54,8 @@ public class ChannelService extends Controller{
 		@P(t = "状态") Byte status, 
 		@P(t = "标题") String title, 
 		@P(t = "标签（json）") String tags, 
-		@P(t = "数据",r = false) String data
+		@P(t = "数据",r = false) String data,
+		@P(t = "数据",r = false) Byte type
 	)throws Exception {
 		Channel channel = new Channel();
 		channel.id = IDUtils.getSimpleId();
@@ -63,6 +64,7 @@ public class ChannelService extends Controller{
 		channel.createTime = new Date();
 		channel.title = title;
 		channel.tags = tags;
+		channel.type = type;
 		if(data != null) {
 			channel.data = data;			
 		}
@@ -110,11 +112,12 @@ public class ChannelService extends Controller{
 		@P(t = "模块编号")Long module,
 		@P(t = "状态",r = false)Byte status, 
 		@P(t = "标签（json）",r = false)String tags, 
+		@P(t = "类型",r = false) Byte type,
 		int count,
 		int offset
 	) throws Exception {
 		JSONObject keys = null;
-		EXP exp = EXP.INS(false).key("org_module", module);
+		EXP exp = EXP.INS(false).key("org_module", module).andKey("type", type);
 		if(tags !=null) {
 			 keys = JSONObject.parseObject(tags);
 		}
