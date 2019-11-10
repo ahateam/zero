@@ -117,6 +117,18 @@ public class Content {
 	 */
 	@RDSAnnField(column = RDSAnnField.ID)
 	public Integer shareNumber;
+	
+	/**
+	 * 直播开始时间
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String liveStartTime;
+	
+	/**
+	 * 直播结束时间
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String liveEndTime;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
