@@ -74,7 +74,9 @@ public class ContentService extends Controller{
 		@P(t = "标题") String title, //
 		@P(t = "数据") String data, //
 		@P(t = "私密信息",r = false) String proviteData, //
-		@P(t = "扩展信息",r = false) String ext //
+		@P(t = "扩展信息",r = false) String ext, //
+		@P(t = "直播开始时间",r = false) String liveStartTime,  //
+		@P(t = "直播结束时间",r = false) String liveEndTime  //
 	)
 	throws Exception {
 		Content c = new Content();
@@ -94,6 +96,8 @@ public class ContentService extends Controller{
 		c.ext = ext;
 		c.pageView = 0;
 		c.shareNumber = 0;
+		c.liveStartTime = liveStartTime;
+		c.liveEndTime = liveEndTime;
 		if(data.length()>10240) {
 			return APIResponse.getNewFailureResp(new RC("fail", "错误！添加内容长度大于10240"));
 		}
@@ -124,7 +128,9 @@ public class ContentService extends Controller{
 		@P(t = "标题",r = false) String title, //
 		@P(t = "数据",r = false) String data, //
 		@P(t = "私密信息",r = false) String proviteData, //
-		@P(t = "扩展信息",r = false) String ext //
+		@P(t = "扩展信息",r = false) String ext, //
+		@P(t = "直播开始时间",r = false) String liveStartTime,  //
+		@P(t = "直播结束时间",r = false) String liveEndTime  //
 	)
 	throws Exception {
 		Content c = new Content();
@@ -141,6 +147,8 @@ public class ContentService extends Controller{
 		c.data = data;
 		c.proviteData = proviteData;
 		c.ext = ext;
+		c.liveStartTime = liveStartTime;
+		c.liveEndTime = liveEndTime;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			contentRepository.update(conn, EXP.INS().key("id", id), c, true);			
 		}
