@@ -76,8 +76,6 @@ public class JschOpenHandler {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
-			
 		}
 	}
 

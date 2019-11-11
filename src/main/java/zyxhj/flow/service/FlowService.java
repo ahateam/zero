@@ -12,6 +12,7 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import io.vertx.core.Vertx;
 import zyxhj.core.domain.User;
 import zyxhj.core.domain.SysRole;
 import zyxhj.core.repository.UserRepository;
@@ -704,7 +705,7 @@ public class FlowService extends Controller {
 							ProcessActivity pa = new ProcessActivity();
 							pa.activityGroupId = 0L;
 							activityRepository.update(conn, EXP.INS().key("id", activityId), pa, true);
-							
+
 							EXP set = EXP.JSON_ARRAY_REMOVE("sub_activities", "$", i);
 							EXP where = EXP.INS().key("id", activityGroupId);
 							return activityGroupRepository.update(conn, set, where);
@@ -796,6 +797,22 @@ public class FlowService extends Controller {
 			activityRepository.delete(conn, EXP.INS().key("pd_id", pdId).and(EXP.IN_ORDERED("id", arges)));
 			return activityGroupRepository.delete(conn, EXP.INS().key("pd_id", pdId).andKey("id", activityGroupId));
 		}
+	}
+
+	@POSTAPI(//
+			path = "uploadtest", //
+			des = "删除流程节点分组"//
+	)
+	public int uploadtest() throws Exception {
+		try (DruidPooledConnection conn = ds.getConnection()) {
+			Vertx.vertx().executeBlocking(future -> {
+				System.out.println(123);
+				future.complete("ok");
+			}, res -> {
+				System.out.println("The result is: " + res.result());
+			});
+		}
+		return 0;
 	}
 
 }
