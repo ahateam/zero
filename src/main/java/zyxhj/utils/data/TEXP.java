@@ -127,7 +127,6 @@ public class TEXP  {
 		q.setFieldName(fieldName); // 设置针对哪个字段
 		q.setFrom(from); // 开始位置值
 		q.setTo(to); // 结束位置值
-		q.greaterThan(ColumnValue.fromLong(3));
 		// link(op, q);
 		return q;
 	}

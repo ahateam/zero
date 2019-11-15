@@ -1,5 +1,8 @@
 package zyxhj.utils;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -12,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
@@ -94,11 +98,11 @@ public abstract class ZeroVerticle extends AbstractVerticle {
 		resp.putHeader("Access-Control-Allow-Origin", "*");// 设置跨域，目前不限制。TODO，将来需要设定指定的来源
 		//文件上传特殊处理
 		if (req.uri().startsWith("/form")) {
-			System.out.println("enter startWith");
 			req.setExpectMultipart(true);
+			System.out.println("enter startWith");
 			req.uploadHandler(upload -> {
 				System.out.println("enter upload");
-				upload.exceptionHandler(cause -> {
+				upload.exceptionHandler(cause -> {//处理异常
 					System.out.println("enter exceptionHandler");
 					req.response().setChunked(true).end("Upload failed");
 				});
