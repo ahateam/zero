@@ -1,7 +1,5 @@
 package zyxhj.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,9 +8,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -289,7 +285,7 @@ public class ExcelUtils {
 			if (file.exists() || !file.isDirectory()) {
 				file.mkdirs();
 			}
-			// TODO 生成的wb对象传输
+			// 生成的wb对象传输
 			FileOutputStream outputStream = new FileOutputStream(new File(ys));
 			userListExcel.write(outputStream);
 			outputStream.close();
