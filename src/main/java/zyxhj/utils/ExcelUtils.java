@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -82,9 +83,13 @@ public class ExcelUtils {
 			obj = cell.getErrorCellValue();
 			break;
 		case NUMERIC:
-			// obj = cell.getNumericCellValue();
-			DecimalFormat df = new DecimalFormat("0");
-			obj = df.format(cell.getNumericCellValue());
+			//解决导入数值精度失效
+			NumberFormat numberFormat = NumberFormat.getInstance();
+			numberFormat.setGroupingUsed(false);
+			obj = numberFormat.format(cell.getNumericCellValue());
+//			 obj = cell.getNumericCellValue();
+//			DecimalFormat df = new DecimalFormat("0");
+//			obj = df.format(cell.getNumericCellValue());
 			break;
 		case STRING:
 			obj = cell.getStringCellValue();
