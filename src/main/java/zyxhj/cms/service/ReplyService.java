@@ -72,7 +72,7 @@ public class ReplyService extends Controller {
 			des = "创建回复", //
 			ret = "Reply实例" //
 	)
-	public APIResponse createReply(//
+	public Reply createReply(//
 			@P(t = "持有者编号") Long ownerId, //
 			@P(t = "提交者编号") Long upUserId, //
 			@P(t = "@对象编号") Long atUserId, //
@@ -91,9 +91,9 @@ public class ReplyService extends Controller {
 		reply.atUserName = atUserName;
 		reply.title = title;
 		reply.text = text;
-		reply.ext = ext;
+		reply.ext = "0";
 		replyRepository.insert(client, reply, true);
-		return APIResponse.getNewSuccessResp(reply);
+		return reply;
 	}
 	
 	@POSTAPI(//
@@ -139,6 +139,11 @@ public class ReplyService extends Controller {
 			@P(t = "序列编号") Long sequenceId, //
 			@P(t = "标题") String title, //
 			@P(t = "正文") String text, //
+			@P(t = "正文") Date createTime, //
+			@P(t = "正文") Byte status, //
+			@P(t = "正文") Long upUserId, //
+			@P(t = "正文") Long atUserId, //
+			@P(t = "正文") String atUserName,
 			@P(t = "扩展", r = false) String ext//
 	) throws ServerException {
 
@@ -148,7 +153,11 @@ public class ReplyService extends Controller {
 		reply._id = TSUtils.get_id(ownerId);
 		reply.ownerId = ownerId;
 		reply.sequenceId = sequenceId;
-
+		reply.createTime = createTime;
+		reply.status  = status;
+		reply.upUserId = upUserId;
+		reply.atUserId = atUserId;
+		reply.atUserName = atUserName;
 		reply.title = title;
 		reply.text = text;
 		reply.ext = ext;

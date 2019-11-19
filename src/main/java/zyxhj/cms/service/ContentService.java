@@ -261,6 +261,24 @@ public class ContentService extends Controller{
         }
         return ret;
 	}
+	
+	@POSTAPI(
+			path = "getContentsByPageView", //
+			des = "", //
+			ret = ""//
+		)
+		public List<Content> getContentsByPageView(
+				@P(t = "模块")String module, 
+				int count, 
+				int offset
+		) throws ServerException, SQLException {
+			try (DruidPooledConnection conn = ds.getConnection()) {
+				EXP exp = EXP.INS(false).key("org_module", module);
+				exp.append("order by page_view desc");
+				return contentRepository.getList(conn, exp, count, offset);			
+			}
+		}
+	
 		/**
 		 * 获取发布信息
 		 */
