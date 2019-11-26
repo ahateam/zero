@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -21,14 +23,12 @@ public class UserRepository extends RDSRepository<User> {
 		super(User.class);
 	}
 
-	public JSONArray getUsers(DruidPooledConnection conn,int count,int offset)
-			throws Exception {
+	public JSONArray getUsers(DruidPooledConnection conn, int count, int offset) throws Exception {
 		StringBuffer sb = new StringBuffer("SELECT * FROM `tb_user` WHERE `ext` IS NOT NULL");
 		List<Object> params = new ArrayList<Object>();
-		return this.sqlGetJSONArray(conn, sb.toString(), params,count,offset);
+		return this.sqlGetJSONArray(conn, sb.toString(), params, count, offset);
 	}
-	
-	
+
 	public JSONArray getUserTags(DruidPooledConnection conn, Long userId, String tagKey) throws ServerException {
 		return getTags(conn, "tags", tagKey, "id=?", Arrays.asList(userId));
 	}
@@ -40,11 +40,11 @@ public class UserRepository extends RDSRepository<User> {
 	}
 
 	// 查询当前户所有用户信息（只查询返回需要显示的字段）
-	public JSONObject getFamilyMenber(DruidPooledConnection conn, String familyMemberSql , String familyInfoSql)
+	public JSONObject getFamilyMenber(DruidPooledConnection conn, String familyMemberSql, String familyInfoSql)
 			throws Exception {
 		List<Object[]> olist = this.sqlGetObjectsList(conn, familyMemberSql, null, null, null);
 		JSONArray menberArray = new JSONArray();
-		System.out.println("-----------------------size"+olist.size());
+		System.out.println("-----------------------size" + olist.size());
 		System.out.println(familyMemberSql);
 		for (int i = 0; i < olist.size(); i++) {
 			JSONObject menber = new JSONObject();
@@ -149,6 +149,27 @@ public class UserRepository extends RDSRepository<User> {
 			Integer offset) throws Exception {
 
 		return null;
+	}
+
+	public int delORGUser(DruidPooledConnection conn, Long id) throws Exception {
+		// 获取当前组织管理员
+		String where = StringUtils.join(" id in (select user_id from tb_ecm_org_user where org_id = ", id,
+				" and JSON_CONTAINS(roles, '102', '$'))");
+		List<User> adminList = this.getList(conn, where, null, null, null);
+		String sql = StringUtils.join(
+				" id in ( select user_id from tb_ecm_org_user where org_id = ",id,")");
+		int length = adminList.size();
+		if (length > 0) {
+			if (length == 1) {
+				sql = StringUtils.join(sql, " and id <> ", adminList.get(0).id);
+			} else {
+				for (int i = 0; i < length; i++) {
+					sql = StringUtils.join(sql, " and id <> ", adminList.get(i).id);
+				}
+			}
+		}
+//		System.out.println(sql);
+		return this.delete(conn, sql, null);
 	}
 
 }
