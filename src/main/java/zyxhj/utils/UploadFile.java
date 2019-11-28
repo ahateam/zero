@@ -29,12 +29,12 @@ public class UploadFile {
 	public static String OSSCATALOGUE_TEMPLATE = "template/";
 	public static String OSSCATALOGUE_USER = "user/";
 	
-	public static String BUCKETNAME_JITI = "jitijingji-test1";//文件存放一级文件夹（自定义默认存放路径）正式服
-//	public static String BUCKETNAME_JITI = "jiti-img-test";//文件存放一级文件夹（自定义默认存放路径） 测试服
+//	public static String BUCKETNAME_JITI = "production-file";//文件存放一级文件夹（自定义默认存放路径）正式服
+	public static String BUCKETNAME_JITI = "test-file-jiti";//文件存放一级文件夹（自定义默认存放路径） 测试服
 	
 	private static String ENDPOINT = "http://oss-cn-hangzhou.aliyuncs.com";// endpoint
-	private static String ACCESSKEYID = "LTAIJ9mYIjuW54Cj";// accessKeyId
-	private static String ACCESSKEYSECRET = "89EMlXLsP13H8mWKIvdr4iM1OvdVxs";// accessKeySecret
+	private static String ACCESSKEYID = "LTAI4FgJibdQgparTs4Nba8E";// accessKeyId
+	private static String ACCESSKEYSECRET = "kDJX4Hicd8H00m16GCSdNN7TJRex9g";// accessKeySecret
 
 	/**
 	 * 上传文件到OSS服务器
@@ -45,7 +45,7 @@ public class UploadFile {
 	 * @param outputStream 输出流
 	 * @param inputStream  输入流 输入流和输出流只能选其一
 	 * 
-	 * @return 本方法返回文件在OSS的完全路径
+	 * @return 本方法返回文件在OSS的相对路径
 	 * @throws Exception
 	 */
 	public String uploadFileToOSS(String OSSBucktName, String OSSCatalogue, String fileName, InputStream inputStream,
@@ -66,8 +66,7 @@ public class UploadFile {
 		ossClient.shutdown();
 		inputStream.close();
 
-		String url = "https://" + OSSBucktName + ".oss-cn-hangzhou.aliyuncs.com/" + filePath;
-		System.out.println("文件下载路径(完全路径);" + url);
-		return url;
+		System.out.println("文件下载路径(相对路径)：" + filePath);
+		return filePath;
 	}
 }
