@@ -13,7 +13,7 @@ public class ExcelUtilsTest {
 	@Test
 	public void simpleRead() {
 	    // 写法1：
-	    String fileName = "C:/Users/Admin/Desktop/新建 XLS 工作表.xls";
+	    String fileName = "C:/Users/Admin/Desktop/1.xlsx";
 
 	    ExcelReader excelReader = EasyExcel.read(fileName, DemoData.class, new DemoDataListener()).build();
 	    ReadSheet readSheet = EasyExcel.readSheet(0).build();
@@ -22,3 +22,5 @@ public class ExcelUtilsTest {
 	    excelReader.finish();
 	}
 }
+
+
