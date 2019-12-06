@@ -62,11 +62,12 @@ public class UserController extends Controller {
 			ret = "LoginBO对象，包含user，session等信息"//
 	)
 	public APIResponse registByNameAndPwd(//
+			@P(t = "手机号") String phone,//
 			@P(t = "用户名") String name, //
 			@P(t = "密码") String pwd//
 	) throws Exception {
 		try (DruidPooledConnection conn = dds.getConnection()) {
-			User user = userService.registByNameAndPwd(conn, name, pwd);
+			User user = userService.registByNameAndPwdAndPhone(conn,phone, name, pwd);
 			// 如果成功注册，则写入Session后，返回LoginBo
 			LoginBo loginBo = userService.login(conn, user);
 			// 返回登录业务对象
@@ -92,10 +93,23 @@ public class UserController extends Controller {
 			return APIResponse.getNewSuccessResp(loginBo);
 		}
 	}
+	
+	@POSTAPI(path = "loginByPhoneAndPwd", //
+			des = "手机号密码登录", //
+			ret = "LoginBO对象，包含user，session等信息"//
+	)
+	public APIResponse loginByPhoneAndPwd(//
+			@P(t = "用户名") String phone, //
+			@P(t = "密码") String pwd//
+	) throws Exception {
+		try (DruidPooledConnection conn = dds.getConnection()) {
+			// 如果成功登录，则写入Session后，返回LoginBo
+			LoginBo loginBo = userService.loginByPhoneAndPwd(conn, phone, pwd);
+			// 返回登录业务对象
+			return APIResponse.getNewSuccessResp(loginBo);
+		}
+	}	
 
-	/**
-	 * 
-	 */
 	@POSTAPI(//
 			path = "loginByAnonymous", //
 			des = "匿名登录", //
@@ -115,10 +129,7 @@ public class UserController extends Controller {
 			return APIResponse.getNewSuccessResp(loginBo);
 		}
 	}
-
-	/**
-	 * 修改用户的身份证
-	 */
+	
 	@POSTAPI(//
 			path = "editUserIdNumber", //
 			des = "修改用户的身份证", //

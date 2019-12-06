@@ -82,6 +82,7 @@ public interface BaseRC {
 	static final RC USER_AUTH_UNKNOWN_STATUS = new RC("user-0018", "unknown user status");// 未知用户状态
 	static final RC USER_AUTH_NOT_ADMIN = new RC("user-0019", "must be an admin user");// 不是管理员账号
 	static final RC USER_NO_PERMISSION = new RC("user-0020", "this user no permission");// 无权限
+	static final RC USER_MOBILE_EXIST = new RC("user-0021", "this mobile exist");// 手机号已存在
 
 	// CMS内容管理系统错误
 	static final RC CMS_CONTENT_NOT_EXISET = new RC("cms-0010", "Content不存在");
