@@ -146,15 +146,17 @@ public interface BaseRC {
 
 	static final RC ECM_ORG_USER_SHARECERNO = new RC("ecm-0024", "股权证号已存在");
 
+	static final RC ECM_ORG_ASSET_TIME_FORMAT_ERROR = new RC("0000025", "资产数据时间格式错误");
+
 	/**
 	 * kkqt小程序项目报错
 	 */
-	static final RC UP_VOTE_ERROR = new RC("ecm-0025", "已经点过赞");
+	static final RC UP_VOTE_ERROR = new RC("kkqt-001", "已经点过赞");
 
-	static final RC ACC_TASK_LIST = new RC("ecm-0026", "请勿重复领取任务");
+	static final RC ACC_TASK_LIST = new RC("kkqt-002", "请勿重复领取任务");
 
-	static final RC CONTENT_BY_ERROR = new RC("ecm-0027", "您已购买,请勿重复购买");
+	static final RC CONTENT_BY_ERROR = new RC("kkqt-003", "您已购买,请勿重复购买");
 	
-	static final RC STOCK_BY_ERROR = new RC("ecm-0028", "此商品库存不足");
+	static final RC STOCK_BY_ERROR = new RC("kkqt-004", "此商品库存不足");
 
 }

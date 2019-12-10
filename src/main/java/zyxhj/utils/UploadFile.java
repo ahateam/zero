@@ -1,18 +1,13 @@
 package zyxhj.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+
+import java.io.*;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 
-import zyxhj.utils.api.Controller.ENUMVALUE;
 
 /**
  * OSS文件上传工具<br><br>
