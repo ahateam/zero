@@ -20,14 +20,14 @@ import com.alibaba.fastjson.JSONObject;
  * @author JXians
  * 
  */
-public class TLSSigAPIv2 {
+public class TIMUtil {
 
 	private static long sdkappid = 1400277699;
 	private static String key = "281d8830bb13fa0923bc5c34cc13690faac214906fd5342782daba5a3e645f3c";
 	private static final Long EXPIRETIME = 604800000L;
 	
 
-	public TLSSigAPIv2(long sdkappid, String key) {
+	public TIMUtil(long sdkappid, String key) {
 		this.sdkappid = sdkappid;
 		this.key = key;
 	}
