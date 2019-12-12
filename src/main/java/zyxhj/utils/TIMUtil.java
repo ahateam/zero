@@ -22,8 +22,11 @@ import com.alibaba.fastjson.JSONObject;
  */
 public class TIMUtil {
 
+	//腾讯云TIM——APPID
 	private static long sdkappid = 1400277699;
+	//腾讯云TIM——秘钥
 	private static String key = "281d8830bb13fa0923bc5c34cc13690faac214906fd5342782daba5a3e645f3c";
+	//userSig有效时间
 	private static final Long EXPIRETIME = 604800000L;
 	
 
