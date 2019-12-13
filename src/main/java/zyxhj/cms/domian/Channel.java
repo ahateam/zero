@@ -66,6 +66,12 @@ public class Channel {
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte type;
+	
+	/**
+	 * 颜色
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String boxBackgroundColor;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////

@@ -129,10 +129,45 @@ public class Content {
 	 */
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
 	public String liveEndTime;
+	/**
+	 * 真浏览量
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Integer truePageView;
+	/**
+	 * 是否显示浏览量
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte isPageView;
+	/*
+	 * 作者
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_TITLE)
+	public String contentAuthor;
+	/*
+	 * 来源
+	 */
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public String contentSource;
+	/*
+	 * 摘要
+	 */
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public String contentRemark;
+	/*
+	 * mp3
+	 */
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public String mp3Src;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
+	@AnnDicField(alias = "不显示")
+	public static final Byte ISPAGEVIEW_NO = 0;
+	@AnnDicField(alias = "显示")
+	public static final Byte ISPAGEVIEW_YES = 1;
+	
 
 	@AnnDicField(alias = "图文")
 	public static final Byte TYPE_ALUMB = 5;

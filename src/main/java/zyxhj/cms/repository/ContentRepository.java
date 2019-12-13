@@ -32,7 +32,7 @@ public class ContentRepository extends RDSRepository<Content> {
 	/*浏览量加1*/
 	public void updatePageView(Long id) throws ServerException, SQLException {
 		try (DruidPooledConnection conn = ds.getConnection()) {
-			String sql = "update tb_cms_content set page_view = page_view+1 where id = " + id;
+			String sql = "update tb_cms_content set page_view = page_view+1, true_page_view = true_page_view +1 where id = " + id;
 			this.executeUpdateSQL(conn, sql, null);
 		}
 	}

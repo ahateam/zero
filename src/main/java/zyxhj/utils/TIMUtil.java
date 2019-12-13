@@ -22,10 +22,12 @@ import com.alibaba.fastjson.JSONObject;
  */
 public class TIMUtil {
 
-	//腾讯云TIM——APPID
-	private static long sdkappid = 1400277699;
-	//腾讯云TIM——秘钥
-	private static String key = "281d8830bb13fa0923bc5c34cc13690faac214906fd5342782daba5a3e645f3c";
+//	//腾讯云TIM——APPID
+//	private static long sdkappid = 1400277699;
+//	//腾讯云TIM——秘钥
+//	private static String key = "281d8830bb13fa0923bc5c34cc13690faac214906fd5342782daba5a3e645f3c";
+	private static long sdkappid = 1400294741;
+	private static String key = "0e4fc8ace54e0173365d79905019d1bbc23a55c0691b1ceb679a6233b0bc6bf4";
 	//userSig有效时间
 	private static final Long EXPIRETIME = 604800000L;
 	

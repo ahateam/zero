@@ -51,11 +51,12 @@ public class ChannelService extends Controller{
 	)
 	public Channel createChannel(
 		@P(t = "模块编号") String module,
-		@P(t = "状态") Byte status, 
-		@P(t = "标题") String title, 
+		@P(t = "状态",r = false) Byte status, 
+		@P(t = "标题",r = false) String title, 
 		@P(t = "标签（json）") String tags, 
 		@P(t = "数据",r = false) String data,
-		@P(t = "数据",r = false) Byte type
+		@P(t = "数据",r = false) Byte type,
+		@P(t = "数据",r = false)String boxBackgroundColor
 	)throws Exception {
 		Channel channel = new Channel();
 		channel.id = IDUtils.getSimpleId();
@@ -65,6 +66,7 @@ public class ChannelService extends Controller{
 		channel.title = title;
 		channel.tags = tags;
 		channel.type = type;
+		channel.boxBackgroundColor = boxBackgroundColor;
 		if(data != null) {
 			channel.data = data;			
 		}
@@ -86,7 +88,8 @@ public class ChannelService extends Controller{
 		@P(t = "状态",r = false)Byte status, 
 		@P(t = "标题",r = false)String title,
 		@P(t = "标签（json）",r = false)String tags, 
-		@P(t = "数据",r = false)String data
+		@P(t = "数据",r = false)String data,
+		@P(t = "数据",r = false)String boxBackgroundColor
 	) throws Exception {
 		Channel channel = new Channel();
 		channel.orgModule = module;
@@ -96,6 +99,7 @@ public class ChannelService extends Controller{
 			channel.tags = tags;			
 		}
 		channel.data = data;
+		channel.boxBackgroundColor = boxBackgroundColor;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			channelRepository.update(conn, EXP.INS().key("org_module", module) .key("id", id), channel, true);		
 		}

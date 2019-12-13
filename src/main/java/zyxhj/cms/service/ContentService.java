@@ -76,7 +76,13 @@ public class ContentService extends Controller{
 		@P(t = "私密信息",r = false) String proviteData, //
 		@P(t = "扩展信息",r = false) String ext, //
 		@P(t = "直播开始时间",r = false) String liveStartTime,  //
-		@P(t = "直播结束时间",r = false) String liveEndTime  //
+		@P(t = "直播结束时间",r = false) String liveEndTime,  //
+		@P(t = "显示浏览量",r = false) int pageView,  //
+		@P(t = "是否显示浏览量",r = false) Byte isPageView, //
+		@P(t = "作者",r = false) String  contentAuthor, //
+		@P(t = "来源",r = false) String  contentSource,  //
+		@P(t = "摘要",r = false) String  contentRemark,  //
+		@P(t = "MP3",r = false) String  mp3Src  //
 	)
 	throws Exception {
 		Content c = new Content();
@@ -85,7 +91,7 @@ public class ContentService extends Controller{
 		c.createTime = new Date();
 		c.updateTime = c.createTime;
 		c.type = type;
-		c.status = Content.STATUS_DELETED;
+		c.status = status==null?Content.STATUS_DELETED:status;
 		c.power = power;
 		c.title = title;
 		c.upUserId = upUserId;
@@ -94,10 +100,15 @@ public class ContentService extends Controller{
 		c.data = data;
 		c.proviteData = proviteData;
 		c.ext = ext;
-		c.pageView = 0;
+		c.pageView = pageView;
 		c.shareNumber = 0;
 		c.liveStartTime = liveStartTime;
 		c.liveEndTime = liveEndTime;
+		c.isPageView = isPageView;
+		c.contentAuthor = contentAuthor;
+		c.contentSource = contentSource;
+		c.contentRemark = contentRemark;
+		c.mp3Src = mp3Src;
 		if(data.length()>10240) {
 			return APIResponse.getNewFailureResp(new RC("fail", "错误！添加内容长度大于10240"));
 		}
@@ -130,7 +141,13 @@ public class ContentService extends Controller{
 		@P(t = "私密信息",r = false) String proviteData, //
 		@P(t = "扩展信息",r = false) String ext, //
 		@P(t = "直播开始时间",r = false) String liveStartTime,  //
-		@P(t = "直播结束时间",r = false) String liveEndTime  //
+		@P(t = "直播结束时间",r = false) String liveEndTime,  //
+		@P(t = "显示浏览",r = false) int pageview,
+		@P(t = "是否显示浏览量",r = false) Byte isPageView, //
+		@P(t = "作者",r = false) String  contentAuthor, //
+		@P(t = "来源",r = false) String  contentSource,  //
+		@P(t = "摘要",r = false) String  contentRemark,  //
+		@P(t = "MP3",r = false) String  mp3Src  //
 	)
 	throws Exception {
 		Content c = new Content();
@@ -149,6 +166,12 @@ public class ContentService extends Controller{
 		c.ext = ext;
 		c.liveStartTime = liveStartTime;
 		c.liveEndTime = liveEndTime;
+		c.pageView = pageview;
+		c.isPageView = isPageView;
+		c.contentAuthor = contentAuthor;
+		c.contentSource = contentSource;
+		c.contentRemark = contentRemark;
+		c.mp3Src = mp3Src;
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			contentRepository.update(conn, EXP.INS().key("id", id), c, true);			
 		}
