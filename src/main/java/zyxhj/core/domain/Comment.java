@@ -97,4 +97,7 @@ public class Comment extends TSEntity {
 
 	@AnnDicField(alias = "已通过")
 	public static final Byte STATUS_ACCEPT = 1;
+	
+	@AnnDicField(alias = "已回绝")
+	public static final Byte STATUS_REJECT = 2;
 }
