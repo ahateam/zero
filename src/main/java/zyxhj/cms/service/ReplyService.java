@@ -82,7 +82,7 @@ public class ReplyService extends Controller {
 			@P(t = "@对象名称") String atUserName, //
 			@P(t = "标题，榴莲用户名") String title, //
 			@P(t = "正文") String text, //
-			@P(t = "扩展，榴莲密信", r = false) String ext, //
+			@P(t = "扩展", r = false) String ext, //
 			@P(t = "审核状态", r = false) Byte status //
 	) throws ServerException, SQLException {
 		Reply reply = new Reply();
@@ -201,7 +201,7 @@ public class ReplyService extends Controller {
 			} else {
 				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, StringUtils.join("输入的状态异常>", status));
 			}
-		} else {
+		} else if(replyId != null && replyId != 0) {
 			PrimaryKey pk = new PrimaryKeyBuilder().add("_id", TSUtils.get_id(replyId)).add("replyId", replyId)
 					.add("sequenceId", sequenceId).build();
 			Comment comment = commentRepository.get(client, pk);
@@ -211,6 +211,8 @@ public class ReplyService extends Controller {
 			} else {
 				throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, StringUtils.join("输入的状态异常>", status));
 			}
+		}else {
+			throw new ServerException(BaseRC.SERVER_DEFAULT_ERROR, StringUtils.join("请输入replyId或ownerId"));
 		}
 	}
 
