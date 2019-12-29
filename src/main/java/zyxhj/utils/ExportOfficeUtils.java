@@ -35,7 +35,13 @@ public class ExportOfficeUtils {
 	private static Configuration config = null;
 	static {
 		config = new Configuration(new Version("2.3.0"));
-		config.setClassForTemplateLoading(ExportOfficeUtils.class, "/template/");
+//		config.setClassForTemplateLoading(ExportOfficeUtils.class, "/template/");
+		try {
+			config.setDirectoryForTemplateLoading(new File("/contractDate"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		config.setDefaultEncoding("UTF-8");
 	}
 
