@@ -33,7 +33,7 @@ import zyxhj.utils.data.ts.ColumnBuilder;
  * 
  * 表达式中的变量用{{}}包裹</br>
  */
-public class TEXP  {
+public class TEXP {
 
 	/**
 	 * TermQuery，单值精确匹配</br>
@@ -117,7 +117,8 @@ public class TEXP  {
 
 	/**
 	 * RangeQuery，范围查询</br>
-	 * https://help.aliyun.com/document_detail/117496.html?spm=a2c4g.11186623.6.669.50df6c98z8c5zA
+	 * https://help.aliyun.com/document_detail/117496.html?spm=a2c4g.11186623.6.669.50df6c98z8c5zA</br>
+	 * TODO direction没做
 	 */
 	public static Query Range(String fieldName, ColumnValue from, ColumnValue to) throws ServerException {
 
