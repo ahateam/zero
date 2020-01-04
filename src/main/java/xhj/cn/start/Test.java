@@ -10,6 +10,7 @@ import zyxhj.cms.domian.ChannelUser;
 import zyxhj.cms.domian.Content;
 import zyxhj.cms.domian.ContentTag;
 import zyxhj.core.domain.Appraise;
+import zyxhj.core.domain.Comment;
 import zyxhj.core.domain.Mail;
 import zyxhj.core.domain.MailTag;
 import zyxhj.core.domain.Reply;
@@ -45,10 +46,11 @@ public class Test {
 //			TSUtils.createTableByEntity(client, ContentTag.class);
 			
 //			TSUtils.createTableByEntity(client, Appraise.class);
-//			TSUtils.createTableByEntity(client, Reply.class);
+//			TSUtils.createTableByEntity(client, Comment.class);
 			
 //			TSUtils.drapTableByEntity(client, Reply.class);
-//			TSUtils.drapTableByEntity(client, Appraise.class);
+			TSUtils.createTableByEntity(client, Mail.class);
+//			TSUtils.createTableByEntity(client, MailTag.class);
 			client.shutdown();
 
 		} catch (Exception e) {

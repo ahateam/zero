@@ -88,89 +88,116 @@ public abstract class ZeroVerticle extends AbstractVerticle {
 		HttpServerRequest req = context.request();
 		HttpServerResponse resp = context.response();
 
+
+		System.out.println("enter handleHttpRequest");
+		
 		resp.putHeader("Access-Control-Allow-Origin", "*");// 设置跨域，目前不限制。TODO，将来需要设定指定的来源
+		//文件上传特殊处理
+		if (req.uri().startsWith("/form")) {
+			req.setExpectMultipart(true);
+			System.out.println("enter startWith");
+			req.uploadHandler(upload -> {
+				System.out.println("enter upload");
+				upload.exceptionHandler(cause -> {//处理异常
+					System.out.println("enter exceptionHandler");
+					req.response().setChunked(true).end("Upload failed");
+				});
+				upload.endHandler(v -> {
+					System.out.println("enter endHandler");
+					req.response().setChunked(true).end("Successfully uploaded to " + upload.filename());
+				});
+				// FIXME - Potential security exploit! In a real
+				// system you must check this filename
+				// to make sure you're not saving to a place where
+				// you don't want!
+				// Or better still, just use Vert.x-Web which
+				// controls the upload area.
+				upload.streamToFileSystem(upload.filename());
+			});
+		} else {
+			
+			System.out.println(StringUtils.join(req.method(), " - ", req.path()));
 
-		System.out.println(StringUtils.join(req.method(), " - ", req.path()));
-
-		String reqPath = req.path();
-		String[] nodes = uri2Nodes(reqPath);
-		if (null != nodes && nodes.length > 0) {
-			// 可能因为nginx反向代理，在SERVER_NAME前加入多级子域名，需要过滤掉
-			// 去除nodes中，SERVER_NAME之前的部分
-			int startInd = 0;
-			boolean flg = false;
-			for (; startInd < nodes.length; startInd++) {
-				if (nodes[startInd].equalsIgnoreCase(name())) {
-					// 找到SERVER_NAME所在的index
-					flg = true;
-					break;
-				}
-			}
-			if (flg) {
-				// 匹配到SERVER_NAME
-
-				if (startInd + 1 >= nodes.length) {
-					// 只有SERVER_NAME节点，显示list
-					resp.putHeader("content-type", "application/json;charset=UTF-8");
-					Controller.writeThings(resp, getCtrldocs());
-				} else if (startInd + 2 >= nodes.length) {
-					// 只有controller节点，没有method节点，返回错误
-					resp.putHeader("content-type", "application/json;charset=UTF-8");
-
-					String node = nodes[startInd + 1];
-					Controller ctrl = ctrlMap.get(node);
-					if (ctrl == null) {
-						Controller.doResponseFailure(resp, BaseRC.SERVER_ERROR,
-								StringUtils.join("missing controller ", node));
-					} else {
-						Controller.writeThings(resp, ctrl.getJSCode());
+			String reqPath = req.path();
+			String[] nodes = uri2Nodes(reqPath);
+			if (null != nodes && nodes.length > 0) {
+				// 可能因为nginx反向代理，在SERVER_NAME前加入多级子域名，需要过滤掉
+				// 去除nodes中，SERVER_NAME之前的部分
+				int startInd = 0;
+				boolean flg = false;
+				for (; startInd < nodes.length; startInd++) {
+					if (nodes[startInd].equalsIgnoreCase(name())) {
+						// 找到SERVER_NAME所在的index
+						flg = true;
+						break;
 					}
-				} else {
-					String node = nodes[startInd + 1];
-					String method = nodes[startInd + 2];
-					Controller ctrl = ctrlMap.get(node);
-					if (null != ctrl) {
+				}
+				if (flg) {
+					// 匹配到SERVER_NAME
+
+					if (startInd + 1 >= nodes.length) {
+						// 只有SERVER_NAME节点，显示list
 						resp.putHeader("content-type", "application/json;charset=UTF-8");
-						try {
-							ctrl.exec(method, context, req, resp);
-						} catch (Exception e) {
-							Controller.writeThings(resp, e.getMessage());
-						}
-					} else {
-						// 最好不设置content-type的header，否则文件处理可能出错
+						Controller.writeThings(resp, getCtrldocs());
+					} else if (startInd + 2 >= nodes.length) {
+						// 只有controller节点，没有method节点，返回错误
+						resp.putHeader("content-type", "application/json;charset=UTF-8");
 
-						// 返回404错误
-						// 没有找到合适的ctrl，则可能是模版或静态资源文件
-						if (node.equalsIgnoreCase(PATH_ASSET)) {
-							// goto template
-							// -tmp 模版引擎处理
-							int ind = reqPath.indexOf(PATH_ASSET) + PATH_ASSET.length();
-							String temp = reqPath.substring(ind);
-
-							String fileName = StringUtils.join("assets", temp);
-							if (vertx.fileSystem().existsBlocking(fileName)) {
-								// 处理静态文件
-								resp.sendFile(fileName);
-								// 需要retrun，防止本函数写入终止符
-								return;
-							} else {
-								// 模版和静态文件都不存在
-								Controller.doResponseFailure(resp, BaseRC.SERVER_ERROR,
-										StringUtils.join("missing file >", fileName));
-							}
-						} else {
+						String node = nodes[startInd + 1];
+						Controller ctrl = ctrlMap.get(node);
+						if (ctrl == null) {
 							Controller.doResponseFailure(resp, BaseRC.SERVER_ERROR,
 									StringUtils.join("missing controller ", node));
+						} else {
+							Controller.writeThings(resp, ctrl.getJSCode());
+						}
+					} else {
+						String node = nodes[startInd + 1];
+						String method = nodes[startInd + 2];
+						Controller ctrl = ctrlMap.get(node);
+						if (null != ctrl) {
+							resp.putHeader("content-type", "application/json;charset=UTF-8");
+							try {
+								ctrl.exec(method, context, req, resp);
+							} catch (Exception e) {
+								Controller.writeThings(resp, e.getMessage());
+							}
+						} else {
+							// 最好不设置content-type的header，否则文件处理可能出错
+
+							// 返回404错误
+							// 没有找到合适的ctrl，则可能是模版或静态资源文件
+							if (node.equalsIgnoreCase(PATH_ASSET)) {
+								// goto template
+								// -tmp 模版引擎处理
+								int ind = reqPath.indexOf(PATH_ASSET) + PATH_ASSET.length();
+								String temp = reqPath.substring(ind);
+
+								String fileName = StringUtils.join("assets", temp);
+								if (vertx.fileSystem().existsBlocking(fileName)) {
+									// 处理静态文件
+									resp.sendFile(fileName);
+									// 需要retrun，防止本函数写入终止符
+									return;
+								} else {
+									// 模版和静态文件都不存在
+									Controller.doResponseFailure(resp, BaseRC.SERVER_ERROR,
+											StringUtils.join("missing file >", fileName));
+								}
+							} else {
+								Controller.doResponseFailure(resp, BaseRC.SERVER_ERROR,
+										StringUtils.join("missing controller ", node));
+							}
 						}
 					}
 				}
+			} else {
+				// 返回404错误
+				resp.putHeader("content-type", "application/json;charset=UTF-8");
+				Controller.doResponseFailure(resp, BaseRC.SERVER_ERROR,
+						StringUtils.join("missing controller ", reqPath));
 			}
-		} else {
-			// 返回404错误
-			resp.putHeader("content-type", "application/json;charset=UTF-8");
-			Controller.doResponseFailure(resp, BaseRC.SERVER_ERROR, StringUtils.join("missing controller ", reqPath));
 		}
-
 		resp.end();
 	}
 

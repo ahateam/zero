@@ -17,8 +17,9 @@ import zyxhj.utils.data.ts.TSEntity;
 @TSAnnEntity(alias = "tb_mail", indexName = "index_mail")
 public class Mail extends TSEntity {
 
+	public static final Long JITI_MODULEID = 100001L;
 	/**
-	 * 模块编号（分片键）
+	 * 模块编号（分片键）_集体经济模块编号暂定为100001L
 	 */
 	@TSAnnID(key = TSAnnID.Key.PK1, type = PrimaryKeyType.INTEGER)
 	public Long moduleId;
@@ -40,7 +41,7 @@ public class Mail extends TSEntity {
 	 */
 	@TSAnnIndex(type = FieldType.LONG, enableSortAndAgg = true, store = true)
 	@TSAnnField(column = TSAnnField.ColumnType.INTEGER)
-	public Date creatTime;
+	public Date createTime;
 
 	/**
 	 * 标签列表，JSONArray格式

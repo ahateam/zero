@@ -281,8 +281,4 @@ public class testImport {
 		}
 	}
 
-	public void testimportTableBatchData() {
-
-	}
-
 }

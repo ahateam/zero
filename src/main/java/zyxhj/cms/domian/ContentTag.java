@@ -17,7 +17,7 @@ public class ContentTag {
 	 */
 	@RDSAnnID
 	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
-	public String conGroup;
+	public String GroupName;
 
 	/**
 	 * 标签名称（名称直接配合模块编号和持有者编号做主键，不重复）
@@ -32,6 +32,11 @@ public class ContentTag {
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte status;
 
+	/**
+	 * 排序大小
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String sortSize;
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////

@@ -1,6 +1,8 @@
 package zyxhj.core.service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,22 +82,23 @@ public class UserService {
 	/**
 	 * 用户名密码注册
 	 * 
-	 * @param name
-	 *            用户名（必填）
-	 * @param pwd
-	 *            密码（必填）
+	 * @param name 用户名（必填）
+	 * @param pwd  密码（必填）
 	 * 
 	 * @return 刚注册的用户对象
 	 */
-	public User registByNameAndPwd(DruidPooledConnection conn, String name, String pwd) throws Exception {
+	public User registByNameAndPwdAndPhone(DruidPooledConnection conn, String phone, String name, String pwd)
+			throws Exception {
 		// 判断用户是否存在
-		User existUser = userRepository.get(conn, EXP.INS().key("name", name));
+		User existUser = userRepository.get(conn, EXP.INS().key("mobile", phone));
 		if (null == existUser) {
+
 			// 用户不存在
 			User newUser = new User();
 			newUser.id = IDUtils.getSimpleId();
 			newUser.createDate = new Date();
 			newUser.name = name;
+			newUser.mobile = phone;
 
 			newUser.pwd = pwd;// TODO 目前是明文，需要加料传输和存储
 
@@ -105,8 +108,7 @@ public class UserService {
 			return newUser;
 
 		} else {
-			// 用户已存在
-			throw new ServerException(BaseRC.USER_EXIST);
+			throw new ServerException(BaseRC.USER_MOBILE_EXIST);
 		}
 	}
 
@@ -120,6 +122,25 @@ public class UserService {
 			// 用户已存在，匹配密码
 			// TODO 目前是明文，需要加料然后匹配
 			if (pwd.equals(existUser.pwd)) {
+				return login(conn, existUser);
+			} else {
+				// 密码错误
+				throw new ServerException(BaseRC.USER_PWD_ERROR);
+			}
+		}
+	}
+
+	public LoginBo loginByPhoneAndPwd(DruidPooledConnection conn, String phone, String pwd) throws Exception {
+		// 判断用户是否存在
+		User existUser = userRepository.get(conn, EXP.INS().key("mobile", phone));
+		if (null == existUser) {
+			// 用户不存在
+			throw new ServerException(BaseRC.USER_NOT_EXIST);
+		} else {
+			// 用户已存在，匹配密码
+			// TODO 目前是明文，需要加料然后匹配
+			if (pwd.equals(existUser.pwd)) {
+				existUser.pwd = null;
 				return login(conn, existUser);
 			} else {
 				// 密码错误
@@ -159,14 +180,14 @@ public class UserService {
 	public void setUserNickname(DruidPooledConnection conn, Long userId, String nickname) throws Exception {
 		User forUpdate = new User();
 		forUpdate.nickname = nickname;
-		userRepository.update(conn,EXP.INS().key("id", userId), forUpdate, true);
-		
+		userRepository.update(conn, EXP.INS().key("id", userId), forUpdate, true);
+
 	}
 
 	public void setUserSignature(DruidPooledConnection conn, Long userId, String signature) throws Exception {
 		User forUpdate = new User();
 		forUpdate.signature = signature;
-		userRepository.update(conn,EXP.INS().key("id", userId), forUpdate, true);
+		userRepository.update(conn, EXP.INS().key("id", userId), forUpdate, true);
 	}
 
 	public int deleteUserById(DruidPooledConnection conn, Long userId) throws Exception {
@@ -210,7 +231,7 @@ public class UserService {
 		User u = new User();
 		u.id = userId;
 		u.idNumber = newIdNumber;// 身份证已添加唯一索引，无需再判断身份证号码是否重复
-		userRepository.update(conn,EXP.INS().key("id", userId), u, true);
+		userRepository.update(conn, EXP.INS().key("id", userId), u, true);
 		return u;
 	}
 
@@ -227,42 +248,44 @@ public class UserService {
 			return user;
 		}
 	}
-	
+
 	// 其他方式登录：头条/百度/支付宝
-	public User otherLoginOpenId(DruidPooledConnection conn, String openId, String name, String ext,String loginInfo) throws Exception {
+	public User otherLoginOpenId(DruidPooledConnection conn, String openId, String name, String ext, String loginInfo)
+			throws Exception {
 		User user = null;
-		if("tt".equals(loginInfo)) {
+		if ("tt".equals(loginInfo)) {
 			user = userRepository.get(conn, EXP.INS().key("tt_open_id", openId));
-		}else if("baidu".equals(loginInfo)) {
+		} else if ("baidu".equals(loginInfo)) {
 			user = userRepository.get(conn, EXP.INS().key("bd_open_id", openId));
-		}else if("alipay".equals(loginInfo)) {
+		} else if ("alipay".equals(loginInfo)) {
 			user = userRepository.get(conn, EXP.INS().key("alipay_open_id", openId));
 		}
 		if (user == null) {
 			// 创建用户
-			return createUserByOther(conn, openId, name, ext,loginInfo);
+			return createUserByOther(conn, openId, name, ext, loginInfo);
 		} else {
 			// 用户登录
 			return user;
 		}
 	}
-	
-	//  其他创建头条/百度/支付宝用户
-	private User createUserByOther(DruidPooledConnection conn, String openId, String name, String ext,String loginInfo) throws Exception {
+
+	// 其他创建头条/百度/支付宝用户
+	private User createUserByOther(DruidPooledConnection conn, String openId, String name, String ext, String loginInfo)
+			throws Exception {
 		User u = new User();
 		u.id = IDUtils.getSimpleId();
 		u.name = name;
 		u.createDate = new Date();
 		u.ext = ext;
-		if("tt".equals(loginInfo)) {
+		if ("tt".equals(loginInfo)) {
 			u.ttOpenId = openId;
-		}else if("baidu".equals(loginInfo)) {
+		} else if ("baidu".equals(loginInfo)) {
 			u.bdOpenId = openId;
-		}else if("alipay".equals(loginInfo)) {
+		} else if ("alipay".equals(loginInfo)) {
 			u.alipayOpenId = openId;
 		}
 		userRepository.insert(conn, u);
-		return u;	
+		return u;
 	}
 
 	// 创建微信用户
@@ -284,7 +307,7 @@ public class UserService {
 		u.name = name;
 		u.mobile = mobile;
 		u.email = email;
-		return userRepository.update(conn,EXP.INS().key("id", userId), u, true);
+		return userRepository.update(conn, EXP.INS().key("id", userId), u, true);
 	}
 
 }

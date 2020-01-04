@@ -44,6 +44,12 @@ public class ChannelContentTag {
 	 */
 	@RDSAnnField(column = RDSAnnField.BYTE)
 	public Byte status;
+	
+	/**
+	 * 付费
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte power;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////

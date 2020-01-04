@@ -53,7 +53,7 @@ public class AppraiseService extends Controller{
 			@P(t = "状态") Byte value //
 	) throws Exception {
 		Appraise appraise = new Appraise();
-		if(judgeAppraise(ownerId, userId, value)) {
+		if(!judgeAppraise(ownerId, userId, value)) {
 			appraise._id = TSUtils.get_id(ownerId);
 			appraise.ownerId = ownerId;
 			appraise.userId = userId;
@@ -64,7 +64,6 @@ public class AppraiseService extends Controller{
 			appraise.value = 10;//10表示已经点过赞
 			return appraise;
 		}
-
 	}
 
 	@POSTAPI(//
@@ -113,7 +112,11 @@ public class AppraiseService extends Controller{
 		return appraiseRepository.search(client, query);
 	}
 	
-	//判断是否点过赞
+	//
+	@POSTAPI(//
+			path = "judgeAppraise", //
+			des = "判断是否点过赞" //
+	)
 	public boolean judgeAppraise(
 			@P(t = "内容编号") Long ownerId, 
 			@P(t = "用户编号") Long userId, 
@@ -125,9 +128,9 @@ public class AppraiseService extends Controller{
 		SearchQuery query = ts.build();
 		long count = (Long) appraiseRepository.search(client, query).get("totalCount"); 
 		if(count != 0) {//已经点过赞
-			return false;
-		}else {
 			return true;
+		}else {
+			return false;
 		}
 	}
 }

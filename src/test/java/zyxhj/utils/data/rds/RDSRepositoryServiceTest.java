@@ -518,4 +518,38 @@ public class RDSRepositoryServiceTest {
 //		}
 	}
 
+	@Test
+	public void testMessage() {
+		List<Long> idList = new ArrayList<Long>();
+		for (int i = 0; i < 5; i++) {
+			idList.add(IDUtils.getSimpleId());
+		}
+		JSONArray ja = new JSONArray();
+		for (int j = 0; j < idList.size(); j++) {
+			JSONObject jo = new JSONObject();
+			jo.put("id", idList.get(j));
+			jo.put("read" + idList.get(j), 0);
+			ja.add(jo);
+		}
+		System.out.println(ja.toJSONString());
+		TestDomain t = new TestDomain();
+		t.id = IDUtils.getSimpleId();
+		t.name = "123456789";
+		t.arrays = ja;
+		try {
+			testRepository.insert(conn, t);
+		} catch (ServerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	@Test
+	public void editMessage() throws Exception {
+		char a = 'a';
+		int b = 10;
+		System.out.println(a+b);
+	}
+
 }

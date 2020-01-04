@@ -136,6 +136,8 @@ public class FlowTest {
 		ProcessDefinition pd = flowService.createPD(Module.FLOW.key, "testPD", tags, lanes);
 		System.out.println(JSON.toJSONString(pd));
 		System.out.println("--- ProcessDefinition ok ---");
+		
+		//402364701777339
 	}
 
 	/**
@@ -163,8 +165,8 @@ public class FlowTest {
 		}
 		System.out.println("--- create Activity ok ---");
 
-		flowService.setPDStartActivity(pdId, activitys.get(0).id);
-		flowService.setPDEndActivity(pdId, activitys.get(activitys.size() - 1).id);
+		flowService.setPDStartActivity(402364701777339L, activitys.get(0).id);
+		flowService.setPDEndActivity(402364701777339L, activitys.get(activitys.size() - 1).id);
 		System.out.println("--- set start end Activity ok ---");
 
 		ProcessDefinition pd = flowService.getPDById(pdId);
@@ -203,7 +205,7 @@ public class FlowTest {
 
 		actions.add(a);
 
-		flowService.editPDActivity(pdId, activityIdStart, null, null, null, JSON.toJSONString(actions));
+		flowService.editPDActivity(402364701777339L, activityIdStart, null, null, null, JSON.toJSONString(actions));
 		System.out.println("--- set Set Action ok ---");
 	}
 
@@ -226,15 +228,6 @@ public class FlowTest {
 		jo.put("COL5", 123);
 		ProcessAsset pa = processService.insertProcessTableData(123L, processId, activityDescId, tableSchemaId, "", jo);
 		System.out.println("--- insertData ok ---");
-	}
-
-	@Test
-	public void testExecuteAction() throws Exception {
-
-		// [{"id":"16c73e50dd437","label":"测试提交","rules":[{"exp":"expDefault","target":"400719819765573"},{"exp":"getTableField(tableSchemaId,fieldName,tableDataId)
-		// > 3","target":"400719819748676"}],"type":"accept"}]
-
-		processService.executeProcessAction(processId, activityIdStart, "16c73e50dd437", 123L);
 	}
 
 	@Test
@@ -304,7 +297,7 @@ public class FlowTest {
 
 		receivers.add(r);
 		
-		flowService.createPDActivity(401122871418288L, "第六个节点", "测试泳道", JSON.toJSONString(receivers), null);
+		flowService.createPDActivity(402364701777339L, "第六个节点", "测试泳道", JSON.toJSONString(receivers), null);
 	}
 	
 	

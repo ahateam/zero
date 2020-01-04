@@ -106,13 +106,71 @@ public class Content {
 	
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public User user;//用户信息
+	/**
+	 * 浏览量
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Integer pageView;
+	
+	/**
+	 * 分享量
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Integer shareNumber;
+	
+	/**
+	 * 直播开始时间
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String liveStartTime;
+	
+	/**
+	 * 直播结束时间
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_NAME)
+	public String liveEndTime;
+	/**
+	 * 真浏览量
+	 */
+	@RDSAnnField(column = RDSAnnField.ID)
+	public Integer truePageView;
+	/**
+	 * 是否显示浏览量
+	 */
+	@RDSAnnField(column = RDSAnnField.BYTE)
+	public Byte isPageView;
+	/*
+	 * 作者
+	 */
+	@RDSAnnField(column = RDSAnnField.TEXT_TITLE)
+	public String contentAuthor;
+	/*
+	 * 来源
+	 */
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public String contentSource;
+	/*
+	 * 摘要
+	 */
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public String contentRemark;
+	/*
+	 * mp3
+	 */
+	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
+	public String mp3Src;
 
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
 	/////////////////////////////////////////////
+	@AnnDicField(alias = "不显示")
+	public static final Byte ISPAGEVIEW_NO = 0;
+	@AnnDicField(alias = "显示")
+	public static final Byte ISPAGEVIEW_YES = 1;
+	
 
 	@AnnDicField(alias = "图文")
-	public static final Byte TYPE_ALUMB = 0;
+	public static final Byte TYPE_ALUMB = 5;
 	@AnnDicField(alias = "音频")
 	public static final Byte TYPE_AUDIO = 1;
 	@AnnDicField(alias = "短视频")
@@ -122,11 +180,13 @@ public class Content {
 	@AnnDicField(alias = "直播")
 	public static final Byte TYPE_LIVE = 4;
 	@AnnDicField(alias = "纯文本")
-	public static final Byte TYPE_H5 = 5;
+	public static final Byte TYPE_H5 = 0;
 	@AnnDicField(alias = "帖子")
 	public static final Byte TYPE_POST = 6;
 	@AnnDicField(alias = "集合")
 	public static final Byte TYPE_SET = 7;
+	@AnnDicField(alias = "活动")
+	public static final Byte TYPE_ACTIVITY = 8;
 
 	@AnnDicField(alias = "待审核")
 	public static final Byte STATUS_DRAFT = 1;
@@ -136,6 +196,8 @@ public class Content {
 	public static final Byte STATUS_CLOSED = 3;
 	@AnnDicField(alias = "已发布")
 	public static final Byte STATUS_DELETED = 4;
+	@AnnDicField(alias = "评论封禁")
+	public static final Byte STATUS_CLOSEREPLY = 5;
 	
 
 	@AnnDicField(alias = "免费")

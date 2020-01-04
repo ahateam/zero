@@ -82,6 +82,7 @@ public interface BaseRC {
 	static final RC USER_AUTH_UNKNOWN_STATUS = new RC("user-0018", "unknown user status");// 未知用户状态
 	static final RC USER_AUTH_NOT_ADMIN = new RC("user-0019", "must be an admin user");// 不是管理员账号
 	static final RC USER_NO_PERMISSION = new RC("user-0020", "this user no permission");// 无权限
+	static final RC USER_MOBILE_EXIST = new RC("user-0021", "this mobile exist");// 手机号已存在
 
 	// CMS内容管理系统错误
 	static final RC CMS_CONTENT_NOT_EXISET = new RC("cms-0010", "Content不存在");
@@ -145,15 +146,17 @@ public interface BaseRC {
 
 	static final RC ECM_ORG_USER_SHARECERNO = new RC("ecm-0024", "股权证号已存在");
 
+	static final RC ECM_ORG_ASSET_TIME_FORMAT_ERROR = new RC("0000025", "资产数据时间格式错误");
+
 	/**
 	 * kkqt小程序项目报错
 	 */
-	static final RC UP_VOTE_ERROR = new RC("ecm-0025", "已经点过赞");
+	static final RC UP_VOTE_ERROR = new RC("kkqt-001", "已经点过赞");
 
-	static final RC ACC_TASK_LIST = new RC("ecm-0026", "请勿重复领取任务");
+	static final RC ACC_TASK_LIST = new RC("kkqt-002", "请勿重复领取任务");
 
-	static final RC CONTENT_BY_ERROR = new RC("ecm-0027", "您已购买,请勿重复购买");
+	static final RC CONTENT_BY_ERROR = new RC("kkqt-003", "您已购买,请勿重复购买");
 	
-	static final RC STOCK_BY_ERROR = new RC("ecm-0028", "此商品库存不足");
+	static final RC STOCK_BY_ERROR = new RC("kkqt-004", "此商品库存不足");
 
 }

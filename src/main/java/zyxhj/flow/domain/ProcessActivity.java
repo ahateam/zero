@@ -47,10 +47,7 @@ public class ProcessActivity {
 	 */
 	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
 	public String receivers;
-
-	@RDSAnnField(column = RDSAnnField.SHORT_TEXT)
-	public String actions;// 行为
-
+	
 	/**
 	 * 存放节点样式信息
 	 */
