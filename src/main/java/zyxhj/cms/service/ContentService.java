@@ -109,9 +109,6 @@ public class ContentService extends Controller{
 		c.contentSource = contentSource;
 		c.contentRemark = contentRemark;
 		c.mp3Src = mp3Src;
-		if(data.length()>10240) {
-			return APIResponse.getNewFailureResp(new RC("fail", "错误！添加内容长度大于10240"));
-		}
 		try (DruidPooledConnection conn = ds.getConnection()) {
 			contentRepository.insert(conn, c);
 		}
