@@ -10,14 +10,18 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URL;
 import java.util.Map;
 
 import org.docx4j.Docx4J;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.RFonts;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -30,7 +34,7 @@ import sun.misc.BASE64Encoder;
  * @author JXians 模板导出word文档与PDF文档
  *
  */
-public class ExportOfficeUtils {
+public  class ExportOfficeUtils {
 
 	private static Configuration config = null;
 	static {
@@ -39,7 +43,6 @@ public class ExportOfficeUtils {
 		try {
 			config.setDirectoryForTemplateLoading(new File("/contractDate"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		config.setDefaultEncoding("UTF-8");
@@ -102,7 +105,7 @@ public class ExportOfficeUtils {
 	 * @param os           输出流
 	 * @throws Exception 
 	 */
-	public static void generatePDF(String templateName, Map<String, Object> dataMap, String PDFoutputFilePath)
+	public static void generatePDF(String templateName, Map<String, String> dataMap, String PDFoutputFilePath)
 			throws Exception {
 		// 合并模板和数据模型 word doc os = ftl + obj
 		String generate = ExportOfficeUtils.generate(templateName, dataMap);
@@ -117,7 +120,7 @@ public class ExportOfficeUtils {
         fontMapper.put("宋体", PhysicalFonts.get("SimSun"));
         fontMapper.put("微软雅黑", PhysicalFonts.get("Microsoft Yahei"));
         fontMapper.put("黑体", PhysicalFonts.get("SimHei"));
-        fontMapper.put("楷体", PhysicalFonts.get("KaiTi"));
+        fontMapper.put("楷体", PhysicalFonts.get("SimSun"));
         fontMapper.put("新宋体", PhysicalFonts.get("NSimSun"));
         fontMapper.put("华文行楷", PhysicalFonts.get("STXingkai"));
         fontMapper.put("华文仿宋", PhysicalFonts.get("STFangsong"));
@@ -140,13 +143,23 @@ public class ExportOfficeUtils {
         //解决宋体（正文）和宋体（标题）的乱码问题
         PhysicalFonts.put("PMingLiU", PhysicalFonts.get("SimSun"));
         PhysicalFonts.put("新細明體", PhysicalFonts.get("SimSun"));
-		
+       
+//        
+//        String fontFamily = "SimSun";
+//        URL simsunUrl = new ExportOfficeUtils().getClass().getResource("/usr/share/fonts/SIMSUN.TTC"); //加载字体文件（解决linux环境下无中文字体问题）
+//        PhysicalFonts.addPhysicalFonts(fontFamily, simsunUrl);
+//        PhysicalFont simsunFont = PhysicalFonts.get(fontFamily);
+//        fontMapper.put(fontFamily, simsunFont);
+//        RFonts rfonts = Context.getWmlObjectFactory().createRFonts();
+//        rfonts.setAsciiTheme(null);
+//        rfonts.setAscii(fontFamily);
+//        wordMLPackage.getMainDocumentPart().getPropertyResolver().getDocumentDefaultRPr().setRFonts(rfonts);
+//        
         wordMLPackage.setFontMapper(fontMapper);
-        
-		foSettings.setWmlPackage(wordMLPackage);
-		foSettings.setApacheFopMime("application/pdf");
+        foSettings.setApacheFopMime("application/pdf");
 		Docx4J.toPDF(wordMLPackage, new FileOutputStream(PDFoutputFilePath));
 	}
+	
 
 	/**
 	 * 图片转码
