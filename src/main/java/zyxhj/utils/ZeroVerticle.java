@@ -88,17 +88,16 @@ public abstract class ZeroVerticle extends AbstractVerticle {
 		HttpServerRequest req = context.request();
 		HttpServerResponse resp = context.response();
 
-
 		System.out.println("enter handleHttpRequest");
-		
+
 		resp.putHeader("Access-Control-Allow-Origin", "*");// 设置跨域，目前不限制。TODO，将来需要设定指定的来源
-		//文件上传特殊处理
+		// 文件上传特殊处理
 		if (req.uri().startsWith("/form")) {
 			req.setExpectMultipart(true);
 			System.out.println("enter startWith");
 			req.uploadHandler(upload -> {
 				System.out.println("enter upload");
-				upload.exceptionHandler(cause -> {//处理异常
+				upload.exceptionHandler(cause -> {// 处理异常
 					System.out.println("enter exceptionHandler");
 					req.response().setChunked(true).end("Upload failed");
 				});
@@ -115,7 +114,7 @@ public abstract class ZeroVerticle extends AbstractVerticle {
 				upload.streamToFileSystem(upload.filename());
 			});
 		} else {
-			
+
 			System.out.println(StringUtils.join(req.method(), " - ", req.path()));
 
 			String reqPath = req.path();
@@ -190,6 +189,11 @@ public abstract class ZeroVerticle extends AbstractVerticle {
 							}
 						}
 					}
+				} else {
+					// 返回404错误
+					resp.putHeader("content-type", "application/json;charset=UTF-8");
+					Controller.doResponseFailure(resp, BaseRC.SERVER_ERROR,
+							StringUtils.join("missing server ", name()));
 				}
 			} else {
 				// 返回404错误
