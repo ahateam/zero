@@ -50,8 +50,10 @@ public interface BaseRC {
 	static final RC REPOSITORY_SIMPLE_QUERY_DOMAIN_ERROR = new RC("repo-0050", "simple query domain error");
 	static final RC REPOSITORY_SIMPLE_QUERY_FIELD_ERROR = new RC("repo-0051", "simple query field error");
 	static final RC REPOSITORY_SIMPLE_QUERY_TS_QUERY_UNSPORTED_ERROR = new RC("repo-0052", "simple query query error");
-
+	
 	static final RC REPOSITORY_EXP_PARAM_NULL = new RC("repo-0053", "exp param null");
+	static final RC REPOSITORY_CREATE_EXIST = new RC("repo-0054", "create exist");
+
 
 	// 开放搜索错误
 	static final RC OPENSEARCH_APPNAME_BLANK = new RC("os-0001", "opensearch appname blank");// 开放搜索appneme错误

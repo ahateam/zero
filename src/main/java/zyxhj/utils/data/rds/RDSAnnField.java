@@ -21,7 +21,6 @@ public @interface RDSAnnField {
 	public static final String TIME = "TIMESTAMP";
 	public static final String BOOLEAN = "BIT";
 	public static final String LONGTEXT = "LONGTEXT";
-	public static final String VARCHAR = "VARCHAR(255)";
 
 	public static final String ID = "BIGINT(20)";
 	public static final String TEXT = "VARCHAR(10240)";// 10240汉字

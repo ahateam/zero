@@ -3,6 +3,7 @@ package zyxhj.test.domain;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alicloud.openservices.tablestore.SyncClient;
 
+import zyxhj.core.domain.Counter;
 import zyxhj.utils.data.DataSource;
 import zyxhj.utils.data.rds.RDSUtils;
 
@@ -23,7 +24,7 @@ public class CreateTableTest {
 
 			// RDSUtils.dropTableByEntity(dds, ORGPermission.class);
 
-			RDSUtils.createTableByEntity(dds, TestDomain1.class);
+			RDSUtils.createTableByEntity(dds, Counter.class);
 
 
 //			TSUtils.createTableByEntity(client, TaskWall.class);
