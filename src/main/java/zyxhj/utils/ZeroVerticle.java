@@ -88,7 +88,7 @@ public abstract class ZeroVerticle extends AbstractVerticle {
 		HttpServerRequest req = context.request();
 		HttpServerResponse resp = context.response();
 
-		System.out.println("enter handleHttpRequest");
+		// System.out.println("enter handleHttpRequest");
 
 		resp.putHeader("Access-Control-Allow-Origin", "*");// 设置跨域，目前不限制。TODO，将来需要设定指定的来源
 		// 文件上传特殊处理

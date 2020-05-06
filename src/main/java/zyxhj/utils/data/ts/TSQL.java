@@ -303,6 +303,30 @@ public class TSQL {
 		return this;
 	}
 
+	///////// BoolQuery，多字段自由组合查询
+	// https://help.aliyun.com/document_detail/117498.html?spm=a2c4g.11186623.6.634.49726be378xavY
+	public TSQL Bool(OP op, List<TSQL> querys) throws ServerException {
+		if (querys != null && querys.size() > 0) {
+			BoolQuery q = new BoolQuery(); // 设置查询类型为BoolQuery
+
+			// 转换成query数组
+			List<Query> list = new ArrayList<>();
+			for (TSQL t : querys) {
+				list.add(t.buildQuery());
+			}
+
+			if (op == OP.AND) {
+				q.setMustQueries(list);
+			} else if (op == OP.OR) {
+				q.setShouldQueries(list);
+			} else if (op == OP.NOT) {
+				q.setMustNotQueries(list);
+			}
+			link(op, q);
+		}
+		return this;
+	}
+
 	///////// NestedQuery，嵌套查询，返回多边形内的数据
 	// https://help.aliyun.com/document_detail/100423.html?spm=a2c4g.11186623.6.819.503811d8kerlWU
 

@@ -211,16 +211,16 @@ public abstract class RDSRepository<T> {
 		if (StringUtils.isBlank(where)) {
 			buildCountAndOffset(sb, count, offset);
 
-			System.out.println(sb.toString());
+//			System.out.println(sb.toString());
 			return executeQuerySQL(conn, sb.toString(), null);
 
 		} else {
 			buildWHERE(sb, where);
 			buildCountAndOffset(sb, count, offset);
 
-			log.debug(sb.toString());
+//			log.debug(sb.toString());
 
-			System.out.println(sb.toString());
+//			System.out.println(sb.toString());
 
 			return executeQuerySQL(conn, sb.toString(), whereParams);
 		}

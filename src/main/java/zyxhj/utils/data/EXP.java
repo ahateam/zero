@@ -363,7 +363,7 @@ public class EXP implements Cloneable {
 					}
 				} else {
 					String objStr = String.valueOf(obj);
-					if(obj instanceof Integer ) {
+					if (obj instanceof Integer) {
 						Long objInt = Long.valueOf(objStr);
 						String path;
 						path = "$." + tempPath;
@@ -1095,7 +1095,7 @@ public class EXP implements Cloneable {
 	}
 
 	public void toSQL(StringBuffer sb, List<Object> params) throws ServerException {
-		System.out.println("--->" + sb.toString());
+		// System.out.println("--->" + sb.toString());
 		if (t.equals(TYPE_EXP)) {
 			// 二元表达式
 			Object left = ps.get(0);
