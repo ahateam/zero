@@ -43,7 +43,8 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，插入对象</br>
 	 * 
-	 * @param T 要插入的对象（泛型）,如果某字段为空则不插入该字段
+	 * @param T
+	 *            要插入的对象（泛型）,如果某字段为空则不插入该字段
 	 */
 	public void insert(DruidPooledConnection conn, T t) throws ServerException {
 		StringBuffer sb = new StringBuffer("INSERT INTO ").append(mapper.getTableName());
@@ -80,7 +81,8 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 模版方法，批量插入对象列表</br>
 	 * 
-	 * @param list 要插入的对象列表（泛型）
+	 * @param list
+	 *            要插入的对象列表（泛型）
 	 * 
 	 * @return 插入的记录数
 	 */
@@ -129,8 +131,10 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 删除对象</br>
 	 * 
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
 	 * 
 	 * @return 返回影响的记录数
 	 */
@@ -143,8 +147,10 @@ public abstract class RDSRepository<T> {
 
 	/**
 	 * 
-	 * @param conn 数据连接对象
-	 * @param exp  SQL语句构造对象 EXP
+	 * @param conn
+	 *            数据连接对象
+	 * @param exp
+	 *            SQL语句构造对象 EXP
 	 * @return 返回受影响行数
 	 * @throws ServerException
 	 */
@@ -159,11 +165,16 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 获取字段对象数组列表</br>
 	 * 
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
-	 * @param count       查询的总数量
-	 * @param offset      查询的起始位置，下标从零开始（0表示从第一个开始查询）
-	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
+	 * @param count
+	 *            查询的总数量
+	 * @param offset
+	 *            查询的起始位置，下标从零开始（0表示从第一个开始查询）
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象数组列表，如果查询不到，则返回空数组
 	 */
@@ -180,9 +191,12 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 获取一行字段对象数组</br>
 	 * 
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
-	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象数组，如果查询不到，则返回null
 	 */
@@ -194,11 +208,16 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 获取对象列表</br>
 	 * 
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
-	 * @param count       查询的总数量
-	 * @param offset      查询的起始位置，下标从零开始（0表示从第一个开始查询）
-	 * @param selections  要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
+	 * @param count
+	 *            查询的总数量
+	 * @param offset
+	 *            查询的起始位置，下标从零开始（0表示从第一个开始查询）
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 * @return 返回查询的对象列表，如果查询不到，则返回空数组
 	 */
@@ -211,16 +230,16 @@ public abstract class RDSRepository<T> {
 		if (StringUtils.isBlank(where)) {
 			buildCountAndOffset(sb, count, offset);
 
-//			System.out.println(sb.toString());
+			// System.out.println(sb.toString());
 			return executeQuerySQL(conn, sb.toString(), null);
 
 		} else {
 			buildWHERE(sb, where);
 			buildCountAndOffset(sb, count, offset);
 
-//			log.debug(sb.toString());
+			// log.debug(sb.toString());
 
-//			System.out.println(sb.toString());
+			// System.out.println(sb.toString());
 
 			return executeQuerySQL(conn, sb.toString(), whereParams);
 		}
@@ -260,10 +279,14 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 更新</br>
 	 * 
-	 * @param set         SQL的SET从句字符串
-	 * @param setParams   SET从句的参数
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
+	 * @param set
+	 *            SQL的SET从句字符串
+	 * @param setParams
+	 *            SET从句的参数
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
 	 * 
 	 * @return 返回影响的记录数
 	 */
@@ -286,9 +309,12 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 更新对象</br>
 	 * 
-	 * @param where       SQL的WHERE从句字符串
-	 * @param whereParams WHERE从句的参数
-	 * @param skipNull    是否跳过空字段
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数
+	 * @param skipNull
+	 *            是否跳过空字段
 	 * 
 	 * @return 返回影响的记录数
 	 */
@@ -411,11 +437,16 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 设置标签（覆盖），可以批量设置多个标签
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param groupKeyword  标签分组关键字
-	 * @param tags          要设置的标签列表，JSONArray格式
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param groupKeyword
+	 *            标签分组关键字
+	 * @param tags
+	 *            要设置的标签列表，JSONArray格式
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
 	 * @return 影响记录行数
 	 */
 	protected int setTags(DruidPooledConnection conn, String tagColumnName, String groupKeyword, JSONArray tags,
@@ -443,11 +474,16 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 添加标签
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param groupKeyword  标签分组关键字
-	 * @param tag           要添加的标签
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param groupKeyword
+	 *            标签分组关键字
+	 * @param tag
+	 *            要添加的标签
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
 	 * @return 影响记录行数
 	 */
 	protected int addTag(DruidPooledConnection conn, String tagColumnName, String groupKeyword, String tag,
@@ -475,11 +511,16 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 删除标签
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param groupKeyword  标签分组关键字
-	 * @param tag           要删除的标签
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param groupKeyword
+	 *            标签分组关键字
+	 * @param tag
+	 *            要删除的标签
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
 	 * @return 影响记录行数
 	 */
 	protected int delTag(DruidPooledConnection conn, String tagColumnName, String groupKeyword, String tag,
@@ -502,10 +543,14 @@ public abstract class RDSRepository<T> {
 	/**
 	 * 获取标签列表
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param groupKeyword  标签分组关键字
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param groupKeyword
+	 *            标签分组关键字
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
 	 * @return 标签列表JSONArray格式
 	 */
 	protected JSONArray getTags(DruidPooledConnection conn, String tagColumnName, String groupKeyword, String where,
@@ -530,12 +575,18 @@ public abstract class RDSRepository<T> {
 	 * 需要传入标签分组keyword和标签数组</br>
 	 * 如果keyword为blank，则从根上查询JSON数组
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param groupKeyword  标签分组关键字
-	 * @param tags          要匹配的标签列表，String[]格式
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
-	 * @param selections    要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param groupKeyword
+	 *            标签分组关键字
+	 * @param tags
+	 *            要匹配的标签列表，String[]格式
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 * 
 	 */
 	protected List<T> getListByTagsJSONArray(DruidPooledConnection conn, String tagColumnName, String groupKeyword,
@@ -571,11 +622,16 @@ public abstract class RDSRepository<T> {
 	 * 跟进标签查询对象列表</br>
 	 * 需要传入完整标签对象结构（keyword和标签name）
 	 * 
-	 * @param tagColumnName 标签列名
-	 * @param jsonTags      要匹配的完整标签对象结构（groupKeyword和标签name）
-	 * @param where         SQL的WHERE从句字符串
-	 * @param whereParams   WHERE从句的参数 参数
-	 * @param selections    要选择的列的列名（数据库字段名），不填表示*，全部选择
+	 * @param tagColumnName
+	 *            标签列名
+	 * @param jsonTags
+	 *            要匹配的完整标签对象结构（groupKeyword和标签name）
+	 * @param where
+	 *            SQL的WHERE从句字符串
+	 * @param whereParams
+	 *            WHERE从句的参数 参数
+	 * @param selections
+	 *            要选择的列的列名（数据库字段名），不填表示*，全部选择
 	 */
 	protected List<T> getListByTagsJSONObject(DruidPooledConnection conn, String tagColumnName, JSONObject jsonTags,
 			String where, List<Object> whereParams, Integer count, Integer offset, String... selections)
