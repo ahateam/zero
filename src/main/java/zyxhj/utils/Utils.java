@@ -5,6 +5,9 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 
+import zyxhj.utils.api.BaseRC;
+import zyxhj.utils.api.ServerException;
+
 public class Utils {
 
 	// 修复fileName，兼容linux和windows
@@ -25,6 +28,14 @@ public class Utils {
 		p.load(new FileInputStream(ciname));
 		return p;
 	}
-	
-	
+
+	public static String readProp(String key, Properties p) throws ServerException {
+		String ret = p.getProperty(key);
+		if (StringUtils.isBlank(ret)) {
+			throw new ServerException(BaseRC.SERVER_ERROR, StringUtils.join("***配置文件读取错误>", key));
+		} else {
+			return ret;
+		}
+	}
+
 }
